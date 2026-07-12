@@ -33,16 +33,18 @@
           <span class="pokemon__number"></span> -
           <span class="pokemon__name"></span>
         </h1>
-        <form class="form">
+        <form class="form" role="search">
           <input
             type="search"
             class="input__search"
             placeholder="Name or Number"
-            list="pokemon-list"
             autocomplete="off"
+            role="combobox"
+            aria-autocomplete="list"
+            aria-expanded="false"
             required
           />
-          <datalist id="pokemon-list"></datalist>
+          <ul class="suggestions" role="listbox"></ul>
         </form>
         <div class="buttons">
           <button class="button btn-prev" type="button">Prev &lt;</button>

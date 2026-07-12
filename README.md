@@ -31,7 +31,7 @@
 
 ## ✨ Funcionalidades
 
-- 🔍 Pesquisar Pokémon por **nome** (com **autocomplete**) ou **número**
+- 🔍 Pesquisar por **nome** (sugestões por **qualquer parte** do nome, navegáveis pelo teclado) ou **número**
 - ⬅️ ➡️ Navegar entre os Pokémon com os botões **Prev**/**Next** ou as **setas do teclado**
 - 🏷️ Ver **tipos** (com cores oficiais), **altura**, **peso** e **stats** em barras
 - 🧬 Ver **habilidades** (destacando as ocultas) e a **cadeia de evolução** (clicável)
@@ -91,6 +91,7 @@ Acesse o endereço exibido no terminal (por padrão `http://localhost:5173`).
 │   ├── api.js              # PokéAPI: fetch, cache, sprite e evolução
 │   ├── pokemonTypes.js     # Cores e traduções dos tipos
 │   ├── storage.js          # Tema e favoritos (localStorage)
+│   ├── autocomplete.js     # Sugestões de busca por substring
 │   └── style.css           # Estilos
 ├── public/
 │   ├── images/pokedex.png  # Imagem do dispositivo

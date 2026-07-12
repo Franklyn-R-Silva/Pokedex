@@ -15,7 +15,8 @@ Navegador
    │        │
    │        ├── src/api.js ─────► fetch na PokéAPI (+ cache), sprite e evolução
    │        ├── src/pokemonTypes.js ─► cores/labels dos tipos
-   │        └── src/storage.js ─► tema e favoritos (localStorage)
+   │        ├── src/storage.js ─► tema e favoritos (localStorage)
+   │        └── src/autocomplete.js ─► sugestões de busca por substring
    │
    └── src/style.css ── tema dirigido pela variável --type-color
 ```
@@ -38,6 +39,10 @@ Mapas `TYPE_COLORS` e `TYPE_LABELS` (18 tipos) e seus getters. A cor do tipo pri
 ### `src/storage.js` — persistência
 
 Camada fina sobre `localStorage`: tema (`getTheme`/`setTheme`) e favoritos (`getFavorites`/`isFavorite`/`toggleFavorite`). Os favoritos são armazenados como `[{ id, name }]`.
+
+### `src/autocomplete.js` — sugestões de busca
+
+`setupAutocomplete({ input, container, getNames, onSelect })` substitui o `<datalist>` nativo (que só sugere por prefixo) por um dropdown que casa por **substring** — permite achar o Pokémon sabendo só parte do nome. Prioriza correspondências no início, destaca o trecho encontrado e é navegável por teclado (↑/↓, Enter, Esc).
 
 ### `src/main.js` — orquestração
 

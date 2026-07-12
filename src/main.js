@@ -9,6 +9,7 @@ import {
 } from './api.js';
 import { getTypeColor, getTypeLabel } from './pokemonTypes.js';
 import { getTheme, setTheme, getFavorites, isFavorite, toggleFavorite } from './storage.js';
+import { setupAutocomplete } from './autocomplete.js';
 
 const pokemonName = document.querySelector('.pokemon__name');
 const pokemonNumber = document.querySelector('.pokemon__number');
@@ -16,7 +17,7 @@ const pokemonImage = document.querySelector('.pokemon__image');
 
 const form = document.querySelector('.form');
 const input = document.querySelector('.input__search');
-const nameList = document.querySelector('#pokemon-list');
+const suggestions = document.querySelector('.suggestions');
 const buttonPrev = document.querySelector('.btn-prev');
 const buttonNext = document.querySelector('.btn-next');
 const buttonDownload = document.querySelector('.btn-download');
@@ -46,6 +47,7 @@ let searchPokemon = 1;
 let currentPokemon = null; // dados completos do Pokémon exibido.
 let currentSprite = null; // { url, name } do Pokémon exibido (para download).
 let requestId = 0; // token para descartar renders assíncronos obsoletos.
+let allNames = []; // todos os nomes de Pokémon (para o autocomplete).
 
 function setLoading() {
   pokemonName.innerHTML = 'Carregando...';
@@ -269,17 +271,10 @@ async function downloadSprite() {
 }
 
 /**
- * Popula o <datalist> com todos os nomes, habilitando o autocomplete da busca.
+ * Carrega todos os nomes para alimentar o autocomplete por substring.
  */
-async function populateNameList() {
-  const names = await fetchAllPokemonNames();
-  const fragment = document.createDocumentFragment();
-  names.forEach((name) => {
-    const option = document.createElement('option');
-    option.value = name;
-    fragment.appendChild(option);
-  });
-  nameList.appendChild(fragment);
+async function loadNames() {
+  allNames = await fetchAllPokemonNames();
 }
 
 function applyTheme(theme) {
@@ -330,7 +325,14 @@ document.addEventListener('keydown', (event) => {
   if (event.key === 'ArrowRight') buttonNext.click();
 });
 
+setupAutocomplete({
+  input,
+  container: suggestions,
+  getNames: () => allNames,
+  onSelect: (name) => renderPokemon(name),
+});
+
 applyTheme(getTheme());
 renderFavorites();
 renderPokemon(searchPokemon);
-populateNameList();
+loadNames();
