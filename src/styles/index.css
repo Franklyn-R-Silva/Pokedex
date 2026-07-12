@@ -1,6 +1,7 @@
 /* Barra de estilos — importa os módulos na ordem de cascata.
    Cada arquivo cobre uma área/feature (ver CLAUDE.md). */
 @import './tokens.css';
+@import './type-icon.css';
 @import './header.css';
 @import './device.css';
 @import './details.css';

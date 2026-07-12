@@ -4,6 +4,7 @@ import type { Translation } from '../../i18n/translations';
 import { fetchEffectiveness } from '../../services/pokeapi';
 import { getTypeColor, getTypeLabel } from '../../domain/pokemonTypes';
 import { useI18n } from '../../i18n/I18nContext';
+import { TypeSymbol } from '../TypeIcon';
 
 function suffix(m: number): string {
   if (m === 4) return ' ×4';
@@ -40,6 +41,7 @@ export function Effectiveness({ types }: { types: PokemonType[] }) {
         <div className="eff-badges">
           {names.map((name, i) => (
             <span className="type-badge" style={{ backgroundColor: getTypeColor(name) }} key={name}>
+              <TypeSymbol type={name} size={14} />
               {getTypeLabel(name, lang) + (mults ? suffix(mults[i]) : '')}
             </span>
           ))}

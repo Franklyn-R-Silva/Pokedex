@@ -36,13 +36,21 @@
 }
 
 .type-badge {
-  padding: 4px 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 14px 4px 10px;
   border-radius: 999px;
   color: #fff;
   font-weight: 700;
   font-size: 0.82rem;
   text-transform: capitalize;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+}
+
+/* TCG usa taxonomia própria (Colorless, Lightning…), sem símbolo — mantém padding simétrico. */
+.type-badge.tcg-type {
+  padding: 4px 14px;
 }
 
 .type-badge--btn {

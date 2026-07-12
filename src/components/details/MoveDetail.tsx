@@ -6,6 +6,7 @@ import { getTypeColor, getTypeLabel } from '../../domain/pokemonTypes';
 import { titleize } from '../../domain/pokemonInfo';
 import { useI18n } from '../../i18n/I18nContext';
 import { useTranslatedText } from '../../hooks/useTranslatedText';
+import { TypeSymbol } from '../TypeIcon';
 
 // Conteúdo do modal de golpe (tipo/poder/precisão/PP/categoria/efeito) — /move.
 export function MoveDetail({ url, name }: { url: string; name: string }) {
@@ -38,6 +39,7 @@ export function MoveDetail({ url, name }: { url: string; name: string }) {
     <>
       <h2 className="detail-title">{titleize(name)}</h2>
       <span className="type-badge" style={{ backgroundColor: getTypeColor(data.type.name) }}>
+        <TypeSymbol type={data.type.name} size={15} />
         {getTypeLabel(data.type.name, lang)}
       </span>
       <div className="detail-grid">

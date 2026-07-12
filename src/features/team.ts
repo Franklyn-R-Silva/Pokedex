@@ -3,6 +3,7 @@ import type { Pokemon } from '../types';
 import { fetchPokemon, fetchEffectiveness } from '../services/pokeapi';
 import { getStaticImage } from '../services/sprites';
 import { getTypeColor, getTypeLabel } from '../domain/pokemonTypes';
+import { typeSymbolEl } from '../domain/typeIcons';
 import { t, getLang } from '../i18n';
 
 const MAX_TEAM = 6;
@@ -103,7 +104,9 @@ export function setupTeam({ form, input, listEl, resultEl, onSelect }: TeamOptio
       const badge = document.createElement('span');
       badge.className = 'type-badge';
       badge.style.backgroundColor = getTypeColor(name);
-      badge.textContent = `${getTypeLabel(name, lang)} ×${count}`;
+      const sym = typeSymbolEl(name, 14);
+      if (sym) badge.appendChild(sym);
+      badge.append(`${getTypeLabel(name, lang)} ×${count}`);
       badges.appendChild(badge);
     });
     resultEl.append(label, badges);

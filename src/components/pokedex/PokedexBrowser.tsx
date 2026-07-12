@@ -3,19 +3,17 @@ import type { RefItem, Lang } from '../../types';
 import { fetchByType, fetchByGeneration } from '../../services/pokeapi';
 import { getTypeColor, getTypeLabel } from '../../domain/pokemonTypes';
 import { useI18n } from '../../i18n/I18nContext';
+import { TypeSymbol } from '../TypeIcon';
 
 // Tipos na ordem do site de referência.
 const TYPES = [
   'normal', 'fighting', 'flying', 'poison', 'ground', 'rock', 'bug', 'ghost', 'steel',
   'fire', 'water', 'grass', 'electric', 'psychic', 'ice', 'dragon', 'dark', 'fairy',
 ];
-const TYPE_EMOJI: Record<string, string> = {
-  normal: '⚪', fighting: '🥊', flying: '🕊️', poison: '☠️', ground: '⛰️', rock: '🪨',
-  bug: '🐛', ghost: '👻', steel: '⚙️', fire: '🔥', water: '💧', grass: '🌿',
-  electric: '⚡', psychic: '🔮', ice: '❄️', dragon: '🐉', dark: '🌑', fairy: '✨',
-};
 const GENS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 const GEN_ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX'];
+// Cada geração introduziu uma região (mapeamento 1:1 na PokéAPI).
+const REGIONS = ['Kanto', 'Johto', 'Hoenn', 'Sinnoh', 'Unova', 'Kalos', 'Alola', 'Galar', 'Paldea'];
 const PAGE = 30;
 
 const spriteUrl = (id: number) =>
@@ -42,6 +40,7 @@ export function PokedexBrowser({
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState<'num' | 'name'>('num');
   const [shown, setShown] = useState(PAGE);
+  const [browseAll, setBrowseAll] = useState(false);
 
   // Carrega tipos + gerações uma vez → base, membership e contadores.
   useEffect(() => {
@@ -108,18 +107,45 @@ export function PokedexBrowser({
     setTypes(new Set());
     setGen(null);
     setSearch('');
+    setBrowseAll(false);
   };
+
+  // Fluxo: entra escolhendo o TIPO (landing); depois vê/refina os Pokémon.
+  const showLanding = !browseAll && types.size === 0 && gen === null && !search.trim();
 
   return (
     <div className="pkx">
       <div className="pkx__head">
-        <button className="deck-back" type="button" onClick={onClose}>
-          {L(lang, '← Voltar', '← Back')}
+        <button className="deck-back" type="button" onClick={showLanding ? onClose : clear}>
+          {showLanding ? L(lang, '← Voltar', '← Back') : L(lang, '← Tipos', '← Types')}
         </button>
         <h2 className="deck-title">{L(lang, '🔎 Explorar Pokédex', '🔎 Explore Pokédex')}</h2>
-        <span className="pkx__count">{results.length}</span>
+        {!showLanding && <span className="pkx__count">{results.length}</span>}
       </div>
 
+      {showLanding ? (
+        <div className="pkx-landing">
+          <div className="pkx-landing__title">{L(lang, 'ESCOLHA UM TIPO', 'PICK A TYPE')}</div>
+          <div className="pkx-landing__grid">
+            {TYPES.map((tp) => (
+              <button
+                key={tp}
+                type="button"
+                className="pkx-landing__type"
+                onClick={() => toggleType(tp)}
+              >
+                <span className="pkx-landing__ic" style={{ background: getTypeColor(tp) }}>
+                  <TypeSymbol type={tp} size={30} />
+                </span>
+                <span className="pkx-landing__label">{getTypeLabel(tp, lang)}</span>
+              </button>
+            ))}
+          </div>
+          <button className="pkx-landing__all" type="button" onClick={() => setBrowseAll(true)}>
+            {L(lang, 'Ver todos os Pokémon →', 'Browse all Pokémon →')}
+          </button>
+        </div>
+      ) : (
       <div className="pkx__body">
         <div className="pkx__filters">
           <div className="pkx__filter-head">
@@ -152,7 +178,7 @@ export function PokedexBrowser({
                   onClick={() => toggleType(tp)}
                 >
                   <span className="pkx__type-ic" style={{ background: getTypeColor(tp) }}>
-                    {TYPE_EMOJI[tp]}
+                    <TypeSymbol type={tp} size={15} />
                   </span>
                   <span className="pkx__type-name">{getTypeLabel(tp, lang)}</span>
                   <span className="pkx__type-n">({n})</span>
@@ -161,7 +187,7 @@ export function PokedexBrowser({
             })}
           </div>
 
-          <h3 className="pkx__section">{L(lang, 'Geração', 'Generation')}</h3>
+          <h3 className="pkx__section">{L(lang, 'Região', 'Region')}</h3>
           <div className="pkx__gens">
             {GENS.map((g, i) => (
               <button
@@ -170,7 +196,10 @@ export function PokedexBrowser({
                 className={`pkx__gen ${gen === g ? 'is-active' : ''}`}
                 onClick={() => setGen((cur) => (cur === g ? null : g))}
               >
-                {L(lang, 'Gen', 'Gen')} {GEN_ROMAN[i]} <span className="pkx__type-n">({genCount(g)})</span>
+                <span className="pkx__gen-region">{REGIONS[i]}</span>
+                <span className="pkx__gen-meta">
+                  {L(lang, 'Gen', 'Gen')} {GEN_ROMAN[i]} · {genCount(g)}
+                </span>
               </button>
             ))}
           </div>
@@ -213,7 +242,7 @@ export function PokedexBrowser({
                           title={getTypeLabel(tp, lang)}
                           style={{ background: getTypeColor(tp) }}
                         >
-                          {TYPE_EMOJI[tp]}
+                          <TypeSymbol type={tp} size={13} />
                         </span>
                       ))}
                     </span>
@@ -229,6 +258,7 @@ export function PokedexBrowser({
           )}
         </div>
       </div>
+      )}
     </div>
   );
 }

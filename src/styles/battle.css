@@ -386,6 +386,10 @@
 }
 
 .battle-move {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   padding: 9px;
   border: none;
   border-radius: var(--radius-sm);

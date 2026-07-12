@@ -6,6 +6,7 @@ import type { Pokemon } from '../types';
 import { fetchEffectiveness, fetchPokemon, MAX_POKEMON } from '../services/pokeapi';
 import { getStaticImage } from '../services/sprites';
 import { getTypeColor, getTypeLabel } from '../domain/pokemonTypes';
+import { typeSymbolEl } from '../domain/typeIcons';
 import { t, getLang } from '../i18n';
 
 const LEVEL = 50;
@@ -454,9 +455,12 @@ export function setupBattle({ modal, content, getTeam, getNames, show }: BattleO
     };
 
     you.moves.forEach((move) => {
-      const btn = el<HTMLButtonElement>('button', 'battle-move', getTypeLabel(move.type, lang()));
+      const btn = el<HTMLButtonElement>('button', 'battle-move');
       btn.type = 'button';
       btn.style.background = getTypeColor(move.type);
+      const sym = typeSymbolEl(move.type, 15);
+      if (sym) btn.appendChild(sym);
+      btn.append(getTypeLabel(move.type, lang()));
       btn.addEventListener('click', () => void round(move));
       moves.appendChild(btn);
     });
