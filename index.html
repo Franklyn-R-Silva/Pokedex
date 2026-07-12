@@ -141,18 +141,30 @@
         <section class="panel compare">
           <h2 class="panel__title" data-i18n="compareTitle">⚔️ Comparar</h2>
           <div class="compare__controls">
-            <input
-              class="compare-a"
-              type="search"
-              data-i18n-ph="comparePlaceholderA"
-              autocomplete="off"
-            />
-            <input
-              class="compare-b"
-              type="search"
-              data-i18n-ph="comparePlaceholderB"
-              autocomplete="off"
-            />
+            <div class="compare-field">
+              <input
+                class="compare-a"
+                type="search"
+                data-i18n-ph="comparePlaceholderA"
+                autocomplete="off"
+                role="combobox"
+                aria-autocomplete="list"
+                aria-expanded="false"
+              />
+              <ul class="suggestions compare-suggest-a" role="listbox"></ul>
+            </div>
+            <div class="compare-field">
+              <input
+                class="compare-b"
+                type="search"
+                data-i18n-ph="comparePlaceholderB"
+                autocomplete="off"
+                role="combobox"
+                aria-autocomplete="list"
+                aria-expanded="false"
+              />
+              <ul class="suggestions compare-suggest-b" role="listbox"></ul>
+            </div>
             <button class="compare-run" type="button" data-i18n="compareButton">Comparar</button>
           </div>
           <div class="compare-result"></div>

@@ -710,6 +710,17 @@ main {
   background: var(--surface-2);
 }
 
+.compare-field {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.compare-field .compare-a,
+.compare-field .compare-b {
+  width: 100%;
+}
+
 .compare-run {
   border: none;
   border-radius: var(--radius-sm);

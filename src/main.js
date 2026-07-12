@@ -490,11 +490,27 @@ filterCtl = setupFilter({
   },
 });
 
+const compareInputA = document.querySelector('.compare-a');
+const compareInputB = document.querySelector('.compare-b');
 compareCtl = setupCompare({
-  inputA: document.querySelector('.compare-a'),
-  inputB: document.querySelector('.compare-b'),
+  inputA: compareInputA,
+  inputB: compareInputB,
   button: document.querySelector('.compare-run'),
   resultEl: document.querySelector('.compare-result'),
+});
+
+// Autocomplete por nome nos dois campos de comparação (só preenche o campo).
+setupAutocomplete({
+  input: compareInputA,
+  container: document.querySelector('.compare-suggest-a'),
+  getNames: () => allNames,
+  onSelect: () => {},
+});
+setupAutocomplete({
+  input: compareInputB,
+  container: document.querySelector('.compare-suggest-b'),
+  getNames: () => allNames,
+  onSelect: () => {},
 });
 
 // Deep link: abre direto o Pokémon indicado em ?pokemon=ID (ou o #1).
