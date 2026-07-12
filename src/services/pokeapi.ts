@@ -2,6 +2,8 @@ import type {
   Pokemon,
   Species,
   TypeData,
+  AbilityData,
+  MoveData,
   EvolutionChain,
   EvolutionNode,
   EncounterLocation,
@@ -21,6 +23,38 @@ const NAMES_KEY = 'pokedex-names';
 const cache = new Map<string, Pokemon>();
 const speciesCache = new Map<string, Species>();
 const typeCache = new Map<string, TypeData>();
+const abilityCache = new Map<string, AbilityData>();
+const moveCache = new Map<string, MoveData>();
+
+/** Detalhes de uma habilidade (com cache). */
+export async function fetchAbility(url: string): Promise<AbilityData | null> {
+  const cached = abilityCache.get(url);
+  if (cached) return cached;
+  try {
+    const response = await fetch(url);
+    if (!response.ok) return null;
+    const data = (await response.json()) as AbilityData;
+    abilityCache.set(url, data);
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+/** Detalhes de um golpe (com cache). */
+export async function fetchMove(url: string): Promise<MoveData | null> {
+  const cached = moveCache.get(url);
+  if (cached) return cached;
+  try {
+    const response = await fetch(url);
+    if (!response.ok) return null;
+    const data = (await response.json()) as MoveData;
+    moveCache.set(url, data);
+    return data;
+  } catch {
+    return null;
+  }
+}
 
 function extractIdFromUrl(url: string): number | null {
   const match = url.match(/\/(\d+)\/?$/);

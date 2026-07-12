@@ -12,6 +12,8 @@ import {
   fetchSpecies,
   fetchEffectiveness,
   fetchEncounters,
+  fetchAbility,
+  fetchMove,
   getFlavorText,
   getGenus,
   MAX_POKEMON,
@@ -92,6 +94,8 @@ const lightboxImg = qs<HTMLImageElement>('.lightbox__img');
 const lightboxThumbs = qs<HTMLElement>('.lightbox__thumbs');
 const infoModal = qs<HTMLElement>('.info-modal');
 const topbarInfo = qs<HTMLButtonElement>('.topbar-info');
+const detailModal = qs<HTMLElement>('.detail-modal');
+const detailContent = qs<HTMLElement>('.detail-modal__content');
 const movesContainer = qs<HTMLElement>('.details__moves');
 const locationsContainer = qs<HTMLElement>('.details__locations');
 const genusEl = qs<HTMLElement>('.details__genus');
@@ -222,6 +226,11 @@ function renderAbilities(abilities: PokemonAbility[]): void {
       chip.classList.add('ability-chip--hidden');
       chip.title = t('hiddenAbility');
     }
+    chip.classList.add('is-clickable');
+    chip.addEventListener(
+      'click',
+      () => void openAbilityModal(ability.ability.url, chip.textContent ?? english),
+    );
     abilitiesContainer.appendChild(chip);
     // Traduz em segundo plano no modo PT.
     if (pt) void translateToPt(english).then((tr) => (chip.textContent = tr));
@@ -397,10 +406,12 @@ function renderMoves(data: Pokemon): void {
       gtitle.textContent = methodLabels[method] ?? titleize(method);
       const chips = document.createElement('div');
       chips.className = 'moves-chips';
-      groups[method].forEach(({ name, level }) => {
-        const chip = document.createElement('span');
-        chip.className = 'move-chip';
+      groups[method].forEach(({ name, level, url }) => {
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'move-chip is-clickable';
         chip.textContent = level > 0 ? `${titleize(name)} · ${level}` : titleize(name);
+        chip.addEventListener('click', () => void openMoveModal(url, name));
         chips.appendChild(chip);
       });
       group.append(gtitle, chips);
@@ -793,6 +804,86 @@ function openLightbox(): void {
 
   setMain(gallery[0].url);
   lightbox.hidden = false;
+}
+
+// Modal de detalhes de habilidade (efeito) — endpoint /ability.
+async function openAbilityModal(url: string, title: string): Promise<void> {
+  detailContent.innerHTML = `<span class="muted">${t('loading')}</span>`;
+  detailModal.hidden = false;
+  const data = await fetchAbility(url);
+  detailContent.innerHTML = '';
+
+  const heading = document.createElement('h2');
+  heading.className = 'detail-title';
+  heading.textContent = title;
+  detailContent.appendChild(heading);
+
+  const entry = data?.effect_entries.find((e) => e.language.name === 'en');
+  const effect = entry?.short_effect ?? entry?.effect ?? t('none');
+  const p = document.createElement('p');
+  p.className = 'detail-effect';
+  p.textContent = effect;
+  detailContent.appendChild(p);
+
+  if (getLang() === 'pt' && effect) void translateToPt(effect).then((tr) => (p.textContent = tr));
+}
+
+// Modal de detalhes de golpe (tipo/poder/precisão/PP/categoria/efeito) — /move.
+async function openMoveModal(url: string, name: string): Promise<void> {
+  detailContent.innerHTML = `<span class="muted">${t('loading')}</span>`;
+  detailModal.hidden = false;
+  const data = await fetchMove(url);
+  detailContent.innerHTML = '';
+
+  const heading = document.createElement('h2');
+  heading.className = 'detail-title';
+  heading.textContent = titleize(name);
+  detailContent.appendChild(heading);
+
+  if (!data) {
+    const muted = document.createElement('span');
+    muted.className = 'muted';
+    muted.textContent = t('notFound');
+    detailContent.appendChild(muted);
+    return;
+  }
+
+  const lang = getLang();
+  const badge = document.createElement('span');
+  badge.className = 'type-badge';
+  badge.style.backgroundColor = getTypeColor(data.type.name);
+  badge.textContent = getTypeLabel(data.type.name, lang);
+  detailContent.appendChild(badge);
+
+  const grid = document.createElement('div');
+  grid.className = 'detail-grid';
+  const addCell = (label: string, value: string): void => {
+    const cell = document.createElement('div');
+    cell.className = 'about-cell';
+    const l = document.createElement('span');
+    l.className = 'about-label';
+    l.textContent = label;
+    const v = document.createElement('span');
+    v.className = 'about-value';
+    v.textContent = value;
+    cell.append(l, v);
+    grid.appendChild(cell);
+  };
+  addCell(t('moveCategory'), t(data.damage_class.name as keyof Translation) as string);
+  addCell(t('movePower'), data.power != null ? String(data.power) : '—');
+  addCell(t('moveAccuracy'), data.accuracy != null ? `${data.accuracy}%` : '—');
+  addCell(t('movePp'), data.pp != null ? String(data.pp) : '—');
+  detailContent.appendChild(grid);
+
+  const entry = data.effect_entries.find((e) => e.language.name === 'en');
+  const effect = (entry?.short_effect ?? '').replace(/\$effect_chance/g, '—');
+  if (effect) {
+    const p = document.createElement('p');
+    p.className = 'detail-effect';
+    p.textContent = effect;
+    detailContent.appendChild(p);
+    if (lang === 'pt') void translateToPt(effect).then((tr) => (p.textContent = tr));
+  }
 }
 
 pokemonImage.addEventListener('click', openLightbox);

@@ -1582,3 +1582,41 @@ html.dark .ctable .is-higher {
   font-weight: 600;
   color: var(--text-muted);
 }
+
+/* ---------- Chips clicáveis + modal de detalhe ---------- */
+
+.ability-chip.is-clickable,
+.move-chip.is-clickable {
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.ability-chip.is-clickable:hover,
+.move-chip.is-clickable:hover {
+  border-color: var(--type-color);
+  color: var(--type-color);
+}
+
+.detail-title {
+  font-size: 1.15rem;
+  color: var(--text);
+  margin-bottom: 10px;
+  text-transform: capitalize;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 14px;
+  margin-top: 14px;
+}
+
+.detail-effect {
+  font-size: 0.86rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-top: 14px;
+  text-align: left;
+}

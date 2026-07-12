@@ -77,6 +77,13 @@ export interface Translation {
   infoData: string;
   infoTranslate: string;
   infoShortcut: string;
+  movePower: string;
+  moveAccuracy: string;
+  movePp: string;
+  moveCategory: string;
+  physical: string;
+  special: string;
+  status: string;
   statLabels: StatMap;
   statNames: StatMap;
 }
@@ -155,6 +162,13 @@ export const translations: Record<Lang, Translation> = {
     infoData: 'Dados fornecidos pela PokéAPI.',
     infoTranslate: 'Os textos em português são traduzidos automaticamente (a PokéAPI não tem PT).',
     infoShortcut: 'Dica: tecle "/" para buscar e ←/→ para navegar.',
+    movePower: 'Poder',
+    moveAccuracy: 'Precisão',
+    movePp: 'PP',
+    moveCategory: 'Categoria',
+    physical: 'Físico',
+    special: 'Especial',
+    status: 'Status',
     statLabels: {
       hp: 'HP',
       attack: 'ATQ',
@@ -245,6 +259,13 @@ export const translations: Record<Lang, Translation> = {
     infoData: 'Data provided by the PokéAPI.',
     infoTranslate: 'Portuguese text is machine-translated (the PokéAPI has no PT).',
     infoShortcut: 'Tip: press "/" to search and ←/→ to navigate.',
+    movePower: 'Power',
+    moveAccuracy: 'Accuracy',
+    movePp: 'PP',
+    moveCategory: 'Category',
+    physical: 'Physical',
+    special: 'Special',
+    status: 'Status',
     statLabels: {
       hp: 'HP',
       attack: 'ATK',

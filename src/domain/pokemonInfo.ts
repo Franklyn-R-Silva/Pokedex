@@ -133,21 +133,22 @@ export function speciesFlags(species: Species): string[] {
 export interface MoveEntry {
   name: string;
   level: number;
+  url: string;
 }
 
 /** Agrupa os golpes por método de aprendizado, sem duplicatas. */
 export function groupMoves(pokemon: Pokemon): Record<string, MoveEntry[]> {
-  const groups: Record<string, Map<string, number>> = {};
+  const groups: Record<string, Map<string, { level: number; url: string }>> = {};
 
   for (const entry of pokemon.moves) {
     for (const detail of entry.version_group_details) {
       const method = detail.move_learn_method.name;
-      const map = (groups[method] ??= new Map<string, number>());
+      const map = (groups[method] ??= new Map());
       const level = detail.level_learned_at;
       const current = map.get(entry.move.name);
       // Mantém o menor nível > 0 (ou 0 quando não é por nível).
-      if (current === undefined || (level > 0 && (current === 0 || level < current))) {
-        map.set(entry.move.name, level);
+      if (current === undefined || (level > 0 && (current.level === 0 || level < current.level))) {
+        map.set(entry.move.name, { level, url: entry.move.url });
       }
     }
   }
@@ -155,7 +156,7 @@ export function groupMoves(pokemon: Pokemon): Record<string, MoveEntry[]> {
   const result: Record<string, MoveEntry[]> = {};
   for (const [method, map] of Object.entries(groups)) {
     result[method] = [...map.entries()]
-      .map(([name, level]) => ({ name, level }))
+      .map(([name, v]) => ({ name, level: v.level, url: v.url }))
       .sort((a, b) => a.level - b.level || a.name.localeCompare(b.name));
   }
   return result;

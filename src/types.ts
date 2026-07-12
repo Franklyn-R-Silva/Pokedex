@@ -128,8 +128,25 @@ export interface TypeData {
   pokemon: { pokemon: NamedResource }[];
 }
 
+export interface EffectEntry {
+  effect: string;
+  short_effect: string;
+  language: NamedResource;
+}
+
 export interface AbilityData {
   names: (LocalizedEntry & { name: string })[];
+  effect_entries: EffectEntry[];
+}
+
+export interface MoveData {
+  name: string;
+  type: NamedResource;
+  power: number | null;
+  accuracy: number | null;
+  pp: number | null;
+  damage_class: NamedResource;
+  effect_entries: EffectEntry[];
 }
 
 /** Item leve {name, id} usado em evolução e no filtro. */
