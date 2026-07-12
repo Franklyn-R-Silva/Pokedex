@@ -28,7 +28,7 @@
 
 .pkx__body {
   display: grid;
-  grid-template-columns: 250px minmax(0, 1fr);
+  grid-template-columns: 300px minmax(0, 1fr);
   gap: var(--space-4);
   align-items: start;
 }
@@ -40,7 +40,7 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: var(--space-3);
+  padding: var(--space-4);
   box-shadow: var(--shadow-sm);
 }
 
@@ -90,19 +90,19 @@
 .pkx__types {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 4px;
+  gap: 6px;
 }
 
 .pkx__type {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 5px 6px;
+  gap: 8px;
+  padding: 8px 9px;
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
   background: none;
   color: var(--text);
-  font-size: 0.72rem;
+  font-size: 0.78rem;
   font-weight: 600;
   cursor: pointer;
   transition:
@@ -128,10 +128,10 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   flex: 0 0 auto;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
 }
@@ -152,16 +152,16 @@
 .pkx__gens {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 4px;
+  gap: 6px;
 }
 
 .pkx__gen {
-  padding: 6px;
+  padding: 9px 8px;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   background: var(--surface-2);
   color: var(--text);
-  font-size: 0.72rem;
+  font-size: 0.76rem;
   font-weight: 700;
   cursor: pointer;
 }
