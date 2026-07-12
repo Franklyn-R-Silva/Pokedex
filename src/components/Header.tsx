@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react';
 import { useI18n } from '../i18n/I18nContext';
 import { useTheme } from '../hooks/useTheme';
 import { useModal } from '../context/ModalContext';
+import { useAuth } from '../context/AuthContext';
 import { InfoModal } from './InfoModal';
+import { AuthModal } from './auth/AuthModal';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -17,7 +19,8 @@ interface HeaderProps {
 export function Header({ onOpenDeck, onOpenCards }: HeaderProps) {
   const { t, lang, toggle: toggleLang } = useI18n();
   const { theme, toggle: toggleTheme } = useTheme();
-  const { open } = useModal();
+  const { open, close } = useModal();
+  const { enabled, user, signOut } = useAuth();
   const [installEvent, setInstallEvent] = useState<BeforeInstallPromptEvent | null>(null);
 
   useEffect(() => {
@@ -74,6 +77,25 @@ export function Header({ onOpenDeck, onOpenCards }: HeaderProps) {
         >
           {theme === 'dark' ? '☀️' : '🌙'}
         </button>
+        {enabled &&
+          (user ? (
+            <button
+              className="auth-btn"
+              type="button"
+              title={user.email ?? ''}
+              onClick={() => void signOut()}
+            >
+              👤 {lang === 'pt' ? 'Sair' : 'Sign out'}
+            </button>
+          ) : (
+            <button
+              className="auth-btn"
+              type="button"
+              onClick={() => open(<AuthModal onDone={close} />)}
+            >
+              {lang === 'pt' ? 'Entrar' : 'Sign in'}
+            </button>
+          ))}
       </div>
     </header>
   );
