@@ -14,12 +14,12 @@ const HEAL_BETWEEN = 0.3; // recupera 30% do HP entre as fases
 
 const wait = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 
-export interface BattleMove {
+interface BattleMove {
   type: string;
   power: number;
 }
 
-export interface Fighter {
+interface Fighter {
   data: Pokemon;
   maxHp: number;
   hp: number;
@@ -52,7 +52,7 @@ function statOf(data: Pokemon, name: string): number {
   return data.stats.find((s) => s.stat.name === name)?.base_stat ?? 50;
 }
 
-export async function buildFighter(data: Pokemon): Promise<Fighter> {
+async function buildFighter(data: Pokemon): Promise<Fighter> {
   const hp = statOf(data, 'hp');
   const types = data.types.map((tp) => tp.type.name);
   const moves: BattleMove[] = types.map((type) => ({ type, power: 65 }));
@@ -77,7 +77,7 @@ export async function buildFighter(data: Pokemon): Promise<Fighter> {
   };
 }
 
-export function computeDamage(
+function computeDamage(
   attacker: Fighter,
   defender: Fighter,
   move: BattleMove,
@@ -112,10 +112,10 @@ function beep(from: number, to: number, dur: number, vol: number): void {
     /* áudio indisponível */
   }
 }
-export function playHit(mult: number): void {
+function playHit(mult: number): void {
   beep(mult > 1 ? 380 : 200, 60, mult > 1 ? 0.22 : 0.16, mult > 1 ? 0.16 : 0.12);
 }
-export function playCry(url: string | null | undefined): void {
+function playCry(url: string | null | undefined): void {
   if (!url) return;
   try {
     const a = new Audio(url);
