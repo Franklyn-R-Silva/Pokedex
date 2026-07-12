@@ -39,7 +39,7 @@ Vite treats `index.html` at the repo root as the entry; it loads `src/main.ts` a
 
 ## Static assets
 
-Images and favicons live in `public/` and are referenced with root-absolute paths (`/images/pokedex.png`, `/favicons/...`). Vite copies `public/` to the build root — put new static assets there, not in `src/`.
+Favicons and PWA icons live in `public/` (root-absolute paths like `/favicons/...`, `/icons/...`); Vite copies `public/` to the build root. The Pokédex device image is bundled via `import ... from './assets/pokedex.png'` in `main.ts` (hashed URL, precached by the SW, cache-busted on change) instead of a fixed `public/` path — this avoids stale-service-worker issues where a fixed asset path serves a broken cached copy.
 
 ## PokéAPI notes
 

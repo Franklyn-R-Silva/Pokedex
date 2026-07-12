@@ -8,6 +8,8 @@ export interface NamedResource {
 export interface Sprites {
   front_default?: string | null;
   front_shiny?: string | null;
+  back_default?: string | null;
+  back_shiny?: string | null;
   other?: {
     'official-artwork'?: { front_default?: string | null; front_shiny?: string | null };
     dream_world?: { front_default?: string | null };
@@ -28,6 +30,7 @@ export interface PokemonType {
 
 export interface PokemonStat {
   base_stat: number;
+  effort: number;
   stat: NamedResource;
 }
 
@@ -89,6 +92,7 @@ export interface Species {
   egg_groups: NamedResource[];
   habitat: NamedResource | null;
   generation: NamedResource;
+  varieties: { is_default: boolean; pokemon: NamedResource }[];
 }
 
 export interface EncounterLocation {

@@ -1,5 +1,6 @@
 import './styles/style.css';
-import type { Pokemon, PokemonType, PokemonStat, PokemonAbility } from './types';
+import pokedexDeviceUrl from './assets/pokedex.png';
+import type { Pokemon, Species, PokemonType, PokemonStat, PokemonAbility } from './types';
 import type { StatKey, Translation } from './i18n/translations';
 import type { Theme } from './services/storage';
 import type { FilterControls } from './features/filter';
@@ -21,6 +22,7 @@ import {
   getStaticImage,
   getAnimatedGif,
   getArtworkById,
+  getSpriteGallery,
 } from './services/sprites';
 import { getTypeColor, getTypeLabel } from './domain/pokemonTypes';
 import {
@@ -55,6 +57,9 @@ const STAT_ORDER: StatKey[] = [
   'speed',
 ];
 
+// A imagem do dispositivo é empacotada pelo Vite (URL com hash, cacheada pelo SW).
+qs<HTMLImageElement>('.pokedex').src = pokedexDeviceUrl;
+
 const pokemonData = qs<HTMLElement>('.pokemon__data');
 const pokemonName = qs<HTMLElement>('.pokemon__name');
 const pokemonNumber = qs<HTMLElement>('.pokemon__number');
@@ -81,6 +86,12 @@ const typesContainer = qs<HTMLElement>('.details__types');
 const flagsContainer = qs<HTMLElement>('.details__flags');
 const aboutContainer = qs<HTMLElement>('.details__about');
 const heldContainer = qs<HTMLElement>('.details__held');
+const formsContainer = qs<HTMLElement>('.details__forms');
+const lightbox = qs<HTMLElement>('.lightbox');
+const lightboxImg = qs<HTMLImageElement>('.lightbox__img');
+const lightboxThumbs = qs<HTMLElement>('.lightbox__thumbs');
+const infoModal = qs<HTMLElement>('.info-modal');
+const topbarInfo = qs<HTMLButtonElement>('.topbar-info');
 const movesContainer = qs<HTMLElement>('.details__moves');
 const locationsContainer = qs<HTMLElement>('.details__locations');
 const genusEl = qs<HTMLElement>('.details__genus');
@@ -183,6 +194,19 @@ function renderStats(stats: PokemonStat[]): void {
   totalValue.textContent = String(total);
   totalRow.append(totalLabel, spacer, totalValue);
   statsContainer.appendChild(totalRow);
+
+  // EV yield (esforço) — quais stats o Pokémon rende ao ser derrotado.
+  const evs = stats
+    .filter((s) => s.effort > 0)
+    .map((s) => `${s.effort} ${labels[s.stat.name as StatKey] ?? s.stat.name}`);
+  if (evs.length > 0) {
+    const evRow = document.createElement('li');
+    evRow.className = 'stat-ev';
+    const strong = document.createElement('strong');
+    strong.textContent = `${t('evYield')}: `;
+    evRow.append(strong, evs.join(', '));
+    statsContainer.appendChild(evRow);
+  }
 }
 
 function renderAbilities(abilities: PokemonAbility[]): void {
@@ -302,6 +326,31 @@ async function renderSpecies(data: Pokemon, reqId: number): Promise<void> {
     cell.append(label, val);
     aboutContainer.appendChild(cell);
   });
+
+  renderForms(species);
+}
+
+function renderForms(species: Species): void {
+  formsContainer.innerHTML = '';
+  const others = species.varieties.filter((v) => !v.is_default);
+  if (others.length === 0) return;
+
+  const title = document.createElement('h2');
+  title.className = 'section-title';
+  title.textContent = t('forms');
+
+  const wrap = document.createElement('div');
+  wrap.className = 'forms-chips';
+  others.forEach((variety) => {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'form-chip';
+    chip.textContent = titleize(variety.pokemon.name);
+    chip.addEventListener('click', () => void renderPokemon(variety.pokemon.name));
+    wrap.appendChild(chip);
+  });
+
+  formsContainer.append(title, wrap);
 }
 
 function renderHeldItems(data: Pokemon): void {
@@ -705,6 +754,61 @@ compareInfo.addEventListener('click', () => {
   compareInfo.setAttribute('aria-expanded', String(willOpen));
 });
 
+// Lightbox: clicar na imagem abre uma galeria com todas as sprites.
+function openLightbox(): void {
+  if (!currentPokemon) return;
+  const gallery = getSpriteGallery(currentPokemon);
+  if (gallery.length === 0) return;
+  const name = currentPokemon.name;
+
+  const setMain = (url: string): void => {
+    lightboxImg.src = url;
+    lightboxImg.alt = name;
+  };
+
+  lightboxThumbs.innerHTML = '';
+  gallery.forEach((item, i) => {
+    const thumb = document.createElement('button');
+    thumb.type = 'button';
+    thumb.className = 'lightbox__thumb';
+    if (i === 0) thumb.classList.add('is-active');
+
+    const img = document.createElement('img');
+    img.src = item.url;
+    img.alt = item.label;
+    img.loading = 'lazy';
+    const caption = document.createElement('span');
+    caption.textContent = item.label;
+    thumb.append(img, caption);
+
+    thumb.addEventListener('click', () => {
+      setMain(item.url);
+      lightboxThumbs
+        .querySelectorAll('.lightbox__thumb')
+        .forEach((el) => el.classList.remove('is-active'));
+      thumb.classList.add('is-active');
+    });
+    lightboxThumbs.appendChild(thumb);
+  });
+
+  setMain(gallery[0].url);
+  lightbox.hidden = false;
+}
+
+pokemonImage.addEventListener('click', openLightbox);
+topbarInfo.addEventListener('click', () => {
+  infoModal.hidden = false;
+});
+
+document.querySelectorAll<HTMLElement>('.modal').forEach((modal) => {
+  modal.addEventListener('click', (event) => {
+    if (event.target === modal) modal.hidden = true;
+  });
+  modal.querySelector<HTMLButtonElement>('.modal__close')?.addEventListener('click', () => {
+    modal.hidden = true;
+  });
+});
+
 buttonDownloadPng.addEventListener('click', () => {
   if (currentImages?.png) void downloadImage(currentImages.png, currentImages.name);
 });
@@ -742,6 +846,14 @@ window.addEventListener('resize', () => {
 
 // Atalhos de teclado: "/" foca a busca, setas navegam, Esc sai da busca.
 document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') {
+    const openModal = document.querySelector<HTMLElement>('.modal:not([hidden])');
+    if (openModal) {
+      openModal.hidden = true;
+      return;
+    }
+  }
+
   const target = event.target as HTMLElement | null;
   const typing =
     document.activeElement === input || target?.tagName === 'INPUT' || target?.tagName === 'SELECT';

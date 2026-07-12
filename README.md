@@ -27,7 +27,8 @@
 - Search by name (substring suggestions) or number, with Prev/Next and keyboard arrows
 - Types, base stats (with radar chart), abilities (hidden ones flagged), type weaknesses, and description
 - Rich data: base XP, capture rate, happiness, growth, gender ratio, egg groups, hatch cycles, habitat, generation, held items, full move list, encounter locations, and legendary/mythical flags
-- Clickable evolution chain, shiny toggle, Pokémon cry, and random Pokémon
+- Clickable evolution chain (with methods), alternate forms, EV yield, shiny toggle, cry, and random
+- Image lightbox with a full sprite gallery (artwork, shiny, animated, front/back)
 - Compare up to 4 Pokémon (stat table + radar chart); filter by type and generation with pagination
 - Bilingual UI (PT-BR / EN); favorites and theme persisted locally
 - Download the static image (PNG) and the animated GIF

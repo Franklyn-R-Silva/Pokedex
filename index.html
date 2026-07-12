@@ -38,6 +38,14 @@
     <header class="topbar">
       <span class="brand">Pokédex</span>
       <div class="topbar__controls">
+        <button
+          class="info-btn topbar-info"
+          type="button"
+          aria-label="Sobre o projeto"
+          data-i18n-aria="infoAria"
+        >
+          ⓘ
+        </button>
         <button class="lang-toggle" type="button" aria-label="Idioma / Language">PT</button>
         <button class="theme-toggle" type="button" aria-label="Tema escuro">🌙</button>
       </div>
@@ -70,7 +78,7 @@
             <button class="button btn-prev" type="button">Prev &lt;</button>
             <button class="button btn-next" type="button">Next &gt;</button>
           </div>
-          <img src="/images/pokedex.png" alt="pokedex" class="pokedex" />
+          <img src="" alt="pokedex" class="pokedex" />
         </div>
 
         <div class="toolbar">
@@ -114,6 +122,7 @@
             </div>
             <div class="details__about"></div>
             <div class="details__held"></div>
+            <div class="details__forms"></div>
             <h2 class="section-title" data-i18n="abilities">Habilidades</h2>
             <div class="details__abilities"></div>
           </div>
@@ -217,5 +226,29 @@
       <a href="https://github.com/Franklyn-R-Silva" target="_blank" rel="noopener">Franklyn</a>
       · Dados da <a href="https://pokeapi.co/" target="_blank" rel="noopener">PokéAPI</a>
     </footer>
+
+    <div class="modal lightbox" hidden>
+      <div class="modal__box lightbox__box">
+        <button class="modal__close" type="button" aria-label="Fechar">✕</button>
+        <img class="lightbox__img" src="" alt="" />
+        <div class="lightbox__thumbs"></div>
+      </div>
+    </div>
+
+    <div class="modal info-modal" hidden>
+      <div class="modal__box">
+        <button class="modal__close" type="button" aria-label="Fechar">✕</button>
+        <h2 data-i18n="infoTitle">Sobre esta Pokédex</h2>
+        <p data-i18n="infoData">Dados fornecidos pela PokéAPI.</p>
+        <p data-i18n="infoTranslate">Os textos em português são traduzidos automaticamente.</p>
+        <p data-i18n="infoShortcut">Dica: tecle "/" para buscar e ←/→ para navegar.</p>
+        <p class="info-credit">
+          <a href="https://github.com/Franklyn-R-Silva" target="_blank" rel="noopener"
+            >@Franklyn-R-Silva</a
+          >
+          · <a href="https://pokeapi.co/" target="_blank" rel="noopener">PokéAPI</a>
+        </p>
+      </div>
+    </div>
   </body>
 </html>

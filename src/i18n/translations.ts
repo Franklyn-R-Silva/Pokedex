@@ -70,6 +70,13 @@ export interface Translation {
   moveTutor: string;
   showMoves: string;
   noLocations: string;
+  forms: string;
+  evYield: string;
+  infoAria: string;
+  infoTitle: string;
+  infoData: string;
+  infoTranslate: string;
+  infoShortcut: string;
   statLabels: StatMap;
   statNames: StatMap;
 }
@@ -141,6 +148,13 @@ export const translations: Record<Lang, Translation> = {
     moveTutor: 'Tutor',
     showMoves: 'Ver golpes',
     noLocations: 'Indisponível na natureza',
+    forms: 'Formas',
+    evYield: 'Rende EV',
+    infoAria: 'Sobre o projeto',
+    infoTitle: 'Sobre esta Pokédex',
+    infoData: 'Dados fornecidos pela PokéAPI.',
+    infoTranslate: 'Os textos em português são traduzidos automaticamente (a PokéAPI não tem PT).',
+    infoShortcut: 'Dica: tecle "/" para buscar e ←/→ para navegar.',
     statLabels: {
       hp: 'HP',
       attack: 'ATQ',
@@ -224,6 +238,13 @@ export const translations: Record<Lang, Translation> = {
     moveTutor: 'Tutor',
     showMoves: 'Show moves',
     noLocations: 'Not found in the wild',
+    forms: 'Forms',
+    evYield: 'EV yield',
+    infoAria: 'About the project',
+    infoTitle: 'About this Pokédex',
+    infoData: 'Data provided by the PokéAPI.',
+    infoTranslate: 'Portuguese text is machine-translated (the PokéAPI has no PT).',
+    infoShortcut: 'Tip: press "/" to search and ←/→ to navigate.',
     statLabels: {
       hp: 'HP',
       attack: 'ATK',
