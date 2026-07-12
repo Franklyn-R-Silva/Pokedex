@@ -45,6 +45,8 @@ export interface Translation {
   filterGenLabel: string;
   filterByType: string;
   statsLegendAria: string;
+  resistances: string;
+  immunities: string;
   about: string;
   heldItems: string;
   moves: string;
@@ -114,6 +116,8 @@ export const translations: Record<Lang, Translation> = {
     filterGenLabel: 'Geração',
     filterByType: 'Filtrar por este tipo',
     statsLegendAria: 'O que significa cada atributo',
+    resistances: 'Resistências',
+    immunities: 'Imunidades',
     about: 'Sobre',
     heldItems: 'Itens segurados',
     moves: 'Golpes',
@@ -195,6 +199,8 @@ export const translations: Record<Lang, Translation> = {
     filterGenLabel: 'Generation',
     filterByType: 'Filter by this type',
     statsLegendAria: 'What each stat means',
+    resistances: 'Resistances',
+    immunities: 'Immunities',
     about: 'About',
     heldItems: 'Held items',
     moves: 'Moves',

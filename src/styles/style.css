@@ -450,15 +450,87 @@ main {
   background: var(--type-color);
 }
 
-.details__weaknesses,
 .details__abilities {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
 
-.details__weaknesses {
-  justify-content: flex-start;
+/* ---------- Abas ---------- */
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin: 14px 0;
+  padding: 4px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+
+.tab {
+  flex: 1;
+  border: none;
+  background: none;
+  border-radius: 999px;
+  padding: 7px 4px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.tab.is-active {
+  background: var(--type-color);
+  color: #fff;
+}
+
+.tab-panel {
+  display: none;
+}
+
+.tab-panel.is-active {
+  display: block;
+}
+
+/* ---------- Efetividade de tipo ---------- */
+
+.eff-group {
+  margin-bottom: 12px;
+}
+
+.eff-group:last-child {
+  margin-bottom: 0;
+}
+
+.eff-group__label {
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  text-align: left;
+  margin-bottom: 6px;
+}
+
+.eff-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.stat--total {
+  margin-top: 6px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.stat--total .stat__label,
+.stat--total .stat__value {
+  color: var(--text);
+  font-weight: 800;
 }
 
 /* ---------- Flags (lendário / mítico / bebê) ---------- */

@@ -130,6 +130,12 @@ export interface Weakness {
   multiplier: number;
 }
 
+export interface Effectiveness {
+  weaknesses: Weakness[];
+  resistances: Weakness[];
+  immunities: string[];
+}
+
 export interface Favorite {
   id: number;
   name: string;

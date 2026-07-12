@@ -7,7 +7,7 @@ import type {
   EvolutionNode,
   EncounterLocation,
   RefItem,
-  Weakness,
+  Effectiveness,
   PokemonType,
   PokemonAbility,
 } from '../types';
@@ -160,8 +160,9 @@ async function fetchType(url: string): Promise<TypeData | null> {
   return data;
 }
 
-/** Fraquezas: combina as relações de dano dos tipos (multiplicador > 1). */
-export async function fetchWeaknesses(types: PokemonType[]): Promise<Weakness[]> {
+/** Efetividade de tipo: fraquezas (>1), resistências (0<m<1) e imunidades (0). */
+export async function fetchEffectiveness(types: PokemonType[]): Promise<Effectiveness> {
+  const empty: Effectiveness = { weaknesses: [], resistances: [], immunities: [] };
   try {
     const multipliers: Record<string, number> = {};
     for (const { type } of types) {
@@ -178,12 +179,20 @@ export async function fetchWeaknesses(types: PokemonType[]): Promise<Weakness[]>
         multipliers[tp.name] = (multipliers[tp.name] ?? 1) * 0;
       });
     }
-    return Object.entries(multipliers)
-      .filter(([, m]) => m > 1)
-      .sort((a, b) => b[1] - a[1])
-      .map(([name, multiplier]) => ({ name, multiplier }));
+    const entries = Object.entries(multipliers);
+    return {
+      weaknesses: entries
+        .filter(([, m]) => m > 1)
+        .sort((a, b) => b[1] - a[1])
+        .map(([name, multiplier]) => ({ name, multiplier })),
+      resistances: entries
+        .filter(([, m]) => m > 0 && m < 1)
+        .sort((a, b) => a[1] - b[1])
+        .map(([name, multiplier]) => ({ name, multiplier })),
+      immunities: entries.filter(([, m]) => m === 0).map(([name]) => name),
+    };
   } catch {
-    return [];
+    return empty;
   }
 }
 

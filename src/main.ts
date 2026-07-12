@@ -9,7 +9,7 @@ import {
   fetchAllPokemonNames,
   fetchEvolutionChain,
   fetchSpecies,
-  fetchWeaknesses,
+  fetchEffectiveness,
   fetchEncounters,
   getFlavorText,
   getGenus,
@@ -81,7 +81,7 @@ const genusEl = qs<HTMLElement>('.details__genus');
 const descriptionEl = qs<HTMLElement>('.details__description');
 const heightValue = qs<HTMLElement>('.height');
 const weightValue = qs<HTMLElement>('.weight');
-const weaknessesContainer = qs<HTMLElement>('.details__weaknesses');
+const effectivenessContainer = qs<HTMLElement>('.details__effectiveness');
 const detailsRadar = qs<HTMLElement>('.details__radar');
 const statsContainer = qs<HTMLElement>('.details__stats');
 const abilitiesContainer = qs<HTMLElement>('.details__abilities');
@@ -163,6 +163,20 @@ function renderStats(stats: PokemonStat[]): void {
     item.append(label, bar, value);
     statsContainer.appendChild(item);
   });
+
+  // Total dos stats base.
+  const total = stats.reduce((sum, s) => sum + s.base_stat, 0);
+  const totalRow = document.createElement('li');
+  totalRow.className = 'stat stat--total';
+  const totalLabel = document.createElement('span');
+  totalLabel.className = 'stat__label';
+  totalLabel.textContent = t('total');
+  const spacer = document.createElement('span');
+  const totalValue = document.createElement('span');
+  totalValue.className = 'stat__value';
+  totalValue.textContent = String(total);
+  totalRow.append(totalLabel, spacer, totalValue);
+  statsContainer.appendChild(totalRow);
 }
 
 async function renderAbilities(abilities: PokemonAbility[], reqId: number): Promise<void> {
@@ -184,27 +198,57 @@ async function renderAbilities(abilities: PokemonAbility[], reqId: number): Prom
   });
 }
 
-async function renderWeaknesses(types: PokemonType[], reqId: number): Promise<void> {
-  weaknessesContainer.innerHTML = `<span class="muted">${t('loading')}</span>`;
+async function renderEffectiveness(types: PokemonType[], reqId: number): Promise<void> {
+  effectivenessContainer.innerHTML = `<span class="muted">${t('loading')}</span>`;
 
-  const weaknesses = await fetchWeaknesses(types);
+  const eff = await fetchEffectiveness(types);
   if (reqId !== requestId) return;
 
   const lang = getLang();
-  weaknessesContainer.innerHTML = '';
-  if (weaknesses.length === 0) {
-    weaknessesContainer.innerHTML = `<span class="muted">${t('none')}</span>`;
-    return;
-  }
+  effectivenessContainer.innerHTML = '';
 
-  weaknesses.forEach(({ name, multiplier }) => {
-    const badge = document.createElement('span');
-    badge.className = 'type-badge';
-    badge.style.backgroundColor = getTypeColor(name);
-    badge.textContent =
-      multiplier > 2 ? `${getTypeLabel(name, lang)} ×4` : getTypeLabel(name, lang);
-    weaknessesContainer.appendChild(badge);
-  });
+  const suffix = (m: number): string => {
+    if (m === 4) return ' ×4';
+    if (m === 0.25) return ' ×¼';
+    if (m === 0.5) return ' ×½';
+    return '';
+  };
+
+  const addGroup = (
+    labelKey: 'weaknesses' | 'resistances' | 'immunities',
+    names: string[],
+    mults?: number[],
+  ) => {
+    if (names.length === 0) return;
+    const group = document.createElement('div');
+    group.className = 'eff-group';
+    const label = document.createElement('div');
+    label.className = 'eff-group__label';
+    label.textContent = t(labelKey);
+    const badges = document.createElement('div');
+    badges.className = 'eff-badges';
+    names.forEach((name, i) => {
+      const badge = document.createElement('span');
+      badge.className = 'type-badge';
+      badge.style.backgroundColor = getTypeColor(name);
+      badge.textContent = getTypeLabel(name, lang) + (mults ? suffix(mults[i]) : '');
+      badges.appendChild(badge);
+    });
+    group.append(label, badges);
+    effectivenessContainer.appendChild(group);
+  };
+
+  addGroup(
+    'weaknesses',
+    eff.weaknesses.map((w) => w.name),
+    eff.weaknesses.map((w) => w.multiplier),
+  );
+  addGroup(
+    'resistances',
+    eff.resistances.map((w) => w.name),
+    eff.resistances.map((w) => w.multiplier),
+  );
+  addGroup('immunities', eff.immunities);
 }
 
 // Descrição, genus, flags e grid "Sobre" (precisa da espécie + do Pokémon).
@@ -259,10 +303,6 @@ function renderMoves(data: Pokemon): void {
 
   const total = new Set(data.moves.map((m) => m.move.name)).size;
 
-  const title = document.createElement('h2');
-  title.className = 'section-title';
-  title.textContent = t('moves');
-
   const toggle = document.createElement('button');
   toggle.type = 'button';
   toggle.className = 'collapse-toggle';
@@ -306,7 +346,7 @@ function renderMoves(data: Pokemon): void {
     toggle.setAttribute('aria-expanded', String(open));
   });
 
-  movesContainer.append(title, toggle, body);
+  movesContainer.append(toggle, body);
 }
 
 async function renderEncounters(url: string, reqId: number): Promise<void> {
@@ -458,7 +498,7 @@ function renderDetails(data: Pokemon, reqId: number): void {
   renderMoves(data);
   void renderAbilities(data.abilities, reqId);
   void renderSpecies(data, reqId);
-  void renderWeaknesses(data.types, reqId);
+  void renderEffectiveness(data.types, reqId);
   void renderEvolution(data.species.url, reqId);
   void renderEncounters(data.location_area_encounters, reqId);
 
@@ -690,6 +730,17 @@ document.addEventListener('keydown', (event) => {
   if (typing) return;
   if (event.key === 'ArrowLeft') buttonPrev.click();
   if (event.key === 'ArrowRight') buttonNext.click();
+});
+
+// Abas do card de detalhes (compacta o conteúdo, menos scroll).
+const tabButtons = document.querySelectorAll<HTMLButtonElement>('.tab');
+const tabPanels = document.querySelectorAll<HTMLElement>('.tab-panel');
+tabButtons.forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const name = btn.dataset.tab ?? 'about';
+    tabButtons.forEach((b) => b.classList.toggle('is-active', b.dataset.tab === name));
+    tabPanels.forEach((panel) => panel.classList.toggle('is-active', panel.dataset.panel === name));
+  });
 });
 
 setupAutocomplete({
