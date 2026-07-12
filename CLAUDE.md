@@ -16,8 +16,9 @@ A single-page Pokédex that fetches data from the public [PokéAPI](https://poke
 - `npm run lint` — ESLint (flat config in `eslint.config.js`, typescript-eslint).
 - `npm run format` — Prettier across the repo.
 - `npm run test` — Vitest (jsdom env, configured under `test` in `vite.config.js`). Test files are `src/__tests__/*.test.ts`.
+- `npm run test:e2e` — Playwright E2E (`e2e/app.spec.ts`), including an axe accessibility audit. Config in `playwright.config.ts`; the `webServer` runs `npm run build && npm run preview`, so kill any stale server on port 4173 before re-running (Playwright reuses an existing server locally and would skip the rebuild). Browsers: `npx playwright install chromium`.
 
-CI (`.github/workflows/ci.yml`) runs lint → typecheck → test → build on every push/PR. PWA (service worker + offline caching of PokéAPI/sprites) is generated at build time by `vite-plugin-pwa` in `vite.config.js`.
+CI (`.github/workflows/ci.yml`) runs lint → typecheck → test → build (job `build`) plus a separate `e2e` job (installs Chromium, runs `npm run test:e2e`) on every push/PR. The axe audit fails CI on any critical WCAG 2 A/AA violation. PWA (service worker + offline caching of PokéAPI/sprites) is generated at build time by `vite-plugin-pwa` in `vite.config.js`.
 
 ## Architecture
 

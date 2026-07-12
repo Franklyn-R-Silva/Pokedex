@@ -1029,7 +1029,11 @@ const tabPanels = document.querySelectorAll<HTMLElement>('.tab-panel');
 tabButtons.forEach((btn) => {
   btn.addEventListener('click', () => {
     const name = btn.dataset.tab ?? 'about';
-    tabButtons.forEach((b) => b.classList.toggle('is-active', b.dataset.tab === name));
+    tabButtons.forEach((b) => {
+      const active = b.dataset.tab === name;
+      b.classList.toggle('is-active', active);
+      b.setAttribute('aria-selected', String(active));
+    });
     tabPanels.forEach((panel) => panel.classList.toggle('is-active', panel.dataset.panel === name));
   });
 });

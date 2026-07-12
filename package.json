@@ -11,7 +11,8 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:e2e": "playwright test"
   },
   "keywords": [
     "pokedex",
@@ -22,7 +23,9 @@
   "author": "Franklyn (@Franklyn-R-Silva)",
   "license": "MIT",
   "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
     "@eslint/js": "^9.15.0",
+    "@playwright/test": "^1.61.1",
     "eslint": "^9.15.0",
     "globals": "^15.12.0",
     "jsdom": "^29.1.1",

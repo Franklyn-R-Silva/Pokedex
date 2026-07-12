@@ -39,7 +39,7 @@ Navegador
 - **`i18n/`** — internacionalização (dicionários tipados + helpers).
 - **`features/`** — widgets de UI autocontidos, cada um com uma função `setup*` que recebe seus elementos e devolve uma pequena API de controle.
 - **`types.ts`** — interfaces compartilhadas para os campos da PokéAPI usados pelo app.
-- **`__tests__/`** — testes (Vitest).
+- **`__tests__/`** — testes unitários (Vitest). Os testes E2E ficam em `e2e/` (Playwright).
 
 ## Módulos
 
@@ -78,6 +78,8 @@ Helpers puros para o conteúdo extra da PokéAPI: `aboutRows` (XP base, captura,
 - **`filter.ts`**: `setupFilter(...)` monta um grid **paginado** (24/página) por tipo e/ou geração. Devolve `{ refresh, setType }` (os badges de tipo chamam `setType`).
 - **`compare.ts`**: `setupCompare(...)` gerencia até **4 Pokémon** (chips) → radar + tabela de N colunas destacando o maior valor. Devolve `{ add, refresh }`.
 - **`radar.ts`**: `radarSvg(list, colors)` — radar SVG puro dos 6 stats, compartilhado pelo card de detalhes (1) e pelo comparador (até 4).
+- **`team.ts`**: `setupTeam(...)` monta um time de até **6 Pokémon** (persistido em `localStorage`) e agrega as fraquezas de tipo do time, mostrando badges com contagem.
+- **`quiz.ts`**: `setupQuiz(...)` — "Quem é esse Pokémon?", com silhueta, 4 alternativas e placar.
 
 ### `src/main.ts` — composition root
 
@@ -89,10 +91,10 @@ Os elementos são selecionados por **classe CSS** — o nome da classe é o cont
 
 ## Build e qualidade
 
-- **Vite** gera o bundle em `dist/`. Deploy no **Cloudflare Pages** (build `npm run build`, saída `dist`). Rotas desconhecidas caem em `public/404.html`.
+- **Vite** gera o bundle em `dist/`. Deploy no **Cloudflare Workers (Static Assets)** via `wrangler.jsonc` (`assets.directory: ./dist`). Rotas desconhecidas caem em `public/404.html`.
 - **TypeScript** (strict) via `tsc --noEmit` no `build`, `typecheck` e no CI.
 - **vite-plugin-pwa** gera o service worker e o manifest (instalável + cache offline `CacheFirst` da PokéAPI e sprites).
-- **Vitest** cobre a lógica pura (`filterNames`, sprites, favoritos/tema). **ESLint** (typescript-eslint) e **Prettier** garantem consistência. O CI roda **lint → typecheck → test → build**.
+- **Vitest** cobre a lógica pura (`filterNames`, sprites, favoritos/tema). **Playwright** roda os testes E2E em `e2e/`, incluindo uma auditoria de acessibilidade com **@axe-core/playwright** que falha em qualquer violação crítica WCAG 2 A/AA. **ESLint** (typescript-eslint) e **Prettier** garantem consistência. O CI roda **lint → typecheck → test → build** e um job **e2e** separado (instala o Chromium e roda `npm run test:e2e`).
 
 ## Dados da PokéAPI
 

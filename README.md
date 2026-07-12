@@ -41,8 +41,9 @@
 
 ## Tech stack
 
-TypeScript · Vite · vite-plugin-pwa · Vitest · ESLint + Prettier · PokéAPI.
-CI (GitHub Actions) runs lint, typecheck, tests, and build on every push and PR.
+TypeScript · Vite · vite-plugin-pwa · Vitest · Playwright + axe-core · ESLint + Prettier · PokéAPI.
+CI (GitHub Actions) runs lint, typecheck, unit tests, and build, plus an E2E
+job with an automated accessibility audit (fails on any critical WCAG 2 A/AA violation).
 
 ## Getting started
 
@@ -57,15 +58,16 @@ npm run dev
 
 Open the URL printed in the terminal (default `http://localhost:5173`).
 
-| Script              | Description                               |
-| ------------------- | ----------------------------------------- |
-| `npm run dev`       | Development server with hot reload        |
-| `npm run build`     | Typecheck + production build into `dist/` |
-| `npm run preview`   | Preview the production build              |
-| `npm run typecheck` | Type-check with `tsc --noEmit`            |
-| `npm run test`      | Run unit tests (Vitest)                   |
-| `npm run lint`      | Lint with ESLint                          |
-| `npm run format`    | Format with Prettier                      |
+| Script              | Description                                      |
+| ------------------- | ------------------------------------------------ |
+| `npm run dev`       | Development server with hot reload               |
+| `npm run build`     | Typecheck + production build into `dist/`        |
+| `npm run preview`   | Preview the production build                     |
+| `npm run typecheck` | Type-check with `tsc --noEmit`                   |
+| `npm run test`      | Run unit tests (Vitest)                          |
+| `npm run test:e2e`  | Run E2E + accessibility tests (Playwright + axe) |
+| `npm run lint`      | Lint with ESLint                                 |
+| `npm run format`    | Format with Prettier                             |
 
 ## Project structure
 
@@ -83,9 +85,10 @@ src/
   i18n/
     index.ts             # getLang / setLang / t / contentLang
     translations.ts      # PT-BR / EN dictionaries
-  features/              # autocomplete · filter · compare · radar
+  features/              # autocomplete · filter · compare · radar · team · quiz
   styles/style.css
-  __tests__/*.test.ts    # Vitest
+  __tests__/*.test.ts    # Vitest (unit)
+e2e/app.spec.ts          # Playwright E2E + axe accessibility audit
 public/                  # Static assets, PWA icons, 404.html
 ```
 
