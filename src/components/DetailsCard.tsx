@@ -3,16 +3,34 @@ import type { Pokemon } from '../types';
 import { getTypeColor } from '../domain/pokemonTypes';
 import { radarSvg } from '../features/radar';
 import { useI18n } from '../i18n/I18nContext';
+import { useSpecies } from '../hooks/useSpecies';
 import { TypeBadge } from './TypeBadge';
 import { StatsList } from './StatsList';
+import { About } from './details/About';
+import { Effectiveness } from './details/Effectiveness';
+import { Evolution } from './details/Evolution';
+import { Moves } from './details/Moves';
+import { Cards } from './details/Cards';
 
-type Tab = 'about' | 'stats';
+type Tab = 'about' | 'stats' | 'moves' | 'evo' | 'cards';
 
-// Card de detalhes: tipos + abas (Sobre/Stats). As demais abas (golpes,
-// evolução, cartas) entram nas próximas fases da migração.
-export function DetailsCard({ pokemon }: { pokemon: Pokemon }) {
+const TABS: { id: Tab; label: keyof import('../i18n/translations').Translation }[] = [
+  { id: 'about', label: 'about' },
+  { id: 'stats', label: 'stats' },
+  { id: 'moves', label: 'moves' },
+  { id: 'evo', label: 'evolution' },
+  { id: 'cards', label: 'cards' },
+];
+
+interface DetailsCardProps {
+  pokemon: Pokemon;
+  onSelect: (nameOrId: string | number) => void;
+}
+
+export function DetailsCard({ pokemon, onSelect }: DetailsCardProps) {
   const { t } = useI18n();
   const [tab, setTab] = useState<Tab>('about');
+  const species = useSpecies(pokemon.species.url);
   const primary = pokemon.types[0]?.type.name ?? 'normal';
 
   return (
@@ -25,40 +43,21 @@ export function DetailsCard({ pokemon }: { pokemon: Pokemon }) {
         </div>
 
         <div className="tabs" role="tablist">
-          <button
-            className={`tab ${tab === 'about' ? 'is-active' : ''}`}
-            type="button"
-            role="tab"
-            aria-selected={tab === 'about'}
-            onClick={() => setTab('about')}
-          >
-            {t('about')}
-          </button>
-          <button
-            className={`tab ${tab === 'stats' ? 'is-active' : ''}`}
-            type="button"
-            role="tab"
-            aria-selected={tab === 'stats'}
-            onClick={() => setTab('stats')}
-          >
-            {t('stats')}
-          </button>
+          {TABS.map(({ id, label }) => (
+            <button
+              key={id}
+              className={`tab ${tab === id ? 'is-active' : ''}`}
+              type="button"
+              role="tab"
+              aria-selected={tab === id}
+              onClick={() => setTab(id)}
+            >
+              {t(label) as string}
+            </button>
+          ))}
         </div>
 
-        {tab === 'about' && (
-          <div className="tab-panel is-active" data-panel="about">
-            <div className="details__meta">
-              <div>
-                <span className="label">{t('height')}</span>
-                <span className="height">{(pokemon.height / 10).toFixed(1)} m</span>
-              </div>
-              <div>
-                <span className="label">{t('weight')}</span>
-                <span className="weight">{(pokemon.weight / 10).toFixed(1)} kg</span>
-              </div>
-            </div>
-          </div>
-        )}
+        {tab === 'about' && <About pokemon={pokemon} species={species} onSelect={onSelect} />}
 
         {tab === 'stats' && (
           <div className="tab-panel is-active" data-panel="stats">
@@ -67,8 +66,21 @@ export function DetailsCard({ pokemon }: { pokemon: Pokemon }) {
               dangerouslySetInnerHTML={{ __html: radarSvg([pokemon], [getTypeColor(primary)]) }}
             />
             <StatsList stats={pokemon.stats} />
+            <Effectiveness types={pokemon.types} />
           </div>
         )}
+
+        {tab === 'moves' && <Moves pokemon={pokemon} />}
+
+        {tab === 'evo' && (
+          <Evolution
+            speciesUrl={pokemon.species.url}
+            encountersUrl={pokemon.location_area_encounters}
+            onSelect={onSelect}
+          />
+        )}
+
+        {tab === 'cards' && <Cards dexId={pokemon.id} />}
       </section>
     </div>
   );

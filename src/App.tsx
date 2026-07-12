@@ -48,7 +48,9 @@ export function App() {
 
         {error && <p className="error-message">{t('notFound')}</p>}
         {loading && !pokemon && <p className="loading-note muted">{t('loading')}</p>}
-        {pokemon && <DetailsCard pokemon={pokemon} />}
+        {pokemon && (
+          <DetailsCard pokemon={pokemon} onSelect={(q) => setQuery(String(q).toLowerCase())} />
+        )}
 
         <div className="col col--panels">
           <section className="panel">
