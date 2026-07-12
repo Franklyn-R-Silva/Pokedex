@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
+import type { Theme } from '../services/storage';
 import { useI18n } from '../i18n/I18nContext';
-import { useTheme } from '../hooks/useTheme';
 import { useModal } from '../context/ModalContext';
 import { useAuth } from '../context/AuthContext';
 import { InfoModal } from './InfoModal';
@@ -12,15 +12,16 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 interface HeaderProps {
+  theme: Theme;
+  onToggleTheme: () => void;
   onOpenDeck: () => void;
   onOpenCards: () => void;
   onOpenPokedex: () => void;
 }
 
 // Barra superior: marca + explorar + cartas + deck + conta + tema/idioma.
-export function Header({ onOpenDeck, onOpenCards, onOpenPokedex }: HeaderProps) {
+export function Header({ theme, onToggleTheme, onOpenDeck, onOpenCards, onOpenPokedex }: HeaderProps) {
   const { t, lang, toggle: toggleLang } = useI18n();
-  const { theme, toggle: toggleTheme } = useTheme();
   const { open, close } = useModal();
   const { enabled, user, signOut } = useAuth();
   const [installEvent, setInstallEvent] = useState<BeforeInstallPromptEvent | null>(null);
@@ -78,7 +79,7 @@ export function Header({ onOpenDeck, onOpenCards, onOpenPokedex }: HeaderProps) 
           className="theme-toggle"
           type="button"
           aria-label="Tema escuro"
-          onClick={toggleTheme}
+          onClick={onToggleTheme}
         >
           {theme === 'dark' ? '☀️' : '🌙'}
         </button>

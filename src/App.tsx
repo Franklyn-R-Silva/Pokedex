@@ -3,6 +3,7 @@ import { MAX_POKEMON, fetchAllPokemonNames } from './services/pokeapi';
 import { getTypeColor, getTypeLabel } from './domain/pokemonTypes';
 import { getArtworkById } from './services/sprites';
 import { useI18n } from './i18n/I18nContext';
+import { useTheme } from './hooks/useTheme';
 import { usePokemon } from './hooks/usePokemon';
 import { Header } from './components/Header';
 import { PokedexDevice } from './components/PokedexDevice';
@@ -41,6 +42,9 @@ function initialQuery(): string {
 
 export function App() {
   const { t, lang } = useI18n();
+  // Tema no nível do App (sempre montado) — aplica a classe .dark em TODAS as
+  // views, inclusive deck/cartas/pokédex que não renderizam o Header.
+  const { theme, toggle: toggleTheme } = useTheme();
   const [query, setQuery] = useState<string>(initialQuery);
   const [shiny, setShiny] = useState(false);
   const { pokemon, loading, error } = usePokemon(query);
@@ -131,6 +135,8 @@ export function App() {
   return (
     <>
       <Header
+        theme={theme}
+        onToggleTheme={toggleTheme}
         onOpenDeck={() => setViewUrl('deck')}
         onOpenCards={() => setViewUrl('cards')}
         onOpenPokedex={() => setViewUrl('pokedex')}

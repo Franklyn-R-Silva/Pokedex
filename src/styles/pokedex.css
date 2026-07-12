@@ -247,6 +247,10 @@
   font-weight: 700;
   text-transform: capitalize;
   font-size: 0.85rem;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .pkx__badges {
