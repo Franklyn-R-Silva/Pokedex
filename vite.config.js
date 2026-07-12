@@ -45,12 +45,42 @@ export default defineConfig({
               expiration: { maxEntries: 400, maxAgeSeconds: 60 * 60 * 24 * 30 },
             },
           },
+          {
+            // Imagens das cartas do TCG: imutáveis, cache longo.
+            urlPattern: /^https:\/\/images\.pokemontcg\.io\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'tcg-images',
+              expiration: { maxEntries: 300, maxAgeSeconds: 60 * 60 * 24 * 30 },
+            },
+          },
+          {
+            // Dados das cartas (inclui preço): revalida em segundo plano.
+            urlPattern: /^https:\/\/api\.pokemontcg\.io\/.*/i,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'tcg-api',
+              expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 3 },
+            },
+          },
+          {
+            // Fontes (Google Fonts): disponíveis offline.
+            urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'fonts',
+              expiration: { maxEntries: 20, maxAgeSeconds: 60 * 60 * 24 * 365 },
+            },
+          },
         ],
       },
     }),
   ],
   build: {
     outDir: 'dist',
+    // Alvo amplo para funcionar em navegadores um pouco mais antigos.
+    target: ['es2020', 'chrome87', 'edge88', 'firefox78', 'safari14'],
+    cssTarget: ['chrome87', 'edge88', 'firefox78', 'safari14'],
   },
   test: {
     environment: 'jsdom',

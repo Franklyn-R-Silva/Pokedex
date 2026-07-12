@@ -20,12 +20,21 @@
     "javascript",
     "vite"
   ],
+  "browserslist": [
+    "> 0.5%",
+    "last 2 versions",
+    "Firefox ESR",
+    "not dead",
+    "iOS >= 14",
+    "Safari >= 14"
+  ],
   "author": "Franklyn (@Franklyn-R-Silva)",
   "license": "MIT",
   "devDependencies": {
     "@axe-core/playwright": "^4.12.1",
     "@eslint/js": "^9.15.0",
     "@playwright/test": "^1.61.1",
+    "autoprefixer": "^10.5.2",
     "eslint": "^9.15.0",
     "globals": "^15.12.0",
     "jsdom": "^29.1.1",
