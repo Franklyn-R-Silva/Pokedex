@@ -1,101 +1,157 @@
-# Arquitetura
+# Architecture
 
-Este documento descreve a organização técnica da Pokédex.
+This document describes how the Pokédex is organized so you can find your way
+around the codebase before contributing. For a higher-level overview and setup
+instructions, see the [README](./README.md).
 
-## Visão geral
+## Overview
 
-Aplicação single-page, sem framework, escrita em **TypeScript** (modo strict) e empacotada com **Vite**. Todo o estado vive no cliente; os dados vêm da [PokéAPI](https://pokeapi.co/) sob demanda. O código é organizado por responsabilidade.
+A single-page application built with **React 19 + TypeScript** (strict mode) and
+bundled with **Vite**. All state lives on the client; data is fetched on demand
+from the [PokéAPI](https://pokeapi.co/) and the [Pokémon TCG API](https://pokemontcg.io/).
+An optional [Supabase](https://supabase.com/) backend adds authentication and
+cloud persistence — the app runs fully without it, falling back to `localStorage`.
+
+The pure, framework-agnostic logic (`services/`, `domain/`, `i18n/`, and the
+imperative `features/` widgets) is shared with the project's original vanilla
+build; this branch ports the **UI layer** to React while reusing that logic
+unchanged.
 
 ```
-Navegador
-   │
-   ├── index.html ──► carrega src/main.ts (type="module")
-   │
-   └── src/main.ts ── composition root: DOM, render e eventos
-            │
-            ├── src/types.ts ─────────► tipos compartilhados da PokéAPI
-            ├── src/services/
-            │      ├── pokeapi.ts ─────► fetch + cache (pokemon/species/type/ability)
-            │      ├── sprites.ts ─────► resolução de imagem (puro)
-            │      └── storage.ts ─────► tema e favoritos (localStorage)
-            ├── src/domain/
-            │      └── pokemonTypes.ts ► cores/labels dos tipos
-            ├── src/i18n/
-            │      ├── index.ts ───────► t()/getLang/setLang/contentLang
-            │      └── translations.ts ► dicionários PT-BR / EN (tipados)
-            ├── src/features/
-            │      ├── autocomplete.ts ► sugestões por substring
-            │      ├── filter.ts ──────► filtro por tipo / geração (paginado)
-            │      ├── compare.ts ─────► comparação de até 4 Pokémon
-            │      └── radar.ts ───────► gráfico de radar (SVG)
-            │
-            └── src/styles/style.css ── tokens de design + layout responsivo
+Browser
+  │
+  ├── index.html ──────────► single #root div, loads src/main.tsx
+  │
+  └── src/main.tsx ────────► createRoot + providers
+           │                   (I18n · Auth · Favorites · Modal)
+           │
+           └── src/App.tsx ──► composition root: state, view routing,
+                    │            keyboard nav, deep links, SEO/OG sync
+                    │
+                    ├── components/ ─► React UI (device, details, cards, deck, panels…)
+                    ├── context/ ────► ModalContext · FavoritesContext · AuthContext
+                    ├── hooks/ ──────► usePokemon · useSpecies · useTheme · useDeck …
+                    ├── services/ ───► data & IO (PokéAPI, TCG, Supabase, storage…)
+                    ├── domain/ ─────► pure domain logic (types, info, deck rules)
+                    ├── i18n/ ───────► typed PT-BR / EN dictionaries + helpers
+                    ├── features/ ───► reused imperative setup* widgets
+                    └── styles/ ─────► design tokens + per-area CSS
 ```
 
-## Padrão de pastas
+## Folder layout
 
-- **`services/`** — acesso a dados e IO: chamadas à PokéAPI (com cache) e `localStorage`.
-- **`domain/`** — lógica de domínio pura (cores/labels dos tipos).
-- **`i18n/`** — internacionalização (dicionários tipados + helpers).
-- **`features/`** — widgets de UI autocontidos, cada um com uma função `setup*` que recebe seus elementos e devolve uma pequena API de controle.
-- **`types.ts`** — interfaces compartilhadas para os campos da PokéAPI usados pelo app.
-- **`__tests__/`** — testes unitários (Vitest). Os testes E2E ficam em `e2e/` (Playwright).
+| Path          | Responsibility                                                                   |
+| ------------- | -------------------------------------------------------------------------------- |
+| `components/` | React UI, grouped by area (`details/`, `cards/`, `deck/`, `panels/`, `auth/`, …) |
+| `context/`    | React context providers (modal, favorites, auth)                                 |
+| `hooks/`      | Reusable stateful logic (data fetching, theme, deck, translation)                |
+| `services/`   | Data access and IO — PokéAPI, TCG API, Supabase, storage, translation, download  |
+| `domain/`     | Pure domain logic with no IO (type colors, derived info, deck rules)             |
+| `i18n/`       | Typed translation dictionaries and helpers                                       |
+| `features/`   | Self-contained imperative widgets, each a `setup*()` function mounted via a ref  |
+| `types.ts`    | Shared interfaces for the PokéAPI fields the app reads                           |
+| `__tests__/`  | Vitest unit tests (E2E tests live in `e2e/`, Playwright)                          |
 
-## Módulos
+## Rendering model
 
-### `src/services/pokeapi.ts` — camada de dados
+`App.tsx` holds the top-level state (`query`, `shiny`, `view`) and drives four
+views selected by the `?view=` query param and rendered lazily via
+`React.lazy` + `Suspense`:
 
-- `fetchPokemon(idOrName)`: retorna `null` em respostas não-200 e **lança** em falha de rede. Memoriza em `Map` (por nome e id).
-- `fetchAllPokemonNames()`: lista completa de nomes (autocomplete), com cache em `localStorage`.
-- `fetchSpecies` (com cache) + `getFlavorText`/`getGenus`/`getAbilityName`: conteúdo textual no idioma pedido (fallback en).
-- `fetchEvolutionChain(speciesUrl)`: percorre `species → evolution_chain` em BFS (inclui ramificações como a do Eevee); o id vem da URL, evitando requisições extras.
-- `fetchWeaknesses(types)`: combina as `damage_relations` (cache por tipo).
-- `fetchByType`/`fetchByGeneration`: alimentam o filtro. `MAX_POKEMON` (1025) limita o Next.
+- **`main`** — the Pokédex device, details card, and the side panels.
+- **`cards`** (`?view=cards`) — TCG card browser (Pokémon TCG API).
+- **`deck`** (`?view=deck`) — TCG deck builder with analytics.
+- **`pokedex`** (`?view=pokedex`) — advanced explorer (sidebar filters + grid).
 
-### `src/services/sprites.ts` — imagens (puro)
+The primary type color of the current Pokémon is written to the `--type-color`
+CSS custom property, which themes the entire UI. `App.tsx` also keeps the URL
+(`?pokemon=ID`) and the SEO/OpenGraph meta tags in sync, and wires the `←`/`→`
+and `/` keyboard shortcuts.
 
-`getPokemonSprite(data, shiny)` resolve via cadeia de fallback — **animado (Gen V) → artwork oficial → dream world → padrão** — necessário porque o animado é `null` na API para gerações novas. Também `getStaticImage`, `getAnimatedGif` e `getArtworkById(id)`.
+## Reused imperative widgets
 
-### `src/services/storage.ts` — persistência
+The `features/*` widgets (`autocomplete`, `filter`, `compare`, `radar`, `team`,
+`quiz`, `battle`) predate the React port and manipulate the DOM directly through
+a `setup*(container, …)` function that returns a small control API. React mounts
+them inside a `useEffect` against a `ref`; React then leaves that subtree alone,
+so their behavior is preserved without a rewrite. This is why `main.tsx` does
+**not** use `StrictMode` — the dev double-mount would break these imperative
+setups.
 
-Camada fina sobre `localStorage`: tema (`getTheme`/`setTheme`) e favoritos (`[{ id, name }]`).
+## Modules
 
-### `src/domain/pokemonTypes.ts` — tipos
+### `services/pokeapi.ts` — PokéAPI data layer
 
-`TYPE_COLORS`/`TYPE_LABELS`/`TYPE_NAMES` (18 tipos) e getters. A cor do tipo primário alimenta a variável CSS `--type-color`.
+`fetchPokemon(idOrName)` returns `null` on non-200 responses and **throws** on
+network failure; results are memoized in a `Map` (by name and id). Also:
+`fetchAllPokemonNames()` (autocomplete list, cached in `localStorage`),
+`fetchSpecies`, `getFlavorText`/`getGenus`/`getAbilityName` (language-aware),
+`fetchEvolutionChain` (BFS-walks branches like Eevee),
+`fetchWeaknesses` (combines type damage relations), and
+`fetchByType`/`fetchByGeneration` (back the filter). `MAX_POKEMON` (1025) bounds Next.
 
-### `src/domain/pokemonInfo.ts` — dados derivados
+### `services/sprites.ts` — image helpers (pure)
 
-Helpers puros para o conteúdo extra da PokéAPI: `aboutRows` (XP base, captura, felicidade, crescimento, gênero, grupos de ovo, ciclos de choco, habitat, geração), `speciesFlags` (lendário/mítico/bebê), `groupMoves` (golpes agrupados por método, sem duplicatas) e formatadores (`formatGeneration`, `formatGender`, `titleize`). A busca de locais usa `fetchEncounters` (endpoint `/pokemon/{id}/encounters`).
+`getPokemonSprite(data, shiny)` resolves through a fallback chain — **Gen-V
+animated → official artwork → dream world → default** — needed because the
+animated sprite is `null` for newer generations. Also `getStaticImage`,
+`getAnimatedGif`, and `getArtworkById(id)`.
 
-### `src/i18n/` — internacionalização
+### `services/tcg.ts` — Pokémon TCG API
 
-`translations.ts` define a interface `Translation` e os dicionários PT/EN (incluindo os `StatMap` de `statLabels`/`statNames`). `index.ts` expõe `t(key)` (tipado pela chave), `getLang`/`setLang` e `contentLang()` (`pt`→`es`, pois a PokéAPI não tem português). Textos estáticos usam `data-i18n` / `data-i18n-ph` / `data-i18n-aria`.
+Fetches trading cards (content, rarity, market price) for the cards browser and
+deck builder. An optional `VITE_POKEMONTCG_KEY` raises the request rate limit.
 
-### `src/features/` — widgets
+### `services/supabase.ts` — optional backend
 
-- **`autocomplete.ts`**: `setupAutocomplete(...)` + `filterNames()` puro. Dropdown por **substring** (prefixo primeiro, com destaque, navegável por teclado). Usado na busca e no comparador.
-- **`filter.ts`**: `setupFilter(...)` monta um grid **paginado** (24/página) por tipo e/ou geração. Devolve `{ refresh, setType }` (os badges de tipo chamam `setType`).
-- **`compare.ts`**: `setupCompare(...)` gerencia até **4 Pokémon** (chips) → radar + tabela de N colunas destacando o maior valor. Devolve `{ add, refresh }`.
-- **`radar.ts`**: `radarSvg(list, colors)` — radar SVG puro dos 6 stats, compartilhado pelo card de detalhes (1) e pelo comparador (até 4).
-- **`team.ts`**: `setupTeam(...)` monta um time de até **6 Pokémon** (persistido em `localStorage`) e agrega as fraquezas de tipo do time, mostrando badges com contagem.
-- **`quiz.ts`**: `setupQuiz(...)` — "Quem é esse Pokémon?", com silhueta, 4 alternativas e placar.
+Creates a single Supabase client from `VITE_SUPABASE_*` env vars, or `null` when
+they are absent (`isSupabaseConfigured`). Access is enforced by Row Level
+Security on the `poke_*` tables; only the anon/publishable key is used in the
+frontend. Migrations live in `supabase/migrations/`.
 
-### `src/main.ts` — composition root
+### `services/storage.ts` — local persistence
 
-Referências do DOM tipadas (`qs<T>()`), o pipeline de render, os event listeners e o estado (`searchPokemon`, `currentPokemon`, `currentImages`, `currentCry`, `shiny`). Um token `requestId` descarta renders assíncronos obsoletos. Deep link lê `?pokemon=ID` e o espelha via `history.replaceState`.
+Thin wrapper over `localStorage` for the theme (`getTheme`/`setTheme`) and
+favorites (`[{ id, name }]`). Dark mode toggles the `dark` class on `<html>`.
 
-## Contrato entre arquivos
+### `domain/`
 
-Os elementos são selecionados por **classe CSS** — o nome da classe é o contrato entre `index.html`, `src/styles/style.css` e os módulos. Ao renomear uma classe, atualize os três.
+- **`pokemonTypes.ts`** — `TYPE_COLORS` / `TYPE_LABELS` / `TYPE_NAMES` (18 types)
+  and getters; the primary color feeds the `--type-color` CSS variable.
+- **`pokemonInfo.ts`** — pure helpers for the extra PokéAPI data: `aboutRows`,
+  `speciesFlags` (legendary/mythical/baby), `groupMoves`, and formatters.
+- **`deck.ts`** — pure deck rules: composition, deck-health scoring, and
+  Standard/Expanded legality checks.
 
-## Build e qualidade
+### `i18n/`
 
-- **Vite** gera o bundle em `dist/`. Deploy no **Cloudflare Workers (Static Assets)** via `wrangler.jsonc` (`assets.directory: ./dist`). Rotas desconhecidas caem em `public/404.html`.
-- **TypeScript** (strict) via `tsc --noEmit` no `build`, `typecheck` e no CI.
-- **vite-plugin-pwa** gera o service worker e o manifest (instalável + cache offline `CacheFirst` da PokéAPI e sprites).
-- **Vitest** cobre a lógica pura (`filterNames`, sprites, favoritos/tema). **Playwright** roda os testes E2E em `e2e/`, incluindo uma auditoria de acessibilidade com **@axe-core/playwright** que falha em qualquer violação crítica WCAG 2 A/AA. **ESLint** (typescript-eslint) e **Prettier** garantem consistência. O CI roda **lint → typecheck → test → build** e um job **e2e** separado (instala o Chromium e roda `npm run test:e2e`).
+`translations.ts` defines the typed `Translation` interface and the PT/EN
+dictionaries (including the `StatMap`s). `I18nContext.tsx` exposes the `useI18n`
+hook — `t(key)` (typed by key), `lang`, `setLang`, and `contentLang()`
+(`pt`→`es`, since the PokéAPI has no Portuguese).
 
-## Dados da PokéAPI
+### Translation of API prose
 
-Endpoint: `GET https://pokeapi.co/api/v2/pokemon/{nome-ou-id}`. Altura em decímetros e peso em hectogramas (÷10 para m/kg). Stats base chegam a ~255; as barras normalizam por 255.
+The PokéAPI has no Portuguese, so in PT mode free-form text (description, genus,
+abilities) is machine-translated EN→PT via `services/translate.ts` (MyMemory
+API, cached in `localStorage`); finite terms (growth rate, egg groups, habitat)
+use curated maps in `domain/pokemonInfo.ts`.
+
+## Build & quality
+
+- **Vite** bundles into `dist/`. Deployed to **Cloudflare** (build `npm run build`,
+  output `dist`); unknown routes fall back to `public/404.html`.
+- **TypeScript** (strict) runs via `tsc --noEmit` in `build`, `typecheck`, and CI.
+- **vite-plugin-pwa** generates the service worker and manifest (installable +
+  offline `CacheFirst` for PokéAPI responses and sprites).
+- **Vitest** covers the pure logic; **Playwright** runs the E2E suite in `e2e/`,
+  including an **@axe-core/playwright** audit that fails on any critical WCAG 2
+  A/AA violation. **ESLint** (typescript-eslint) and **Prettier** enforce style.
+- **CI** (`.github/workflows/ci.yml`) runs **lint → typecheck → test → build**
+  plus a separate **e2e** job on every push and pull request.
+
+## PokéAPI notes
+
+Endpoint: `GET https://pokeapi.co/api/v2/pokemon/{name-or-id}`. Height is in
+decimetres and weight in hectograms (divide by 10 for m/kg). Base stats can
+reach ~255; stat bars normalize against 255 and cap at 100%.

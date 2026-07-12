@@ -42,6 +42,15 @@ html.dark {
   font-family: var(--font);
 }
 
+/* Botões/campos não herdam a cor do texto por padrão (usam o preto do sistema),
+   o que deixa textos escuros no modo escuro. Herdar corrige em todo o projeto. */
+button,
+input,
+select,
+textarea {
+  color: inherit;
+}
+
 body {
   text-align: center;
   color: var(--text);

@@ -23,6 +23,20 @@
 
 ---
 
+## Sobre
+
+A **Pokédex** é um app web de página única que consome a [PokéAPI](https://pokeapi.co/)
+pública para pesquisar, navegar e detalhar todos os 1025 Pokémon. Além da Pokédex clássica,
+inclui um explorador de **cartas de TCG** (cartas reais, raridade e preço de mercado), um
+mini-game de **batalha em equipe** por turnos e um **deck builder de TCG** com análises e
+checagem de legalidade.
+
+A lógica independente de framework (serviços de dados, regras de domínio, i18n, widgets de
+funcionalidades) é compartilhada com a versão vanilla original; esta branch porta a interface
+para **React 19 + TypeScript** (strict). A interface é totalmente bilíngue (PT-BR / EN) — como
+a PokéAPI não tem português, os textos são traduzidos automaticamente e cacheados no navegador.
+Distribuída como **PWA** instalável com suporte offline e publicada no **Cloudflare Pages**.
+
 ## Funcionalidades
 
 - Busca por nome (sugestões por qualquer parte) ou número, com Prev/Next e setas do teclado
@@ -31,6 +45,9 @@
 - Cadeia de evolução clicável (com métodos), formas alternativas, EV yield, shiny, cry e aleatório
 - Lightbox da imagem com galeria de sprites (artwork, shiny, animado, frente/costas)
 - Comparação de até 4 Pokémon (tabela de stats + gráfico de radar); filtro por tipo e geração com paginação
+- Aba de **cartas de TCG**: veja as cartas reais de um Pokémon com raridade, preço de mercado e efeito holo 3D (Pokémon TCG API)
+- Mini-game de **batalha em equipe**: monte um time e jogue uma batalha por turnos (itens, registro de vitórias)
+- **Deck builder** (`?view=deck`): monte decks de TCG com gráficos, score de saúde do deck, checagem de legalidade Standard/Expanded e importação de meta-decks
 - Interface bilíngue (PT-BR / EN); favoritos e tema salvos no navegador
 - Download da imagem estática (PNG) e do GIF animado
 - Links compartilháveis (`?pokemon=ID`) e PWA instalável com suporte offline
@@ -73,21 +90,24 @@ Acesse a URL exibida no terminal (por padrão `http://localhost:5173`).
 ## Estrutura do projeto
 
 ```
-index.html               # Ponto de entrada (carrega src/main.ts)
+index.html               # Ponto de entrada (div #root, carrega src/main.tsx)
 src/
-  main.ts                # Composition root: DOM, render e eventos
+  main.tsx               # createRoot + providers (i18n / favoritos / modal)
+  App.tsx                # Composition root: estado, rotas, navegação e SEO
   types.ts               # Tipos compartilhados da PokéAPI
+  components/            # UI: Header, PokedexDevice, DetailsCard (+ details/),
+                         #   cards/, deck/, panels/, auth/, InfoModal, Lightbox…
+  context/               # ModalContext, FavoritesContext
+  hooks/                 # usePokemon · useSpecies · useTheme · useDeck · useTranslatedText
   services/              # Dados & IO
     pokeapi.ts           # fetch + cache em memória
     sprites.ts           # helpers de imagem
     storage.ts           # tema & favoritos (localStorage)
-  domain/
-    pokemonTypes.ts      # cores & labels dos tipos
-  i18n/
-    index.ts             # getLang / setLang / t / contentLang
-    translations.ts      # dicionários PT-BR / EN
-  features/              # autocomplete · filter · compare · radar · team · quiz
-  styles/style.css
+    translate.ts         # tradução automática EN→PT (MyMemory, com cache)
+  domain/                # pokemonTypes · pokemonInfo · deck (lógica pura)
+  i18n/                  # t / getLang / setLang / contentLang + dicts PT-BR/EN
+  features/              # autocomplete · filter · compare · radar · team · quiz · battle
+  styles/                # tokens + CSS por área (layout, device, cards, deck, …)
   __tests__/*.test.ts    # Vitest (unitário)
 e2e/app.spec.ts          # Playwright E2E + auditoria de acessibilidade (axe)
 public/                  # Assets, ícones do PWA, 404.html
