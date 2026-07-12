@@ -14,10 +14,11 @@ interface BeforeInstallPromptEvent extends Event {
 interface HeaderProps {
   onOpenDeck: () => void;
   onOpenCards: () => void;
+  onOpenPokedex: () => void;
 }
 
-// Barra superior: marca + cartas + deck + conta + tema/idioma.
-export function Header({ onOpenDeck, onOpenCards }: HeaderProps) {
+// Barra superior: marca + explorar + cartas + deck + conta + tema/idioma.
+export function Header({ onOpenDeck, onOpenCards, onOpenPokedex }: HeaderProps) {
   const { t, lang, toggle: toggleLang } = useI18n();
   const { theme, toggle: toggleTheme } = useTheme();
   const { open, close } = useModal();
@@ -43,6 +44,9 @@ export function Header({ onOpenDeck, onOpenCards }: HeaderProps) {
     <header className="topbar">
       <img className="brand-logo" src={logoUrl} alt="Pokédex" width="120" height="34" />
       <div className="topbar__controls">
+        <button className="deck-open" type="button" onClick={onOpenPokedex}>
+          {lang === 'pt' ? '🔎 Explorar' : '🔎 Explore'}
+        </button>
         <button className="deck-open" type="button" onClick={onOpenCards}>
           {lang === 'pt' ? '🃟 Cartas' : '🃟 Cards'}
         </button>
