@@ -60,7 +60,11 @@ function RotatingCard({ card }: { card: TcgCard }) {
     <div className="card3d" style={{ perspective: '1200px' }}>
       <div
         className={`card3d__stage ${spinning ? 'is-anim' : ''}`}
-        style={{ transform: `scale(${zoom}) rotateX(${rot.x}deg) rotateY(${rot.y}deg)` }}
+        style={{
+          width: `${Math.round(200 * zoom)}px`,
+          height: `${Math.round(279 * zoom)}px`,
+          transform: `rotateX(${rot.x}deg) rotateY(${rot.y}deg)`,
+        }}
         onPointerDown={onDown}
         onPointerMove={onMove}
         onPointerUp={onUp}
