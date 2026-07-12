@@ -47,6 +47,7 @@ export const translations = {
     total: 'Total',
     filterTypeLabel: 'Tipo',
     filterGenLabel: 'Geração',
+    filterByType: 'Filtrar por este tipo',
     statsLegendAria: 'O que significa cada atributo',
     statLabels: {
       hp: 'HP',
@@ -105,6 +106,7 @@ export const translations = {
     total: 'Total',
     filterTypeLabel: 'Type',
     filterGenLabel: 'Generation',
+    filterByType: 'Filter by this type',
     statsLegendAria: 'What each stat means',
     statLabels: {
       hp: 'HP',

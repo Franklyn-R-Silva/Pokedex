@@ -56,6 +56,23 @@ body {
   outline-offset: 2px;
 }
 
+/* Foco elegante nos campos: borda tingida + anel suave (sem contorno duro). */
+.compare-input:focus,
+.compare-input:focus-visible,
+.filter-type:focus,
+.filter-gen:focus {
+  outline: none;
+  border-color: var(--type-color);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--type-color) 22%, transparent);
+}
+
+/* Busca do dispositivo (retrô): só tinge a borda, preservando a sombra. */
+.input__search:focus,
+.input__search:focus-visible {
+  outline: none;
+  border-color: var(--type-color);
+}
+
 h1,
 h2,
 .brand,
@@ -348,6 +365,19 @@ main {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
 }
 
+.type-badge--btn {
+  border: none;
+  cursor: pointer;
+  transition:
+    transform 0.12s ease,
+    filter 0.2s ease;
+}
+
+.type-badge--btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+}
+
 .details__genus {
   text-align: center;
   font-size: 0.75rem;
@@ -432,6 +462,14 @@ main {
 }
 
 /* ---------- Stats ---------- */
+
+.details__radar {
+  margin: 2px 0 14px;
+}
+
+.details__radar .radar {
+  max-width: 236px;
+}
 
 .details__stats {
   list-style: none;
@@ -1124,5 +1162,36 @@ html.dark .ctable .is-higher {
 
   .pokedex-device {
     margin-top: 0;
+  }
+}
+
+/* ---------- Animações ---------- */
+
+@keyframes pokemon-pop {
+  0% {
+    transform: translate(-63%, 20%) scale(0.75);
+    opacity: 0.3;
+  }
+  60% {
+    transform: translate(-63%, 20%) scale(1.06);
+  }
+  100% {
+    transform: translate(-63%, 20%) scale(1);
+    opacity: 1;
+  }
+}
+
+.pokemon__image.pop {
+  animation: pokemon-pop 0.35s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
   }
 }

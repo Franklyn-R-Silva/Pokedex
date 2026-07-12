@@ -19,6 +19,7 @@ import { getTheme, setTheme, getFavorites, isFavorite, toggleFavorite } from './
 import { setupAutocomplete } from './autocomplete.js';
 import { setupFilter } from './filter.js';
 import { setupCompare } from './compare.js';
+import { radarSvg } from './radar.js';
 import { initLang, getLang, setLang, t, contentLang } from './i18n.js';
 
 const pokemonData = document.querySelector('.pokemon__data');
@@ -49,6 +50,7 @@ const descriptionEl = document.querySelector('.details__description');
 const heightValue = document.querySelector('.height');
 const weightValue = document.querySelector('.weight');
 const weaknessesContainer = document.querySelector('.details__weaknesses');
+const detailsRadar = document.querySelector('.details__radar');
 const statsContainer = document.querySelector('.details__stats');
 const abilitiesContainer = document.querySelector('.details__abilities');
 const evolutionContainer = document.querySelector('.details__evolution');
@@ -90,10 +92,18 @@ function renderTypes(types) {
   const lang = getLang();
   typesContainer.innerHTML = '';
   types.forEach(({ type }) => {
-    const badge = document.createElement('span');
-    badge.className = 'type-badge';
+    const badge = document.createElement('button');
+    badge.type = 'button';
+    badge.className = 'type-badge type-badge--btn';
     badge.style.backgroundColor = getTypeColor(type.name);
     badge.textContent = getTypeLabel(type.name, lang);
+    badge.title = t('filterByType');
+    badge.addEventListener('click', () => {
+      filterCtl?.setType(type.name);
+      document
+        .querySelector('.panel.filter')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
     typesContainer.appendChild(badge);
   });
 }
@@ -294,6 +304,7 @@ function renderDetails(data, reqId) {
   renderTypes(data.types);
   heightValue.textContent = `${(data.height / 10).toFixed(1)} m`;
   weightValue.textContent = `${(data.weight / 10).toFixed(1)} kg`;
+  detailsRadar.innerHTML = radarSvg([data], [getTypeColor(primaryType)]);
   renderStats(data.stats);
   renderAbilities(data.abilities, reqId);
   renderSpeciesInfo(data.species.url, reqId);
@@ -336,6 +347,10 @@ async function renderPokemon(pokemon) {
   buttonShare.disabled = false;
   buttonCry.disabled = !currentCry;
   updateImages();
+  // Reinicia a animação de "pop" da imagem a cada Pokémon.
+  pokemonImage.classList.remove('pop');
+  void pokemonImage.offsetWidth;
+  pokemonImage.classList.add('pop');
   updateFavoriteButton();
   updateUrl(data.id);
 
@@ -513,10 +528,23 @@ window.addEventListener('resize', () => {
   if (currentPokemon) fitPokemonName();
 });
 
-// Navegação pelo teclado (setas esquerda/direita).
+// Atalhos de teclado: "/" foca a busca, setas navegam, Esc sai da busca.
 document.addEventListener('keydown', (event) => {
-  if (document.activeElement === input) return;
-  if (event.target.tagName === 'INPUT' || event.target.tagName === 'SELECT') return;
+  const typing =
+    document.activeElement === input ||
+    event.target.tagName === 'INPUT' ||
+    event.target.tagName === 'SELECT';
+
+  if (event.key === '/' && !typing) {
+    event.preventDefault();
+    input.focus();
+    return;
+  }
+  if (event.key === 'Escape' && document.activeElement === input) {
+    input.blur();
+    return;
+  }
+  if (typing) return;
   if (event.key === 'ArrowLeft') buttonPrev.click();
   if (event.key === 'ArrowRight') buttonNext.click();
 });

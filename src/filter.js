@@ -137,5 +137,10 @@ export function setupFilter({ typeSelect, genSelect, resultsEl, paginationEl, on
       populateSelects();
       if (lastResults.length) renderPage();
     },
+    // Define o tipo e aplica (usado ao clicar num badge de tipo).
+    setType(typeName) {
+      typeSelect.value = typeName;
+      apply();
+    },
   };
 }
