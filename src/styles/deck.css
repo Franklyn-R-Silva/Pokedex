@@ -461,3 +461,49 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* Ver detalhe da carta no catálogo/lista */
+.deck-result-cell {
+  position: relative;
+}
+
+.deck-result-view {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 0.7rem;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.deck-result-cell:hover .deck-result-view,
+.deck-result-view:focus-visible {
+  opacity: 1;
+}
+
+.deck-row__view {
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  line-height: 0;
+  border-radius: 4px;
+}
+
+.deck-row__view img {
+  width: 30px;
+  height: 42px;
+  object-fit: contain;
+}
+
+.deck-row__view:hover {
+  outline: 2px solid var(--type-color);
+}

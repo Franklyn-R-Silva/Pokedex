@@ -133,7 +133,10 @@ export interface CardSearch {
   page?: number;
 }
 
-/** Busca cartas por nome/supertipo/subtipo/tipo (para o construtor de deck). */
+const searchCache = new Map<string, { cards: TcgCard[]; totalCount: number }>();
+
+/** Busca cartas por nome/supertipo/subtipo/tipo (para o construtor de deck).
+ *  Cacheada em memória por consulta — importação/repetição ficam instantâneas. */
 export async function searchCards(
   opts: CardSearch,
 ): Promise<{ cards: TcgCard[]; totalCount: number }> {
@@ -143,6 +146,10 @@ export async function searchCards(
   if (opts.subtype) parts.push(`subtypes:"${opts.subtype}"`);
   if (opts.type) parts.push(`types:${opts.type}`);
   const query = parts.join(' ') || 'supertype:Pokémon';
+
+  const cacheKey = `${query}#${opts.page ?? 1}`;
+  const cached = searchCache.get(cacheKey);
+  if (cached) return cached;
 
   try {
     const url =
@@ -156,7 +163,9 @@ export async function searchCards(
 
     const json = (await response.json()) as { data?: ApiCard[]; totalCount?: number };
     const cards = (json.data ?? []).filter((c) => c.images?.small).map(toCard);
-    return { cards, totalCount: json.totalCount ?? cards.length };
+    const result = { cards, totalCount: json.totalCount ?? cards.length };
+    if (cards.length > 0) searchCache.set(cacheKey, result);
+    return result;
   } catch {
     return { cards: [], totalCount: 0 };
   }

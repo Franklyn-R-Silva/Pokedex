@@ -102,8 +102,9 @@ function RotatingCard({ card }: { card: TcgCard }) {
 }
 
 // Modal rico da carta: análise girável + conteúdo, raridade e preço.
-export function CardDetail({ card }: { card: TcgCard }) {
-  const { t } = useI18n();
+// onAdd (opcional) mostra um botão para adicionar a carta ao deck.
+export function CardDetail({ card, onAdd }: { card: TcgCard; onAdd?: () => void }) {
+  const { t, lang } = useI18n();
 
   const meta = [
     card.setName,
@@ -116,6 +117,12 @@ export function CardDetail({ card }: { card: TcgCard }) {
       <RotatingCard card={card} />
       <div className="tcg-detail__info">
         <h2 className="tcg-detail__name">{card.name}</h2>
+
+        {onAdd && (
+          <button type="button" className="tcg-add-deck" onClick={onAdd}>
+            ＋ {lang === 'pt' ? 'Adicionar ao deck' : 'Add to deck'}
+          </button>
+        )}
 
         <div className="tcg-detail__badges">
           {card.rarity && (

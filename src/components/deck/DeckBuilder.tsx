@@ -25,10 +25,15 @@ export function DeckBuilder({ onClose }: { onClose: () => void }) {
     if (!template || building) return;
     setBuilding(true);
     clear();
-    for (const { query, count } of template.cards) {
-      const { cards } = await searchCards({ name: query });
-      if (cards[0]) addMany(cards[0], count);
-    }
+    // Busca todas as cartas em paralelo (com cache) — importação rápida.
+    const results = await Promise.all(
+      template.cards.map((c) =>
+        searchCards({ name: c.query }).then((r) => ({ card: r.cards[0], count: c.count })),
+      ),
+    );
+    results.forEach(({ card, count }) => {
+      if (card) addMany(card, count);
+    });
     setBuilding(false);
   };
 
