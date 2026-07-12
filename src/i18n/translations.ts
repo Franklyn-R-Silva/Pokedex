@@ -102,6 +102,12 @@ export interface Translation {
   battleSwap: string;
   battleYou: string;
   battleFoe: string;
+  advGym: string;
+  advWild: string;
+  advLeader: string;
+  advWildFoe: string;
+  advWon: string;
+  advLost: string;
   battleFoesTitle: string;
   battleRandom: string;
   battleAddFoe: string;
@@ -231,6 +237,12 @@ export const translations: Record<Lang, Translation> = {
     battleSwap: 'Trocar Pokémon',
     battleYou: 'Você',
     battleFoe: 'Oponente',
+    advGym: 'O líder do ginásio apareceu!',
+    advWild: 'Um Pokémon selvagem apareceu!',
+    advLeader: 'Líder',
+    advWildFoe: 'Selvagem',
+    advWon: 'Você venceu! 🎉',
+    advLost: 'Você foi derrotado…',
     battleFoesTitle: 'Inimigos (fases)',
     battleRandom: '🎲 Aleatório',
     battleAddFoe: 'Adicionar por nome',
@@ -372,6 +384,12 @@ export const translations: Record<Lang, Translation> = {
     battleSwap: 'Change Pokémon',
     battleYou: 'You',
     battleFoe: 'Opponent',
+    advGym: 'The gym leader appears!',
+    advWild: 'A wild Pokémon appeared!',
+    advLeader: 'Leader',
+    advWildFoe: 'Wild',
+    advWon: 'You won! 🎉',
+    advLost: 'You were defeated…',
     battleFoesTitle: 'Opponents (phases)',
     battleRandom: '🎲 Random',
     battleAddFoe: 'Add by name',

@@ -21,8 +21,11 @@ const DeckBuilder = lazy(() =>
 const CardBrowser = lazy(() =>
   import('./components/cards/CardBrowser').then((m) => ({ default: m.CardBrowser })),
 );
+const Adventure = lazy(() =>
+  import('./components/adventure/Adventure').then((m) => ({ default: m.Adventure })),
+);
 
-type View = 'main' | 'deck' | 'cards';
+type View = 'main' | 'deck' | 'cards' | 'aventura';
 
 // Pokémon do dia (determinístico pela data) quando não há ?pokemon=ID.
 function pokemonOfTheDay(): number {
@@ -43,7 +46,7 @@ export function App() {
   const { pokemon, loading, error } = usePokemon(query);
   const [view, setView] = useState<View>(() => {
     const v = new URLSearchParams(window.location.search).get('view');
-    return v === 'deck' || v === 'cards' ? v : 'main';
+    return v === 'deck' || v === 'cards' || v === 'aventura' ? v : 'main';
   });
 
   const setViewUrl = (next: View) => {
@@ -108,20 +111,22 @@ export function App() {
     return () => document.removeEventListener('keydown', onKey);
   }, [pokemon, go]);
 
-  if (view === 'deck' || view === 'cards')
+  if (view !== 'main')
     return (
       <Suspense fallback={<p className="loading-note muted">{t('loading')}</p>}>
-        {view === 'deck' ? (
-          <DeckBuilder onClose={() => setViewUrl('main')} />
-        ) : (
-          <CardBrowser onClose={() => setViewUrl('main')} />
-        )}
+        {view === 'deck' && <DeckBuilder onClose={() => setViewUrl('main')} />}
+        {view === 'cards' && <CardBrowser onClose={() => setViewUrl('main')} />}
+        {view === 'aventura' && <Adventure onClose={() => setViewUrl('main')} />}
       </Suspense>
     );
 
   return (
     <>
-      <Header onOpenDeck={() => setViewUrl('deck')} onOpenCards={() => setViewUrl('cards')} />
+      <Header
+        onOpenDeck={() => setViewUrl('deck')}
+        onOpenCards={() => setViewUrl('cards')}
+        onOpenAdventure={() => setViewUrl('aventura')}
+      />
       <main>
         <PokedexDevice
           pokemon={pokemon}
