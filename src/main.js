@@ -21,6 +21,7 @@ import { setupFilter } from './filter.js';
 import { setupCompare } from './compare.js';
 import { initLang, getLang, setLang, t, contentLang } from './i18n.js';
 
+const pokemonData = document.querySelector('.pokemon__data');
 const pokemonName = document.querySelector('.pokemon__name');
 const pokemonNumber = document.querySelector('.pokemon__number');
 const pokemonImage = document.querySelector('.pokemon__image');
@@ -39,6 +40,8 @@ const buttonCry = document.querySelector('.btn-cry');
 const buttonShare = document.querySelector('.btn-share');
 const themeToggle = document.querySelector('.theme-toggle');
 const langToggle = document.querySelector('.lang-toggle');
+const compareInfo = document.querySelector('.compare-info');
+const compareLegend = document.querySelector('.compare-legend');
 
 const typesContainer = document.querySelector('.details__types');
 const genusEl = document.querySelector('.details__genus');
@@ -265,6 +268,19 @@ function updateImages() {
   buttonDownloadGif.title = gif ? '' : t('noGif');
 }
 
+// Reduz a fonte do nome/número até caber em uma linha na tela do dispositivo
+// (nomes de forma como "squawkabilly-white-plumage" são longos).
+function fitPokemonName() {
+  pokemonData.style.fontSize = '';
+  let size = parseFloat(getComputedStyle(pokemonData).fontSize);
+  let guard = 0;
+  while (pokemonData.scrollWidth > pokemonData.clientWidth && size > 8 && guard < 40) {
+    size -= 1;
+    pokemonData.style.fontSize = `${size}px`;
+    guard += 1;
+  }
+}
+
 function updateUrl(id) {
   const url = new URL(window.location.href);
   url.searchParams.set('pokemon', id);
@@ -308,8 +324,9 @@ async function renderPokemon(pokemon) {
 
   pokemonImage.style.display = 'block';
   pokemonImage.alt = data.name;
-  pokemonName.innerHTML = data.name;
-  pokemonNumber.innerHTML = data.id;
+  pokemonName.textContent = data.name.replace(/-/g, ' ');
+  pokemonNumber.textContent = data.id;
+  fitPokemonName();
   input.value = '';
   searchPokemon = data.id;
 
@@ -393,6 +410,22 @@ function applyTheme(theme) {
 }
 
 // Aplica o idioma a todos os textos estáticos da interface.
+// Preenche a legenda de atributos (HP → Vida, etc.) no idioma atual.
+function renderCompareLegend() {
+  const labels = t('statLabels');
+  const names = t('statNames');
+  const order = ['hp', 'attack', 'defense', 'special-attack', 'special-defense', 'speed'];
+  compareLegend.innerHTML = '';
+  order.forEach((key) => {
+    const item = document.createElement('div');
+    item.className = 'legend-item';
+    const abbr = document.createElement('strong');
+    abbr.textContent = labels[key];
+    item.append(abbr, ` ${names[key]}`);
+    compareLegend.appendChild(item);
+  });
+}
+
 function applyStaticI18n() {
   document.querySelectorAll('[data-i18n]').forEach((el) => {
     el.textContent = t(el.dataset.i18n);
@@ -400,6 +433,10 @@ function applyStaticI18n() {
   document.querySelectorAll('[data-i18n-ph]').forEach((el) => {
     el.placeholder = t(el.dataset.i18nPh);
   });
+  document.querySelectorAll('[data-i18n-aria]').forEach((el) => {
+    el.setAttribute('aria-label', t(el.dataset.i18nAria));
+  });
+  renderCompareLegend();
   langToggle.textContent = getLang().toUpperCase();
   applyTheme(getTheme());
 }
@@ -434,6 +471,12 @@ buttonShiny.addEventListener('click', () => {
 buttonCry.addEventListener('click', playCry);
 buttonShare.addEventListener('click', sharePokemon);
 
+compareInfo.addEventListener('click', () => {
+  const willOpen = compareLegend.hidden;
+  compareLegend.hidden = !willOpen;
+  compareInfo.setAttribute('aria-expanded', String(willOpen));
+});
+
 buttonDownloadPng.addEventListener('click', () => {
   if (currentImages?.png) downloadImage(currentImages.png, currentImages.name);
 });
@@ -465,6 +508,11 @@ langToggle.addEventListener('click', () => {
   if (currentPokemon) renderPokemon(currentPokemon.id);
 });
 
+// Reajusta o tamanho do nome quando o dispositivo muda de tamanho.
+window.addEventListener('resize', () => {
+  if (currentPokemon) fitPokemonName();
+});
+
 // Navegação pelo teclado (setas esquerda/direita).
 document.addEventListener('keydown', (event) => {
   if (document.activeElement === input) return;
@@ -484,6 +532,7 @@ filterCtl = setupFilter({
   typeSelect: document.querySelector('.filter-type'),
   genSelect: document.querySelector('.filter-gen'),
   resultsEl: document.querySelector('.filter-results'),
+  paginationEl: document.querySelector('.filter-pagination'),
   onSelect: (name) => {
     renderPokemon(name);
     window.scrollTo({ top: 0, behavior: 'smooth' });

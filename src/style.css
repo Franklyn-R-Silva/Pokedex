@@ -80,6 +80,7 @@ h2,
   gap: 8px;
   padding: 10px clamp(12px, 4vw, 28px);
   background: color-mix(in srgb, var(--surface) 78%, transparent);
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--border);
 }
@@ -183,11 +184,15 @@ main {
 
 .pokemon__data {
   position: absolute;
+  top: 53.5%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 64%;
+  text-align: center;
+  white-space: nowrap;
   font-weight: 700;
   color: #aaa;
-  top: 54.5%;
-  right: 27%;
-  font-size: clamp(8px, 5vw, 25px);
+  font-size: clamp(8px, 5vw, 24px);
 }
 
 .pokemon__name {
@@ -650,6 +655,68 @@ main {
   text-align: left;
 }
 
+.panel__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.panel__head .panel__title {
+  margin-bottom: 0;
+}
+
+.info-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 50%;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.info-btn:hover {
+  background: var(--type-color);
+  border-color: var(--type-color);
+  color: #fff;
+}
+
+.compare-legend {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px 12px;
+  margin-bottom: 14px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  text-align: left;
+}
+
+.compare-legend[hidden] {
+  display: none;
+}
+
+.legend-item {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+}
+
+.legend-item strong {
+  color: var(--text);
+  font-weight: 700;
+  margin-right: 4px;
+}
+
 .favorites__list {
   display: flex;
   flex-wrap: wrap;
@@ -778,6 +845,68 @@ main {
 
 .grid-more {
   align-self: center;
+}
+
+.filter-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 16px;
+  padding: 5px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  width: fit-content;
+  margin-inline: auto;
+}
+
+.filter-pagination:empty {
+  display: none;
+}
+
+.page-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 1.1rem;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition:
+    transform 0.12s ease,
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.page-btn:hover:not(:disabled) {
+  background: var(--type-color);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.page-btn:disabled {
+  opacity: 0.35;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.page-info {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text);
+  padding: 0 10px;
+  min-width: 78px;
+  text-align: center;
+  white-space: nowrap;
 }
 
 /* ---------- Tabela de comparação ---------- */

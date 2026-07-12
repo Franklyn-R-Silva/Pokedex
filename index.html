@@ -132,20 +132,46 @@
         <section class="panel filter">
           <h2 class="panel__title" data-i18n="exploreTitle">🔎 Explorar</h2>
           <div class="filter__controls">
-            <select class="filter-type" aria-label="Tipo"></select>
-            <select class="filter-gen" aria-label="Geração"></select>
+            <select
+              class="filter-type"
+              title="Tipo"
+              aria-label="Tipo"
+              data-i18n-aria="filterTypeLabel"
+            ></select>
+            <select
+              class="filter-gen"
+              title="Geração"
+              aria-label="Geração"
+              data-i18n-aria="filterGenLabel"
+            ></select>
           </div>
           <div class="filter-results grid"></div>
+          <div class="filter-pagination"></div>
         </section>
 
         <section class="panel compare">
-          <h2 class="panel__title" data-i18n="compareTitle">⚔️ Comparar</h2>
+          <div class="panel__head">
+            <h2 class="panel__title" data-i18n="compareTitle">⚔️ Comparar</h2>
+            <button
+              class="info-btn compare-info"
+              type="button"
+              aria-label="O que significa cada atributo"
+              data-i18n-aria="statsLegendAria"
+              aria-expanded="false"
+            >
+              ⓘ
+            </button>
+          </div>
+          <div class="compare-legend" hidden></div>
           <div class="compare__controls">
             <div class="compare-field">
               <input
                 class="compare-a"
                 type="search"
+                placeholder="1º Pokémon"
                 data-i18n-ph="comparePlaceholderA"
+                data-i18n-aria="comparePlaceholderA"
+                aria-label="1º Pokémon"
                 autocomplete="off"
                 role="combobox"
                 aria-autocomplete="list"
@@ -157,7 +183,10 @@
               <input
                 class="compare-b"
                 type="search"
+                placeholder="2º Pokémon"
                 data-i18n-ph="comparePlaceholderB"
+                data-i18n-aria="comparePlaceholderB"
+                aria-label="2º Pokémon"
                 autocomplete="off"
                 role="combobox"
                 aria-autocomplete="list"

@@ -43,6 +43,9 @@ export const translations = {
     comparePlaceholderA: '1º Pokémon',
     comparePlaceholderB: '2º Pokémon',
     total: 'Total',
+    filterTypeLabel: 'Tipo',
+    filterGenLabel: 'Geração',
+    statsLegendAria: 'O que significa cada atributo',
     statLabels: {
       hp: 'HP',
       attack: 'ATQ',
@@ -50,6 +53,14 @@ export const translations = {
       'special-attack': 'AT.E',
       'special-defense': 'DF.E',
       speed: 'VEL',
+    },
+    statNames: {
+      hp: 'Vida',
+      attack: 'Ataque',
+      defense: 'Defesa',
+      'special-attack': 'Ataque Especial',
+      'special-defense': 'Defesa Especial',
+      speed: 'Velocidade',
     },
   },
   en: {
@@ -88,6 +99,9 @@ export const translations = {
     comparePlaceholderA: '1st Pokémon',
     comparePlaceholderB: '2nd Pokémon',
     total: 'Total',
+    filterTypeLabel: 'Type',
+    filterGenLabel: 'Generation',
+    statsLegendAria: 'What each stat means',
     statLabels: {
       hp: 'HP',
       attack: 'ATK',
@@ -95,6 +109,14 @@ export const translations = {
       'special-attack': 'SpA',
       'special-defense': 'SpD',
       speed: 'Spe',
+    },
+    statNames: {
+      hp: 'Hit Points',
+      attack: 'Attack',
+      defense: 'Defense',
+      'special-attack': 'Special Attack',
+      'special-defense': 'Special Defense',
+      speed: 'Speed',
     },
   },
 };

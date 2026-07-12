@@ -1,13 +1,14 @@
-// Filtro por tipo e/ou geração: mostra um grid de Pokémon clicáveis.
+// Filtro por tipo e/ou geração: mostra um grid paginado de Pokémon clicáveis.
 import { fetchByType, fetchByGeneration, getArtworkById } from './api.js';
 import { TYPE_NAMES, getTypeLabel } from './pokemonTypes.js';
 import { t, getLang } from './i18n.js';
 
 const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-const MAX_RESULTS = 60;
+const PAGE_SIZE = 24;
 
-export function setupFilter({ typeSelect, genSelect, resultsEl, onSelect }) {
+export function setupFilter({ typeSelect, genSelect, resultsEl, paginationEl, onSelect }) {
   let lastResults = [];
+  let page = 0;
 
   function populateSelects() {
     const lang = getLang();
@@ -28,16 +29,43 @@ export function setupFilter({ typeSelect, genSelect, resultsEl, onSelect }) {
     genSelect.value = currentGen;
   }
 
-  function renderResults(list) {
-    lastResults = list;
+  function renderPagination() {
+    paginationEl.innerHTML = '';
+    const total = lastResults.length;
+    const pages = Math.ceil(total / PAGE_SIZE);
+    if (pages <= 1) return;
+
+    const prev = document.createElement('button');
+    prev.type = 'button';
+    prev.className = 'page-btn';
+    prev.textContent = '‹';
+    prev.disabled = page === 0;
+    prev.addEventListener('click', () => {
+      page -= 1;
+      renderPage();
+    });
+
+    const info = document.createElement('span');
+    info.className = 'page-info';
+    info.textContent = `${page + 1} / ${pages} · ${total}`;
+
+    const next = document.createElement('button');
+    next.type = 'button';
+    next.className = 'page-btn';
+    next.textContent = '›';
+    next.disabled = page >= pages - 1;
+    next.addEventListener('click', () => {
+      page += 1;
+      renderPage();
+    });
+
+    paginationEl.append(prev, info, next);
+  }
+
+  function renderPage() {
     resultsEl.innerHTML = '';
-
-    if (list.length === 0) {
-      resultsEl.innerHTML = `<span class="muted">${t('noResults')}</span>`;
-      return;
-    }
-
-    list.slice(0, MAX_RESULTS).forEach(({ name, id }) => {
+    const start = page * PAGE_SIZE;
+    lastResults.slice(start, start + PAGE_SIZE).forEach(({ name, id }) => {
       const item = document.createElement('button');
       item.type = 'button';
       item.className = 'grid-item';
@@ -55,12 +83,20 @@ export function setupFilter({ typeSelect, genSelect, resultsEl, onSelect }) {
       resultsEl.appendChild(item);
     });
 
-    if (list.length > MAX_RESULTS) {
-      const more = document.createElement('span');
-      more.className = 'muted grid-more';
-      more.textContent = `+${list.length - MAX_RESULTS}`;
-      resultsEl.appendChild(more);
+    renderPagination();
+  }
+
+  function renderResults(list) {
+    lastResults = list;
+    page = 0;
+
+    if (list.length === 0) {
+      resultsEl.innerHTML = `<span class="muted">${t('noResults')}</span>`;
+      paginationEl.innerHTML = '';
+      return;
     }
+
+    renderPage();
   }
 
   async function apply() {
@@ -69,11 +105,13 @@ export function setupFilter({ typeSelect, genSelect, resultsEl, onSelect }) {
 
     if (!type && !gen) {
       resultsEl.innerHTML = '';
+      paginationEl.innerHTML = '';
       lastResults = [];
       return;
     }
 
     resultsEl.innerHTML = `<span class="muted">${t('loading')}</span>`;
+    paginationEl.innerHTML = '';
 
     let list;
     if (type && gen) {
@@ -93,11 +131,11 @@ export function setupFilter({ typeSelect, genSelect, resultsEl, onSelect }) {
   genSelect.addEventListener('change', apply);
   populateSelects();
 
-  // Re-aplica rótulos ao trocar de idioma, preservando os resultados atuais.
+  // Re-aplica rótulos ao trocar de idioma, preservando resultados e página.
   return {
     refresh() {
       populateSelects();
-      if (lastResults.length) renderResults(lastResults);
+      if (lastResults.length) renderPage();
     },
   };
 }
