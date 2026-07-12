@@ -1,5 +1,6 @@
 import { useRef, useEffect } from 'react';
 import { setupTeam } from '../../features/team';
+import type { TeamControls } from '../../features/team';
 import { setupBattle } from '../../features/battle';
 import type { BattleControls } from '../../features/battle';
 import { setupAutocomplete } from '../../features/autocomplete';
@@ -12,7 +13,7 @@ interface TeamPanelProps {
 
 // Reaproveita setupTeam (time de 6 + fraquezas) + setupBattle (mini-jogo).
 export function TeamPanel({ getNames, onSelect }: TeamPanelProps) {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const formRef = useRef<HTMLFormElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestRef = useRef<HTMLUListElement>(null);
@@ -21,6 +22,7 @@ export function TeamPanel({ getNames, onSelect }: TeamPanelProps) {
   const modalRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const battleRef = useRef<BattleControls | null>(null);
+  const teamRef = useRef<TeamControls | null>(null);
   const onSelectRef = useRef(onSelect);
   useEffect(() => {
     onSelectRef.current = onSelect;
@@ -35,6 +37,7 @@ export function TeamPanel({ getNames, onSelect }: TeamPanelProps) {
       resultEl: resultRef.current,
       onSelect: (name) => onSelectRef.current(name),
     });
+    teamRef.current = teamCtl;
     if (suggestRef.current) {
       setupAutocomplete({
         input: inputRef.current,
@@ -54,6 +57,10 @@ export function TeamPanel({ getNames, onSelect }: TeamPanelProps) {
       });
     }
   }, [getNames]);
+
+  useEffect(() => {
+    teamRef.current?.refresh();
+  }, [lang]);
 
   const closeBattle = () => {
     if (modalRef.current) modalRef.current.hidden = true;

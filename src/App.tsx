@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, lazy, Suspense } from 'react';
 import { MAX_POKEMON, fetchAllPokemonNames } from './services/pokeapi';
 import { getTypeColor, getTypeLabel } from './domain/pokemonTypes';
 import { getArtworkById } from './services/sprites';
@@ -12,7 +12,12 @@ import { FilterPanel } from './components/panels/FilterPanel';
 import { ComparePanel } from './components/panels/ComparePanel';
 import { TeamPanel } from './components/panels/TeamPanel';
 import { QuizPanel } from './components/panels/QuizPanel';
-import { DeckBuilder } from './components/deck/DeckBuilder';
+
+// Code-split: o construtor de deck (view pesada + Pokémon TCG API) só carrega
+// quando aberto, mantendo o bundle inicial menor.
+const DeckBuilder = lazy(() =>
+  import('./components/deck/DeckBuilder').then((m) => ({ default: m.DeckBuilder })),
+);
 
 // Pokémon do dia (determinístico pela data) quando não há ?pokemon=ID.
 function pokemonOfTheDay(): number {
@@ -97,7 +102,12 @@ export function App() {
     return () => document.removeEventListener('keydown', onKey);
   }, [pokemon, go]);
 
-  if (view === 'deck') return <DeckBuilder onClose={() => setViewUrl('main')} />;
+  if (view === 'deck')
+    return (
+      <Suspense fallback={<p className="loading-note muted">{t('loading')}</p>}>
+        <DeckBuilder onClose={() => setViewUrl('main')} />
+      </Suspense>
+    );
 
   return (
     <>

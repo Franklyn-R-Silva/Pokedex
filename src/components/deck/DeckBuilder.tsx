@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useDeck } from '../../hooks/useDeck';
 import { deckSize, DECK_SIZE } from '../../domain/deck';
+import { META_DECKS } from '../../domain/metaDecks';
+import { searchCards } from '../../services/tcg';
 import { useI18n } from '../../i18n/I18nContext';
 import { dl } from './labels';
 import { Catalog } from './Catalog';
@@ -12,9 +14,23 @@ type MobileTab = 'catalog' | 'deck' | 'analysis';
 // View dedicada do construtor de deck (catálogo | deck | análise).
 export function DeckBuilder({ onClose }: { onClose: () => void }) {
   const { lang } = useI18n();
-  const { entries, add, remove, clear } = useDeck();
+  const { entries, add, addMany, remove, clear } = useDeck();
   const [mobileTab, setMobileTab] = useState<MobileTab>('deck');
+  const [building, setBuilding] = useState(false);
   const size = deckSize(entries);
+
+  // Carrega um arquétipo do meta buscando cada carta pelo nome na API.
+  const loadMeta = async (id: string) => {
+    const template = META_DECKS.find((d) => d.id === id);
+    if (!template || building) return;
+    setBuilding(true);
+    clear();
+    for (const { query, count } of template.cards) {
+      const { cards } = await searchCards({ name: query });
+      if (cards[0]) addMany(cards[0], count);
+    }
+    setBuilding(false);
+  };
 
   return (
     <div className="deck-builder">
@@ -30,6 +46,22 @@ export function DeckBuilder({ onClose }: { onClose: () => void }) {
           {dl(lang, 'clear')}
         </button>
       </header>
+
+      <div className="deck-meta">
+        <span className="deck-meta__label">{dl(lang, 'meta')}</span>
+        {META_DECKS.map((d) => (
+          <button
+            key={d.id}
+            type="button"
+            className="deck-meta__btn"
+            disabled={building}
+            onClick={() => void loadMeta(d.id)}
+          >
+            {d.name}
+          </button>
+        ))}
+        {building && <span className="muted">{dl(lang, 'buildingMeta')}</span>}
+      </div>
 
       <div className="deck-mobile-tabs">
         {(['catalog', 'deck', 'analysis'] as MobileTab[]).map((tab) => (

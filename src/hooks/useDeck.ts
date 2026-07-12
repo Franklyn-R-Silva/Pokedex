@@ -37,6 +37,20 @@ export function useDeck() {
     });
   }, []);
 
+  const addMany = useCallback((card: TcgCard, n: number) => {
+    setEntries((prev) => {
+      let next = prev;
+      for (let i = 0; i < n; i++) {
+        const existing = next.find((e) => e.card.id === card.id);
+        if (!copiesAllowed(card, existing?.count ?? 0)) break;
+        next = existing
+          ? next.map((e) => (e.card.id === card.id ? { ...e, count: e.count + 1 } : e))
+          : [...next, { card, count: 1 }];
+      }
+      return save(next);
+    });
+  }, []);
+
   const remove = useCallback((id: string) => {
     setEntries((prev) =>
       save(
@@ -49,5 +63,5 @@ export function useDeck() {
 
   const clear = useCallback(() => setEntries(save([])), []);
 
-  return { entries, add, remove, clear };
+  return { entries, add, addMany, remove, clear };
 }

@@ -33,6 +33,8 @@ export function PokedexDevice({
   const { open } = useModal();
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestRef = useRef<HTMLUListElement>(null);
+  const dataRef = useRef<HTMLHeadingElement>(null);
+  const imageRef = useRef<HTMLImageElement>(null);
   const onSearchRef = useRef(onSearch);
   useEffect(() => {
     onSearchRef.current = onSearch;
@@ -48,6 +50,36 @@ export function PokedexDevice({
       onSelect: (name) => onSearchRef.current(name),
     });
   }, [getNames]);
+
+  // Encolhe o nome/número até caber em uma linha e reinicia o "pop" da imagem.
+  useEffect(() => {
+    const el = dataRef.current;
+    if (el) {
+      el.style.fontSize = '';
+      let size = parseFloat(getComputedStyle(el).fontSize);
+      let guard = 0;
+      while (el.scrollWidth > el.clientWidth && size > 8 && guard < 40) {
+        size -= 1;
+        el.style.fontSize = `${size}px`;
+        guard += 1;
+      }
+    }
+    const img = imageRef.current;
+    if (img) {
+      img.classList.remove('pop');
+      void img.offsetWidth;
+      img.classList.add('pop');
+    }
+  }, [pokemon]);
+
+  useEffect(() => {
+    const onResize = () => {
+      const el = dataRef.current;
+      if (el) el.style.fontSize = '';
+    };
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
@@ -72,12 +104,13 @@ export function PokedexDevice({
     <div className="col col--device">
       <div className="pokedex-device">
         <img
+          ref={imageRef}
           src={pokemon ? getPokemonSprite(pokemon, shiny) : ''}
           alt={pokemon?.name ?? 'pokemon'}
           className="pokemon__image"
           onClick={() => pokemon && open(<Lightbox pokemon={pokemon} />)}
         />
-        <h1 className="pokemon__data">
+        <h1 className="pokemon__data" ref={dataRef}>
           <span className="pokemon__number">{pokemon?.id ?? ''}</span> -{' '}
           <span className="pokemon__name">{pokemon?.name.replace(/-/g, ' ') ?? ''}</span>
         </h1>

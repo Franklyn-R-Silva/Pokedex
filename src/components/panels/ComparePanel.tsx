@@ -9,7 +9,7 @@ const STAT_ORDER: StatKey[] = ['hp', 'attack', 'defense', 'special-attack', 'spe
 
 // Reaproveita setupCompare (até 4 Pokémon → radar + tabela) + autocomplete.
 export function ComparePanel({ getNames }: { getNames: () => string[] }) {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const formRef = useRef<HTMLFormElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestRef = useRef<HTMLUListElement>(null);
@@ -36,6 +36,10 @@ export function ComparePanel({ getNames }: { getNames: () => string[] }) {
       });
     }
   }, [getNames]);
+
+  useEffect(() => {
+    ctlRef.current?.refresh();
+  }, [lang]);
 
   const labels = t('statLabels');
   const names = t('statNames');

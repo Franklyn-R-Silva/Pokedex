@@ -22,6 +22,8 @@ const L = {
   whatsMissing: ['Análise — o que falta', 'Analysis — what to improve'],
   catalog: ['Catálogo', 'Catalog'],
   analysis: ['Análise', 'Analysis'],
+  meta: ['Decks do meta:', 'Meta decks:'],
+  buildingMeta: ['Montando deck…', 'Building deck…'],
 } as const;
 
 export function dl(lang: Lang, key: keyof typeof L): string {
