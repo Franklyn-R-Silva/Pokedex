@@ -3,8 +3,12 @@ const BASE_URL = 'https://pokeapi.co/api/v2/pokemon';
 // Total de Pokémon disponíveis na PokéAPI (usado para limitar a navegação).
 export const MAX_POKEMON = 1025;
 
-// Cache em memória para evitar refetch ao navegar entre Pokémon já vistos.
+const NAMES_KEY = 'pokedex-names';
+
+// Caches em memória para evitar refetch ao navegar/repetir buscas.
 const cache = new Map();
+const speciesCache = new Map();
+const typeCache = new Map();
 
 /**
  * Busca um Pokémon pelo nome ou número.
@@ -32,46 +36,104 @@ export async function fetchPokemon(idOrName) {
 }
 
 /**
- * Carrega a lista completa de nomes de Pokémon (para o autocomplete da busca).
+ * Carrega a lista completa de nomes (para o autocomplete). Guarda em
+ * localStorage para não rebaixar os 1025 nomes a cada visita.
  * @returns {Promise<string[]>}
  */
 export async function fetchAllPokemonNames() {
   try {
+    const cached = localStorage.getItem(NAMES_KEY);
+    if (cached) return JSON.parse(cached);
+  } catch {
+    /* localStorage indisponível: segue para o fetch */
+  }
+
+  try {
     const response = await fetch(`${BASE_URL}?limit=${MAX_POKEMON}`);
     if (!response.ok) return [];
     const data = await response.json();
-    return data.results.map((pokemon) => pokemon.name);
+    const names = data.results.map((pokemon) => pokemon.name);
+    try {
+      localStorage.setItem(NAMES_KEY, JSON.stringify(names));
+    } catch {
+      /* ignora falha ao gravar cache */
+    }
+    return names;
   } catch {
     return [];
   }
 }
 
 /**
- * Resolve a melhor imagem disponível para o Pokémon.
+ * Busca (com cache) os dados de espécie de um Pokémon.
+ * @param {string} url  data.species.url
+ * @returns {Promise<object|null>}
+ */
+export async function fetchSpecies(url) {
+  if (speciesCache.has(url)) return speciesCache.get(url);
+  try {
+    const response = await fetch(url);
+    if (!response.ok) return null;
+    const data = await response.json();
+    speciesCache.set(url, data);
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+/** Descrição (flavor text) em inglês, com quebras normalizadas. */
+export function getFlavorText(species) {
+  const entry = species?.flavor_text_entries?.find((e) => e.language.name === 'en');
+  return entry ? entry.flavor_text.replace(/[\n\f\r]/g, ' ') : '';
+}
+
+/** Categoria/genus em inglês (ex.: "Seed Pokémon"). */
+export function getGenus(species) {
+  const entry = species?.genera?.find((e) => e.language.name === 'en');
+  return entry ? entry.genus : '';
+}
+
+/**
+ * Resolve a melhor imagem disponível para o Pokémon (normal ou shiny).
  * O sprite animado (black-white) só existe até a Geração V, então usamos
  * uma cadeia de fallback para não deixar imagem quebrada nas gerações novas.
  * @param {object} data
+ * @param {boolean} [shiny=false]
  * @returns {string} URL da imagem.
  */
-export function getPokemonSprite(data) {
+export function getPokemonSprite(data, shiny = false) {
   const sprites = data.sprites ?? {};
+  const animated = sprites.versions?.['generation-v']?.['black-white']?.animated;
+  const artwork = sprites.other?.['official-artwork'];
 
-  const animated = sprites.versions?.['generation-v']?.['black-white']?.animated?.front_default;
-  const officialArtwork = sprites.other?.['official-artwork']?.front_default;
-  const dreamWorld = sprites.other?.dream_world?.front_default;
+  if (shiny) {
+    return animated?.front_shiny || artwork?.front_shiny || sprites.front_shiny || '';
+  }
 
-  return animated || officialArtwork || dreamWorld || sprites.front_default || '';
+  return (
+    animated?.front_default ||
+    artwork?.front_default ||
+    sprites.other?.dream_world?.front_default ||
+    sprites.front_default ||
+    ''
+  );
 }
 
 /**
  * Imagem estática (PNG) de melhor qualidade: artwork oficial, com fallbacks.
  * @param {object} data
+ * @param {boolean} [shiny=false]
  * @returns {string}
  */
-export function getStaticImage(data) {
+export function getStaticImage(data, shiny = false) {
   const sprites = data.sprites ?? {};
+  const artwork = sprites.other?.['official-artwork'];
+  if (shiny) {
+    return artwork?.front_shiny || sprites.front_shiny || '';
+  }
   return (
-    sprites.other?.['official-artwork']?.front_default ||
+    artwork?.front_default ||
     sprites.other?.dream_world?.front_default ||
     sprites.front_default ||
     ''
@@ -81,11 +143,12 @@ export function getStaticImage(data) {
 /**
  * GIF animado (Gen V black-white). Retorna '' quando não existe (Gen VI+).
  * @param {object} data
+ * @param {boolean} [shiny=false]
  * @returns {string}
  */
-export function getAnimatedGif(data) {
-  const sprites = data.sprites ?? {};
-  return sprites.versions?.['generation-v']?.['black-white']?.animated?.front_default || '';
+export function getAnimatedGif(data, shiny = false) {
+  const animated = data.sprites?.versions?.['generation-v']?.['black-white']?.animated;
+  return (shiny ? animated?.front_shiny : animated?.front_default) || '';
 }
 
 /**
@@ -111,9 +174,8 @@ function extractIdFromUrl(url) {
  */
 export async function fetchEvolutionChain(speciesUrl) {
   try {
-    const speciesResponse = await fetch(speciesUrl);
-    if (!speciesResponse.ok) return [];
-    const species = await speciesResponse.json();
+    const species = await fetchSpecies(speciesUrl);
+    if (!species) return [];
 
     const evoResponse = await fetch(species.evolution_chain.url);
     if (!evoResponse.ok) return [];
@@ -127,6 +189,46 @@ export async function fetchEvolutionChain(speciesUrl) {
       node.evolves_to.forEach((next) => queue.push(next));
     }
     return chain;
+  } catch {
+    return [];
+  }
+}
+
+async function fetchType(url) {
+  if (typeCache.has(url)) return typeCache.get(url);
+  const response = await fetch(url);
+  if (!response.ok) return null;
+  const data = await response.json();
+  typeCache.set(url, data);
+  return data;
+}
+
+/**
+ * Calcula as fraquezas combinando as relações de dano dos tipos do Pokémon.
+ * @param {Array<{type: {name: string, url: string}}>} types  data.types
+ * @returns {Promise<Array<{name: string, multiplier: number}>>} tipos com multiplicador > 1.
+ */
+export async function fetchWeaknesses(types) {
+  try {
+    const multipliers = {};
+    for (const { type } of types) {
+      const typeData = await fetchType(type.url);
+      if (!typeData) continue;
+      const relations = typeData.damage_relations;
+      relations.double_damage_from.forEach((t) => {
+        multipliers[t.name] = (multipliers[t.name] ?? 1) * 2;
+      });
+      relations.half_damage_from.forEach((t) => {
+        multipliers[t.name] = (multipliers[t.name] ?? 1) * 0.5;
+      });
+      relations.no_damage_from.forEach((t) => {
+        multipliers[t.name] = (multipliers[t.name] ?? 1) * 0;
+      });
+    }
+    return Object.entries(multipliers)
+      .filter(([, m]) => m > 1)
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, multiplier]) => ({ name, multiplier }));
   } catch {
     return [];
   }

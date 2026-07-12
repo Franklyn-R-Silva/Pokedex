@@ -500,6 +500,77 @@ main {
   text-decoration: underline;
 }
 
+/* ---------- Toolbar (aleatório / shiny / som / compartilhar) ---------- */
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 425px;
+}
+
+.btn-tool {
+  border: none;
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #3a444d;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+  transition:
+    transform 0.12s ease,
+    filter 0.2s ease;
+}
+
+.btn-tool:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.btn-tool:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-shiny.is-active {
+  background: var(--type-color);
+  color: #fff;
+}
+
+/* ---------- Genus / descrição / fraquezas ---------- */
+
+.details__genus {
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--type-color);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.details__genus:empty {
+  display: none;
+}
+
+.details__description {
+  text-align: center;
+  font-size: 0.85rem;
+  color: #555;
+  line-height: 1.4;
+  margin-bottom: 16px;
+}
+
+.details__weaknesses {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
 /* ---------- Modo escuro ---------- */
 
 html.dark body {
@@ -552,6 +623,15 @@ html.dark .suggestions {
 
 html.dark .suggestion {
   color: #e6e6e6;
+}
+
+html.dark .btn-tool {
+  background: #1c2033;
+  color: #e6e6e6;
+}
+
+html.dark .details__description {
+  color: #c9c9c9;
 }
 
 html.dark .theme-toggle {

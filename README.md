@@ -11,12 +11,12 @@
   <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=javascript&logoColor=black" alt="JavaScript" />
   <img src="https://img.shields.io/badge/Vite-646CFF?style=flat&logo=vite&logoColor=white" alt="Vite" />
   <img src="https://img.shields.io/badge/PokéAPI-EF5350?style=flat&logo=pokemon&logoColor=white" alt="PokéAPI" />
-  <img src="https://img.shields.io/badge/deploy-Netlify-00C7B7?style=flat&logo=netlify&logoColor=white" alt="Netlify" />
+  <img src="https://img.shields.io/badge/deploy-Cloudflare%20Pages-F38020?style=flat&logo=cloudflare&logoColor=white" alt="Cloudflare Pages" />
   <img src="https://img.shields.io/badge/license-MIT-green?style=flat" alt="License MIT" />
 </p>
 
 <p align="center">
-  <a href="https://pokedex-franklyn.netlify.app/"><strong>🌐 Acessar o demo ao vivo »</strong></a>
+  <a href="https://pokedex.devfrs.com/"><strong>🌐 Acessar o demo ao vivo »</strong></a>
 </p>
 
 ---
@@ -35,18 +35,22 @@
 - ⬅️ ➡️ Navegar entre os Pokémon com os botões **Prev**/**Next** ou as **setas do teclado**
 - 🏷️ Ver **tipos** (com cores oficiais), **altura**, **peso** e **stats** em barras
 - 🧬 Ver **habilidades** (destacando as ocultas) e a **cadeia de evolução** (clicável)
+- 🛡️ Ver **fraquezas** por tipo e a **descrição** (flavor text) do Pokémon
+- 🎲 **Pokémon aleatório**, ✨ **shiny**, 🔊 **cry** (som) e 🔗 **link compartilhável** (`?pokemon=ID`)
 - 🎨 **Tema por tipo**: as cores da interface mudam conforme o Pokémon
 - 🌙 **Modo escuro** e ⭐ **favoritar Pokémon** (persistidos no navegador)
-- ⬇️ **Baixar** a imagem estática (**PNG**) e o **GIF** animado do Pokémon
+- ⬇️ **Baixar** a imagem estática (**PNG**) e o **GIF** animado (respeitando o shiny)
+- 📲 **PWA**: instalável no celular e funciona **offline**
 - 📱 Layout **responsivo** para celular
-- ⚡ **Cache** de requisições e mensagens de erro/carregamento
+- ⚡ **Cache** de requisições (memória + `localStorage`) e mensagens de erro/carregamento
 
 ## 🛠️ Tecnologias
 
 - **HTML5** — estrutura
 - **CSS3** — estilização (tema por tipo, responsivo, `clamp()` para tipografia)
 - **JavaScript (ES6+)** — módulos ES, `fetch` e `async/await`
-- **[Vite](https://vitejs.dev/)** — dev server e build
+- **[Vite](https://vitejs.dev/)** + **vite-plugin-pwa** — dev server, build e PWA/offline
+- **[Vitest](https://vitest.dev/)** — testes unitários
 - **ESLint + Prettier + EditorConfig** — qualidade e consistência de código
 - **GitHub Actions** — CI (lint + build) a cada push/PR
 - **[PokéAPI](https://pokeapi.co/)** — fonte dos dados
@@ -80,6 +84,7 @@ Acesse o endereço exibido no terminal (por padrão `http://localhost:5173`).
 | `npm run preview` | Pré-visualiza o build de produção          |
 | `npm run lint`    | Verifica o código com ESLint               |
 | `npm run format`  | Formata o código com Prettier              |
+| `npm run test`    | Roda os testes unitários (Vitest)          |
 
 ## 📂 Estrutura do projeto
 
@@ -92,13 +97,15 @@ Acesse o endereço exibido no terminal (por padrão `http://localhost:5173`).
 │   ├── pokemonTypes.js     # Cores e traduções dos tipos
 │   ├── storage.js          # Tema e favoritos (localStorage)
 │   ├── autocomplete.js     # Sugestões de busca por substring
+│   ├── *.test.js           # Testes (Vitest)
 │   └── style.css           # Estilos
 ├── public/
 │   ├── images/pokedex.png  # Imagem do dispositivo
-│   └── favicons/           # Favicon
+│   ├── favicons/           # Favicon
+│   └── _redirects          # Fallback de SPA (Cloudflare Pages)
 ├── .github/workflows/ci.yml # CI (lint + build)
 ├── ARCHITECTURE.md         # Documentação técnica
-├── vite.config.js
+├── vite.config.js          # Vite + PWA
 └── package.json
 ```
 
@@ -129,6 +136,10 @@ O fluxo está dividido em módulos:
 - [x] Layout **responsivo** para celular
 - [x] Adicionar **habilidades** e cadeia de evolução
 - [x] Modo **escuro** e favoritar Pokémon
+- [x] **Fraquezas**, **descrição**, **aleatório**, **shiny**, **cry** e **link compartilhável**
+- [x] **PWA** (offline) e **testes** (Vitest)
+- [ ] Filtrar por **tipo** e **geração**
+- [ ] Comparar dois Pokémon lado a lado
 
 ## 🙏 Créditos
 

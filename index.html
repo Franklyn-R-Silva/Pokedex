@@ -6,11 +6,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Pokédex web que consome a PokéAPI. Pesquise por nome ou número, veja tipos, stats, habilidades e evolução, e baixe a imagem do Pokémon."
+      content="Pokédex web que consome a PokéAPI. Pesquise por nome ou número, veja tipos, stats, habilidades, fraquezas e evolução, ouça o cry e baixe a imagem do Pokémon."
     />
     <meta name="author" content="Franklyn" />
+    <meta name="theme-color" content="#ef5350" />
+
+    <!-- Open Graph / redes sociais -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Pokédex" />
+    <meta
+      property="og:description"
+      content="Pesquise Pokémon por nome ou número: tipos, stats, habilidades, fraquezas, evolução e download da imagem."
+    />
+    <meta property="og:image" content="/images/pokedex.png" />
+    <meta property="og:url" content="https://pokedex.devfrs.com/" />
+    <meta name="twitter:card" content="summary_large_image" />
 
     <link rel="icon" href="/favicons/favicon-16x16.png" />
+    <link rel="apple-touch-icon" href="/images/pokedex.png" />
 
     <link rel="preconnect" href="https://pokeapi.co" />
     <link rel="preconnect" href="https://raw.githubusercontent.com" />
@@ -42,6 +55,7 @@
             role="combobox"
             aria-autocomplete="list"
             aria-expanded="false"
+            aria-label="Buscar Pokémon por nome ou número"
             required
           />
           <ul class="suggestions" role="listbox"></ul>
@@ -53,8 +67,18 @@
         <img src="/images/pokedex.png" alt="pokedex" class="pokedex" />
       </div>
 
-      <section class="details">
+      <div class="toolbar">
+        <button class="btn-tool btn-random" type="button">🎲 Aleatório</button>
+        <button class="btn-tool btn-shiny" type="button" aria-pressed="false">✨ Shiny</button>
+        <button class="btn-tool btn-cry" type="button" disabled>🔊 Som</button>
+        <button class="btn-tool btn-share" type="button" disabled>🔗 Compartilhar</button>
+      </div>
+
+      <section class="details" aria-live="polite">
         <div class="details__types"></div>
+
+        <p class="details__genus"></p>
+        <p class="details__description"></p>
 
         <div class="details__meta">
           <div>
@@ -66,6 +90,9 @@
             <span class="weight"></span>
           </div>
         </div>
+
+        <h2 class="section-title">Fraquezas</h2>
+        <div class="details__weaknesses"></div>
 
         <h2 class="section-title">Stats</h2>
         <ul class="details__stats"></ul>

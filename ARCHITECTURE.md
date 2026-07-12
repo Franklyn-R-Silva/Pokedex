@@ -30,6 +30,10 @@ Navegador
 - `fetchAllPokemonNames()`: carrega a lista completa de nomes (usada no autocomplete da busca).
 - `getPokemonSprite(data)`: resolve a imagem via cadeia de fallback — **animado (Gen V) → artwork oficial → dream world → sprite padrão**. Necessário porque o sprite animado é `null` na API para Pokémon de gerações mais novas.
 - `fetchEvolutionChain(speciesUrl)`: segue `species → evolution_chain` e percorre a árvore (incluindo ramificações, como a do Eevee), retornando `[{ name, id }]`. O id é extraído da URL da espécie, evitando requisições extras para montar as imagens (via `getArtworkById`).
+- `fetchSpecies(url)` (com cache) + `getFlavorText`/`getGenus`: descrição e categoria da espécie. O mesmo cache serve à evolução, evitando refetch.
+- `fetchWeaknesses(types)`: combina as `damage_relations` de cada tipo (com cache por tipo) e retorna os tipos com multiplicador > 1.
+- `getPokemonSprite`/`getStaticImage`/`getAnimatedGif` aceitam um flag `shiny` para alternar entre normal e brilhante.
+- `fetchAllPokemonNames()` memoriza a lista em `localStorage` para não rebaixar 1025 nomes a cada visita.
 - `MAX_POKEMON`: total de Pokémon; limita o botão Next.
 
 ### `src/pokemonTypes.js` — tipos
@@ -62,8 +66,9 @@ Imagens e favicons ficam em `public/` e são referenciados por caminho absoluto 
 
 ## Build e qualidade
 
-- **Vite** gera o bundle otimizado em `dist/` (`base: './'` para funcionar em subpastas / Netlify).
-- **ESLint** (flat config) e **Prettier** garantem consistência; ambos rodam no CI (GitHub Actions) a cada push/PR.
+- **Vite** gera o bundle otimizado em `dist/`. Deploy no **Cloudflare Pages** (build: `npm run build`, saída: `dist`); `public/_redirects` faz o fallback de SPA.
+- **vite-plugin-pwa** gera o service worker e o manifest: a app é instalável e faz cache offline da PokéAPI e dos sprites (estratégia `CacheFirst`).
+- **Vitest** cobre a lógica pura (`filterNames`, resolução de sprites, favoritos/tema). **ESLint** (flat config) e **Prettier** garantem consistência; rodam no CI (GitHub Actions) a cada push/PR.
 
 ## Dados da PokéAPI
 

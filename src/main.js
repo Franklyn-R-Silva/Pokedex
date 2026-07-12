@@ -3,6 +3,10 @@ import {
   fetchPokemon,
   fetchAllPokemonNames,
   fetchEvolutionChain,
+  fetchSpecies,
+  fetchWeaknesses,
+  getFlavorText,
+  getGenus,
   getPokemonSprite,
   getStaticImage,
   getAnimatedGif,
@@ -25,11 +29,18 @@ const buttonNext = document.querySelector('.btn-next');
 const buttonDownloadPng = document.querySelector('.btn-download--png');
 const buttonDownloadGif = document.querySelector('.btn-download--gif');
 const buttonFavorite = document.querySelector('.btn-favorite');
+const buttonRandom = document.querySelector('.btn-random');
+const buttonShiny = document.querySelector('.btn-shiny');
+const buttonCry = document.querySelector('.btn-cry');
+const buttonShare = document.querySelector('.btn-share');
 const themeToggle = document.querySelector('.theme-toggle');
 
 const typesContainer = document.querySelector('.details__types');
+const genusEl = document.querySelector('.details__genus');
+const descriptionEl = document.querySelector('.details__description');
 const heightValue = document.querySelector('.height');
 const weightValue = document.querySelector('.weight');
+const weaknessesContainer = document.querySelector('.details__weaknesses');
 const statsContainer = document.querySelector('.details__stats');
 const abilitiesContainer = document.querySelector('.details__abilities');
 const evolutionContainer = document.querySelector('.details__evolution');
@@ -49,6 +60,8 @@ const STAT_LABELS = {
 let searchPokemon = 1;
 let currentPokemon = null; // dados completos do Pokémon exibido.
 let currentImages = null; // { png, gif, name } do Pokémon exibido (para download).
+let currentCry = ''; // URL do cry do Pokémon exibido.
+let shiny = false; // exibindo a versão shiny?
 let requestId = 0; // token para descartar renders assíncronos obsoletos.
 let allNames = []; // todos os nomes de Pokémon (para o autocomplete).
 
@@ -64,9 +77,12 @@ function showError(message) {
   details.classList.remove('is-visible');
   currentPokemon = null;
   currentImages = null;
+  currentCry = '';
   buttonDownloadPng.disabled = true;
   buttonDownloadGif.disabled = true;
   buttonFavorite.disabled = true;
+  buttonCry.disabled = true;
+  buttonShare.disabled = true;
   document.documentElement.style.removeProperty('--type-color');
 }
 
@@ -120,6 +136,38 @@ function renderAbilities(abilities) {
     }
     abilitiesContainer.appendChild(chip);
   });
+}
+
+async function renderWeaknesses(types, reqId) {
+  weaknessesContainer.innerHTML = '<span class="muted">Carregando...</span>';
+
+  const weaknesses = await fetchWeaknesses(types);
+  if (reqId !== requestId) return;
+
+  weaknessesContainer.innerHTML = '';
+  if (weaknesses.length === 0) {
+    weaknessesContainer.innerHTML = '<span class="muted">Nenhuma</span>';
+    return;
+  }
+
+  weaknesses.forEach(({ name, multiplier }) => {
+    const badge = document.createElement('span');
+    badge.className = 'type-badge';
+    badge.style.backgroundColor = getTypeColor(name);
+    badge.textContent = multiplier > 2 ? `${getTypeLabel(name)} ×4` : getTypeLabel(name);
+    weaknessesContainer.appendChild(badge);
+  });
+}
+
+async function renderSpeciesInfo(speciesUrl, reqId) {
+  genusEl.textContent = '';
+  descriptionEl.textContent = '';
+
+  const species = await fetchSpecies(speciesUrl);
+  if (reqId !== requestId || !species) return;
+
+  genusEl.textContent = getGenus(species);
+  descriptionEl.textContent = getFlavorText(species);
 }
 
 async function renderEvolution(speciesUrl, reqId) {
@@ -196,6 +244,27 @@ function renderFavorites() {
   });
 }
 
+// Atualiza a imagem exibida e os alvos de download conforme o estado shiny.
+function updateImages() {
+  if (!currentPokemon) return;
+  const data = currentPokemon;
+  const baseName = shiny ? `${data.name}-shiny` : data.name;
+
+  pokemonImage.src = getPokemonSprite(data, shiny);
+  const png = getStaticImage(data, shiny);
+  const gif = getAnimatedGif(data, shiny);
+  currentImages = { png, gif, name: baseName };
+  buttonDownloadPng.disabled = !png;
+  buttonDownloadGif.disabled = !gif;
+  buttonDownloadGif.title = gif ? '' : 'Sem GIF animado para este Pokémon';
+}
+
+function updateUrl(id) {
+  const url = new URL(window.location.href);
+  url.searchParams.set('pokemon', id);
+  window.history.replaceState({}, '', url);
+}
+
 function renderDetails(data, reqId) {
   const primaryType = data.types[0]?.type?.name;
   document.documentElement.style.setProperty('--type-color', getTypeColor(primaryType));
@@ -205,6 +274,8 @@ function renderDetails(data, reqId) {
   weightValue.textContent = `${(data.weight / 10).toFixed(1)} kg`;
   renderStats(data.stats);
   renderAbilities(data.abilities);
+  renderSpeciesInfo(data.species.url, reqId);
+  renderWeaknesses(data.types, reqId);
   renderEvolution(data.species.url, reqId);
 
   details.classList.add('is-visible');
@@ -229,24 +300,21 @@ async function renderPokemon(pokemon) {
     return;
   }
 
-  const sprite = getPokemonSprite(data);
   pokemonImage.style.display = 'block';
-  pokemonImage.src = sprite;
   pokemonImage.alt = data.name;
   pokemonName.innerHTML = data.name;
   pokemonNumber.innerHTML = data.id;
   input.value = '';
   searchPokemon = data.id;
 
-  const png = getStaticImage(data);
-  const gif = getAnimatedGif(data);
   currentPokemon = data;
-  currentImages = { png, gif, name: data.name };
-  buttonDownloadPng.disabled = !png;
-  buttonDownloadGif.disabled = !gif;
-  buttonDownloadGif.title = gif ? '' : 'Sem GIF animado para este Pokémon';
+  currentCry = data.cries?.latest ?? '';
   buttonFavorite.disabled = false;
+  buttonShare.disabled = false;
+  buttonCry.disabled = !currentCry;
+  updateImages();
   updateFavoriteButton();
+  updateUrl(data.id);
 
   renderDetails(data, reqId);
 }
@@ -276,6 +344,37 @@ async function downloadImage(url, name) {
     URL.revokeObjectURL(objectUrl);
   } catch {
     window.open(url, '_blank', 'noopener');
+  }
+}
+
+function playCry() {
+  if (!currentCry) return;
+  const audio = new Audio(currentCry);
+  audio.volume = 0.4;
+  audio.play().catch(() => {
+    /* autoplay bloqueado ou formato não suportado */
+  });
+}
+
+async function sharePokemon() {
+  if (!currentPokemon) return;
+  const url = new URL(window.location.href);
+  url.searchParams.set('pokemon', currentPokemon.id);
+  const link = url.toString();
+
+  try {
+    if (navigator.share) {
+      await navigator.share({ title: 'Pokédex', text: `Veja ${currentPokemon.name}!`, url: link });
+    } else if (navigator.clipboard) {
+      await navigator.clipboard.writeText(link);
+      const original = buttonShare.textContent;
+      buttonShare.textContent = '✅ Copiado!';
+      setTimeout(() => {
+        buttonShare.textContent = original;
+      }, 1500);
+    }
+  } catch {
+    /* usuário cancelou ou API indisponível */
   }
 }
 
@@ -312,6 +411,21 @@ buttonNext.addEventListener('click', () => {
   }
 });
 
+buttonRandom.addEventListener('click', () => {
+  const id = Math.floor(Math.random() * MAX_POKEMON) + 1;
+  renderPokemon(id);
+});
+
+buttonShiny.addEventListener('click', () => {
+  shiny = !shiny;
+  buttonShiny.setAttribute('aria-pressed', String(shiny));
+  buttonShiny.classList.toggle('is-active', shiny);
+  updateImages();
+});
+
+buttonCry.addEventListener('click', playCry);
+buttonShare.addEventListener('click', sharePokemon);
+
 buttonDownloadPng.addEventListener('click', () => {
   if (currentImages?.png) downloadImage(currentImages.png, currentImages.name);
 });
@@ -347,7 +461,11 @@ setupAutocomplete({
   onSelect: (name) => renderPokemon(name),
 });
 
+// Deep link: abre direto o Pokémon indicado em ?pokemon=ID (ou o #1).
+const initialParam = new URLSearchParams(window.location.search).get('pokemon');
+searchPokemon = Number(initialParam) || 1;
+
 applyTheme(getTheme());
 renderFavorites();
-renderPokemon(searchPokemon);
+renderPokemon(initialParam || searchPokemon);
 loadNames();

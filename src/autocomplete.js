@@ -2,6 +2,26 @@
 // por teclado. Substitui o <datalist> nativo, que só sugere por prefixo.
 
 /**
+ * Filtra nomes por substring, priorizando quem começa com a busca.
+ * @param {string[]} names
+ * @param {string} query
+ * @param {number} [limit=8]
+ * @returns {string[]}
+ */
+export function filterNames(names, query, limit = 8) {
+  const q = query.toLowerCase();
+  if (!q) return [];
+  const starts = [];
+  const contains = [];
+  for (const name of names) {
+    const pos = name.indexOf(q);
+    if (pos === 0) starts.push(name);
+    else if (pos > 0) contains.push(name);
+  }
+  return [...starts, ...contains].slice(0, limit);
+}
+
+/**
  * @param {object} options
  * @param {HTMLInputElement} options.input
  * @param {HTMLElement} options.container  Lista onde as sugestões são renderizadas.
@@ -16,6 +36,7 @@ export function setupAutocomplete({ input, container, getNames, onSelect, limit 
   function close() {
     container.innerHTML = '';
     container.classList.remove('is-open');
+    input.setAttribute('aria-expanded', 'false');
     matches = [];
     activeIndex = -1;
   }
@@ -60,6 +81,7 @@ export function setupAutocomplete({ input, container, getNames, onSelect, limit 
     });
 
     container.classList.add('is-open');
+    input.setAttribute('aria-expanded', 'true');
   }
 
   function select(name) {
