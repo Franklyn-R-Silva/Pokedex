@@ -88,6 +88,44 @@ function computeDamage(
   return { dmg: Math.max(mult === 0 ? 0 : 1, Math.floor(base * variance)), mult };
 }
 
+// --- Som da batalha (WebAudio no golpe + cry real ao desmaiar) -------------
+let audioCtx: AudioContext | null = null;
+function beep(from: number, to: number, dur: number, vol: number): void {
+  try {
+    const AC =
+      window.AudioContext ??
+      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    audioCtx ??= new AC();
+    const c = audioCtx;
+    const o = c.createOscillator();
+    const g = c.createGain();
+    o.connect(g);
+    g.connect(c.destination);
+    o.type = 'square';
+    o.frequency.setValueAtTime(from, c.currentTime);
+    o.frequency.exponentialRampToValueAtTime(to, c.currentTime + dur);
+    g.gain.setValueAtTime(vol, c.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + dur);
+    o.start();
+    o.stop(c.currentTime + dur);
+  } catch {
+    /* áudio indisponível */
+  }
+}
+function playHit(mult: number): void {
+  beep(mult > 1 ? 380 : 200, 60, mult > 1 ? 0.22 : 0.16, mult > 1 ? 0.16 : 0.12);
+}
+function playCry(url: string | null | undefined): void {
+  if (!url) return;
+  try {
+    const a = new Audio(url);
+    a.volume = 0.35;
+    void a.play().catch(() => undefined);
+  } catch {
+    /* ignore */
+  }
+}
+
 export function setupBattle({ modal, content, getTeam, getNames, show }: BattleOptions): BattleControls {
   const lang = getLang;
 
@@ -341,6 +379,7 @@ export function setupBattle({ modal, content, getTeam, getNames, show }: BattleO
 
       const { dmg, mult } = computeDamage(attacker, defender, move);
       defender.hp -= dmg;
+      playHit(mult);
       defenderSide.card.classList.add('is-hit');
       floatDamage(defenderSide.card, dmg, mult);
       paint(defenderSide, defender);
@@ -358,6 +397,7 @@ export function setupBattle({ modal, content, getTeam, getNames, show }: BattleO
     const finish = (winner: Fighter, loser: Fighter, youWon: boolean): void => {
       over = true;
       moves.innerHTML = '';
+      playCry(loser.data.cries?.latest); // grito do Pokémon que desmaiou
       pushLog(`${loser.data.name} ${t('battleFainted')}`);
       if (youWon) {
         const banner = el('p', 'battle-result', `✅ ${winner.data.name} ${t('battleWins')}`);

@@ -5,6 +5,7 @@ import { useModal } from '../context/ModalContext';
 import { useAuth } from '../context/AuthContext';
 import { InfoModal } from './InfoModal';
 import { AuthModal } from './auth/AuthModal';
+import logoUrl from '../assets/logo_pokedex.webp';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -40,7 +41,7 @@ export function Header({ onOpenDeck, onOpenCards }: HeaderProps) {
 
   return (
     <header className="topbar">
-      <span className="brand">Pokédex</span>
+      <img className="brand-logo" src={logoUrl} alt="Pokédex" width="120" height="34" />
       <div className="topbar__controls">
         <button className="deck-open" type="button" onClick={onOpenCards}>
           {lang === 'pt' ? '🃟 Cartas' : '🃟 Cards'}

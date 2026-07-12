@@ -6,7 +6,7 @@ import { setupAutocomplete } from '../features/autocomplete';
 import { useI18n } from '../i18n/I18nContext';
 import { useModal } from '../context/ModalContext';
 import { Lightbox } from './Lightbox';
-import pokedexDeviceUrl from '../assets/pokedex.webp';
+import pokedexDeviceUrl from '../assets/pokedex.png';
 
 interface DeviceProps {
   pokemon: Pokemon | null;
