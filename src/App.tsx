@@ -14,8 +14,16 @@ import { TeamPanel } from './components/panels/TeamPanel';
 import { QuizPanel } from './components/panels/QuizPanel';
 import { DeckBuilder } from './components/deck/DeckBuilder';
 
+// Pokémon do dia (determinístico pela data) quando não há ?pokemon=ID.
+function pokemonOfTheDay(): number {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), 0, 0).getTime();
+  const dayOfYear = Math.floor((now.getTime() - start) / 86_400_000);
+  return ((dayOfYear * 7 + now.getFullYear()) % MAX_POKEMON) + 1;
+}
+
 function initialQuery(): string {
-  return new URLSearchParams(window.location.search).get('pokemon') ?? '1';
+  return new URLSearchParams(window.location.search).get('pokemon') ?? String(pokemonOfTheDay());
 }
 
 export function App() {

@@ -51,6 +51,7 @@ export function DetailsCard({ pokemon, shiny, onSelect }: DetailsCardProps) {
               className={`tab ${tab === id ? 'is-active' : ''}`}
               type="button"
               role="tab"
+              data-tab={id}
               aria-selected={tab === id}
               onClick={() => setTab(id)}
             >

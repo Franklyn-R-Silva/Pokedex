@@ -20,6 +20,14 @@ test('as abas do card de detalhes alternam', async ({ page }) => {
   await expect(page.locator('.details__radar .radar')).toBeVisible();
 });
 
+test('construtor de deck abre e analisa', async ({ page }) => {
+  await page.goto('/?view=deck');
+  await expect(page.locator('.deck-builder')).toBeVisible();
+  await expect(page.locator('.deck-count')).toContainText('/ 60');
+  await expect(page.locator('.deck-score__value')).toBeVisible();
+  await expect(page.locator('.deck-donut')).toBeVisible();
+});
+
 test('sem violações de acessibilidade críticas (axe)', async ({ page }) => {
   await page.goto('/?pokemon=1');
   await page.waitForTimeout(1500);
