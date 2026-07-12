@@ -7,7 +7,7 @@ import type { TcgCard, TcgAttack } from '../types';
 const API = 'https://api.pokemontcg.io/v2/cards';
 const STORE_KEY = 'pokedex-tcg';
 const SELECT =
-  'id,name,number,rarity,artist,flavorText,hp,supertype,evolvesFrom,types,subtypes,set,images,attacks,tcgplayer,cardmarket';
+  'id,name,number,rarity,artist,flavorText,hp,supertype,evolvesFrom,legalities,types,subtypes,set,images,attacks,tcgplayer,cardmarket';
 const memory = new Map<number, TcgCard[]>();
 
 // Chave opcional: sem ela a API funciona com limite reduzido (1000/dia).
@@ -30,6 +30,7 @@ interface ApiCard {
   hp?: string;
   supertype?: string;
   evolvesFrom?: string;
+  legalities?: { standard?: string; expanded?: string; unlimited?: string };
   types?: string[];
   subtypes?: string[];
   set?: { name?: string };
@@ -82,6 +83,8 @@ function toCard(c: ApiCard): TcgCard {
     hp: c.hp ?? '',
     supertype: c.supertype ?? '',
     evolvesFrom: c.evolvesFrom ?? '',
+    legalStandard: c.legalities?.standard === 'Legal',
+    legalExpanded: c.legalities?.expanded === 'Legal',
     types: c.types ?? [],
     subtypes: c.subtypes ?? [],
     artist: c.artist ?? '',

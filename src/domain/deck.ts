@@ -30,6 +30,9 @@ export interface DeckAnalysis {
   grade: string;
   issues: DeckIssue[];
   tips: DeckIssue[];
+  standardLegal: boolean;
+  expandedLegal: boolean;
+  illegalStandard: number;
 }
 
 export const DECK_SIZE = 60;
@@ -149,6 +152,11 @@ export function analyzeDeck(entries: DeckEntry[]): DeckAnalysis {
     tips.push({ level: 'ok', code: 'tipSolid' });
   }
 
+  // Legalidade de formato: todas as cartas precisam ser legais no formato.
+  const illegalStandard = entries.filter((e) => !e.card.legalStandard).length;
+  const standardLegal = entries.length > 0 && illegalStandard === 0;
+  const expandedLegal = entries.length > 0 && entries.every((e) => e.card.legalExpanded);
+
   return {
     size,
     pokemon,
@@ -163,5 +171,8 @@ export function analyzeDeck(entries: DeckEntry[]): DeckAnalysis {
     grade,
     issues,
     tips,
+    standardLegal,
+    expandedLegal,
+    illegalStandard,
   };
 }

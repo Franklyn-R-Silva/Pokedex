@@ -62,6 +62,20 @@ export function DeckAnalysis({ entries }: { entries: DeckEntry[] }) {
         </div>
       </div>
 
+      <div className="deck-legality">
+        <span className={`deck-format ${a.standardLegal ? 'is-legal' : 'is-illegal'}`}>
+          {a.standardLegal ? '✔' : '✖'} Standard
+        </span>
+        <span className={`deck-format ${a.expandedLegal ? 'is-legal' : 'is-illegal'}`}>
+          {a.expandedLegal ? '✔' : '✖'} Expanded
+        </span>
+        {a.illegalStandard > 0 && (
+          <span className="deck-format__note muted">
+            {a.illegalStandard} {lang === 'pt' ? 'fora de Standard' : 'not Standard-legal'}
+          </span>
+        )}
+      </div>
+
       <div className="deck-charts">
         <div className="deck-chart">
           <h4>{dl(lang, 'composition')}</h4>
