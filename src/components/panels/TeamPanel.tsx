@@ -1,7 +1,6 @@
 import { useRef, useEffect } from 'react';
 import { setupTeam } from '../../features/team';
 import type { TeamControls } from '../../features/team';
-import { setupBattle } from '../../features/battle';
 import type { BattleControls } from '../../features/battle';
 import { setupAutocomplete } from '../../features/autocomplete';
 import { useI18n } from '../../i18n/I18nContext';
@@ -46,17 +45,22 @@ export function TeamPanel({ getNames, onSelect }: TeamPanelProps) {
         onSelect: (name) => void teamCtl.add(name),
       });
     }
-    if (modalRef.current && contentRef.current) {
-      const modal = modalRef.current;
+  }, [getNames]);
+
+  // Code-split: o mini-jogo de batalha só é carregado no primeiro clique.
+  const openBattle = async () => {
+    if (!battleRef.current && modalRef.current && contentRef.current && teamRef.current) {
+      const { setupBattle } = await import('../../features/battle');
       battleRef.current = setupBattle({
-        modal,
+        modal: modalRef.current,
         content: contentRef.current,
-        getTeam: () => teamCtl.getTeam(),
+        getTeam: () => teamRef.current?.getTeam() ?? [],
         getNames,
         show: (m) => (m.hidden = false),
       });
     }
-  }, [getNames]);
+    battleRef.current?.open();
+  };
 
   useEffect(() => {
     teamRef.current?.refresh();
@@ -70,7 +74,7 @@ export function TeamPanel({ getNames, onSelect }: TeamPanelProps) {
     <section className="panel team">
       <div className="panel__head">
         <h2 className="panel__title">{t('teamTitle')}</h2>
-        <button className="btn-battle" type="button" onClick={() => battleRef.current?.open()}>
+        <button className="btn-battle" type="button" onClick={() => void openBattle()}>
           {t('battleButton')}
         </button>
       </div>
