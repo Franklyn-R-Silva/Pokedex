@@ -89,5 +89,5 @@ Deployed on **Cloudflare Pages** — build command `npm run build`, output direc
 
 ## License
 
-[MIT](./LICENSE) © Franklyn — [@hadesfranklyn](https://github.com/hadesfranklyn).
+[MIT](./LICENSE) © Franklyn — [@Franklyn-R-Silva](https://github.com/Franklyn-R-Silva).
 Data from the [PokéAPI](https://pokeapi.co/); Pokémon © Nintendo / Game Freak.
