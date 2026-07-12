@@ -7,7 +7,7 @@ import type { TcgCard, TcgAttack } from '../types';
 const API = 'https://api.pokemontcg.io/v2/cards';
 const STORE_KEY = 'pokedex-tcg';
 const SELECT =
-  'id,name,number,rarity,artist,flavorText,hp,types,subtypes,set,images,attacks,tcgplayer,cardmarket';
+  'id,name,number,rarity,artist,flavorText,hp,supertype,evolvesFrom,types,subtypes,set,images,attacks,tcgplayer,cardmarket';
 const memory = new Map<number, TcgCard[]>();
 
 // Chave opcional: sem ela a API funciona com limite reduzido (1000/dia).
@@ -28,6 +28,8 @@ interface ApiCard {
   artist?: string;
   flavorText?: string;
   hp?: string;
+  supertype?: string;
+  evolvesFrom?: string;
   types?: string[];
   subtypes?: string[];
   set?: { name?: string };
@@ -78,6 +80,8 @@ function toCard(c: ApiCard): TcgCard {
     setName: c.set?.name ?? '',
     number: c.number ?? '',
     hp: c.hp ?? '',
+    supertype: c.supertype ?? '',
+    evolvesFrom: c.evolvesFrom ?? '',
     types: c.types ?? [],
     subtypes: c.subtypes ?? [],
     artist: c.artist ?? '',
@@ -118,6 +122,43 @@ export async function fetchCards(dexId: number): Promise<TcgCard[]> {
     return cards;
   } catch {
     return [];
+  }
+}
+
+export interface CardSearch {
+  name?: string;
+  supertype?: string;
+  subtype?: string;
+  type?: string;
+  page?: number;
+}
+
+/** Busca cartas por nome/supertipo/subtipo/tipo (para o construtor de deck). */
+export async function searchCards(
+  opts: CardSearch,
+): Promise<{ cards: TcgCard[]; totalCount: number }> {
+  const parts: string[] = [];
+  if (opts.name?.trim()) parts.push(`name:${opts.name.trim().replace(/[^\w\s-]/g, '')}*`);
+  if (opts.supertype) parts.push(`supertype:"${opts.supertype}"`);
+  if (opts.subtype) parts.push(`subtypes:"${opts.subtype}"`);
+  if (opts.type) parts.push(`types:${opts.type}`);
+  const query = parts.join(' ') || 'supertype:Pokémon';
+
+  try {
+    const url =
+      `${API}?q=${encodeURIComponent(query)}&orderBy=-set.releaseDate` +
+      `&page=${opts.page ?? 1}&pageSize=24&select=${SELECT}`;
+    const headers: Record<string, string> = {};
+    if (API_KEY) headers['X-Api-Key'] = API_KEY;
+
+    const response = await fetch(url, { headers });
+    if (!response.ok) return { cards: [], totalCount: 0 };
+
+    const json = (await response.json()) as { data?: ApiCard[]; totalCount?: number };
+    const cards = (json.data ?? []).filter((c) => c.images?.small).map(toCard);
+    return { cards, totalCount: json.totalCount ?? cards.length };
+  } catch {
+    return { cards: [], totalCount: 0 };
   }
 }
 

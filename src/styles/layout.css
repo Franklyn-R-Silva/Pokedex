@@ -1,0 +1,106 @@
+/* ---------- Rodapé ---------- */
+
+.site-footer {
+  padding: 28px 15px 36px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.site-footer a {
+  color: var(--type-color);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.site-footer a:hover {
+  text-decoration: underline;
+}
+
+/* ---------- Responsivo (celular) ---------- */
+
+@media (max-width: 480px) {
+  .pokedex-device {
+    margin-top: 4%;
+    width: 100%;
+  }
+
+  .details,
+  .favorites,
+  .panel {
+    padding: 18px;
+  }
+
+  .details__meta .height,
+  .details__meta .weight {
+    font-size: 1rem;
+  }
+
+  .type-badge {
+    font-size: 0.75rem;
+    padding: 3px 12px;
+  }
+
+  .stat {
+    grid-template-columns: 38px 1fr 32px;
+    gap: 8px;
+  }
+}
+
+/* ---------- Desktop: layout em colunas (menos scroll) ---------- */
+
+@media (min-width: 1024px) {
+  main {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 28px;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 28px 15px 56px;
+  }
+
+  .col {
+    width: 372px;
+    flex: 0 0 372px;
+  }
+
+  .col--device {
+    margin-top: 6px;
+  }
+
+  .pokedex-device {
+    margin-top: 0;
+  }
+}
+
+/* ---------- Animações ---------- */
+
+@keyframes pokemon-pop {
+  0% {
+    transform: translate(-63%, 20%) scale(0.75);
+    opacity: 0.3;
+  }
+  60% {
+    transform: translate(-63%, 20%) scale(1.06);
+  }
+  100% {
+    transform: translate(-63%, 20%) scale(1);
+    opacity: 1;
+  }
+}
+
+.pokemon__image.pop {
+  animation: pokemon-pop 0.35s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+

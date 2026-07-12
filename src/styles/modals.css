@@ -1,0 +1,281 @@
+/* ---------- Formas / EV / info topo ---------- */
+
+.details__forms:empty {
+  display: none;
+}
+
+.forms-chips,
+.forms-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.form-chip {
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-transform: capitalize;
+  transition: background 0.2s ease;
+}
+
+.form-chip:hover {
+  background: var(--type-color);
+  border-color: var(--type-color);
+  color: #fff;
+}
+
+.stat-ev {
+  list-style: none;
+  margin-top: 8px;
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  text-align: left;
+}
+
+.stat-ev strong {
+  color: var(--text);
+}
+
+.topbar-info {
+  width: 38px;
+  height: 38px;
+  font-size: 1rem;
+}
+
+.pokemon__image {
+  cursor: zoom-in;
+}
+
+/* ---------- Modais (lightbox / info) ---------- */
+
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.65);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+
+.modal[hidden] {
+  display: none;
+}
+
+.modal__box {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 24px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  text-align: center;
+}
+
+.modal__close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.modal__close:hover {
+  color: var(--text);
+}
+
+.info-modal h2 {
+  font-size: 1.1rem;
+  color: var(--text);
+  margin-bottom: 12px;
+}
+
+.info-modal p {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+.info-credit a {
+  color: var(--type-color);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.lightbox__img {
+  width: 100%;
+  max-width: 300px;
+  height: 260px;
+  object-fit: contain;
+  image-rendering: auto;
+}
+
+.lightbox__thumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 14px;
+}
+
+.lightbox__thumb {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  width: 66px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  cursor: pointer;
+}
+
+.lightbox__thumb.is-active {
+  border-color: var(--type-color);
+}
+
+.lightbox__thumb img {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+}
+
+.lightbox__thumb span {
+  font-size: 0.58rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+/* ---------- Chips clicáveis + modal de detalhe ---------- */
+
+.ability-chip.is-clickable,
+.move-chip.is-clickable {
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.ability-chip.is-clickable:hover,
+.move-chip.is-clickable:hover {
+  border-color: var(--type-color);
+  color: var(--type-color);
+}
+
+.detail-title {
+  font-size: 1.15rem;
+  color: var(--text);
+  margin-bottom: 10px;
+  text-transform: capitalize;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 14px;
+  margin-top: 14px;
+}
+
+.detail-effect {
+  font-size: 0.86rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-top: 14px;
+  text-align: left;
+}
+
+/* ---------- Skeleton (carregando) ---------- */
+
+.skeleton {
+  height: 14px;
+  border-radius: 6px;
+  margin: 6px 0;
+  background: linear-gradient(90deg, var(--surface-2) 25%, var(--border) 37%, var(--surface-2) 63%);
+  background-size: 400% 100%;
+  animation: skeleton-shimmer 1.4s ease infinite;
+}
+
+.skeleton--sm {
+  width: 60%;
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: 0 0;
+  }
+}
+
+/* ---------- Setas da evolução ---------- */
+
+.evo-arrow {
+  align-self: center;
+  color: var(--text-muted);
+  font-weight: 800;
+  font-size: 1.1rem;
+}
+
+/* ---------- Botão instalar (PWA) ---------- */
+
+.install-btn {
+  border: none;
+  background: var(--type-color);
+  color: #fff;
+  border-radius: 999px;
+  height: 38px;
+  padding: 0 14px;
+  font-weight: 700;
+  font-size: 0.8rem;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+}
+
+.install-btn[hidden] {
+  display: none;
+}
+
+/* ---------- Barras no comparar ---------- */
+
+.ctable-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.ctable-bar {
+  width: 90%;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.ctable-bar span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+}
+

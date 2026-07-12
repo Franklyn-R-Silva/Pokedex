@@ -41,7 +41,7 @@
 
 ## Tech stack
 
-TypeScript · Vite · vite-plugin-pwa · Vitest · Playwright + axe-core · ESLint + Prettier · PokéAPI.
+React 19 · TypeScript · Vite · vite-plugin-pwa · Vitest · Playwright + axe-core · ESLint + Prettier · PokéAPI · Pokémon TCG API.
 CI (GitHub Actions) runs lint, typecheck, unit tests, and build, plus an E2E
 job with an automated accessibility audit (fails on any critical WCAG 2 A/AA violation).
 

@@ -190,6 +190,8 @@ export interface TcgCard {
   setName: string;
   number: string;
   hp: string;
+  supertype: string;
+  evolvesFrom: string;
   types: string[];
   subtypes: string[];
   artist: string;

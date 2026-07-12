@@ -1,0 +1,601 @@
+/* ---------- Cards (detalhes / favoritos / painéis) ---------- */
+
+.details,
+.favorites,
+.panel {
+  width: 100%;
+  max-width: 425px;
+  padding: var(--space-5);
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+.details {
+  border-top: 5px solid var(--type-color);
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease,
+    border-color 0.4s ease;
+}
+
+.details.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.details__types {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.type-badge {
+  padding: 4px 14px;
+  border-radius: 999px;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.82rem;
+  text-transform: capitalize;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+}
+
+.type-badge--btn {
+  border: none;
+  cursor: pointer;
+  transition:
+    transform 0.12s ease,
+    filter 0.2s ease;
+}
+
+.type-badge--btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+}
+
+.details__genus {
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--type-color);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 6px;
+}
+
+.details__genus:empty {
+  display: none;
+}
+
+.details__description {
+  text-align: center;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-bottom: 18px;
+}
+
+.details__meta {
+  display: flex;
+  justify-content: space-around;
+  gap: 10px;
+  margin-bottom: 6px;
+  padding: 12px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.details__meta > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.details__meta .label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.details__meta .height,
+.details__meta .weight {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-muted);
+  text-align: left;
+  margin: 18px 0 10px;
+}
+
+.section-title::before {
+  content: '';
+  width: 4px;
+  height: 13px;
+  border-radius: 2px;
+  background: var(--type-color);
+}
+
+.details__abilities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ---------- Abas ---------- */
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin: 14px 0;
+  padding: 4px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+
+.tab {
+  flex: 1;
+  border: none;
+  background: none;
+  border-radius: 999px;
+  padding: 7px 4px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.tab.is-active {
+  background: var(--type-color);
+  color: #fff;
+}
+
+.tab-panel {
+  display: none;
+}
+
+.tab-panel.is-active {
+  display: block;
+}
+
+/* ---------- Efetividade de tipo ---------- */
+
+.eff-group {
+  margin-bottom: 12px;
+}
+
+.eff-group:last-child {
+  margin-bottom: 0;
+}
+
+.eff-group__label {
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  text-align: left;
+  margin-bottom: 6px;
+}
+
+.eff-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.stat--total {
+  margin-top: 6px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.stat--total .stat__label,
+.stat--total .stat__value {
+  color: var(--text);
+  font-weight: 800;
+}
+
+/* ---------- Flags (lendário / mítico / bebê) ---------- */
+
+.details__flags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.details__flags:empty {
+  display: none;
+}
+
+.flag {
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #fff;
+}
+
+.flag--legendary {
+  background: #d4a017;
+}
+
+.flag--mythical {
+  background: #8e44ad;
+}
+
+.flag--baby {
+  background: #e07a9c;
+}
+
+/* ---------- Grid "Sobre" ---------- */
+
+.details__about {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 14px;
+}
+
+.about-cell {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.about-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+.about-value {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.details__held {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  text-align: left;
+  margin-top: 8px;
+}
+
+.details__held:empty {
+  display: none;
+}
+
+.details__held strong {
+  color: var(--text);
+}
+
+/* ---------- Golpes / locais (recolhível + chips) ---------- */
+
+.details__moves:empty,
+.details__locations:empty {
+  display: none;
+}
+
+.collapse-toggle {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--text);
+  font-weight: 700;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.collapse-toggle:hover {
+  background: var(--type-color);
+  border-color: var(--type-color);
+  color: #fff;
+}
+
+.moves-body {
+  margin-top: 10px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.moves-body[hidden] {
+  display: none;
+}
+
+/* Busca de golpes: fica fixa no topo da lista rolável. */
+.moves-search {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+  padding: 8px 11px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+
+.moves-search:focus-within {
+  border-color: var(--type-color);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--type-color) 22%, transparent);
+}
+
+.moves-search__icon {
+  font-size: 0.85rem;
+  line-height: 1;
+  opacity: 0.7;
+}
+
+.moves-search__input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.moves-search__input:focus {
+  outline: none;
+}
+
+.moves-empty {
+  text-align: left;
+  font-size: 0.8rem;
+  padding: 4px 2px;
+}
+
+.moves-empty[hidden],
+.move-chip[hidden],
+.moves-group[hidden] {
+  display: none;
+}
+
+.moves-group {
+  margin-bottom: var(--space-3);
+}
+
+.moves-group__title {
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  text-align: left;
+  margin-bottom: 6px;
+}
+
+.moves-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.move-chip {
+  padding: 4px 9px;
+  border-radius: 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text);
+  text-transform: capitalize;
+}
+
+/* ---------- Stats ---------- */
+
+.details__radar {
+  margin: 2px 0 14px;
+}
+
+.details__radar .radar {
+  max-width: 236px;
+}
+
+.details__stats {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.stat {
+  display: grid;
+  grid-template-columns: 42px 1fr 36px;
+  align-items: center;
+  gap: 10px;
+}
+
+.stat__label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-align: left;
+}
+
+.stat__bar {
+  height: 8px;
+  background: var(--surface-2);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.stat__fill {
+  height: 100%;
+  background: var(--type-color);
+  border-radius: 999px;
+  transition: width 0.5s ease;
+}
+
+.stat__value {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text);
+  text-align: right;
+}
+
+/* ---------- Habilidades ---------- */
+
+.ability-chip {
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.ability-chip--hidden {
+  border: 1px dashed var(--type-color);
+}
+
+.ability-chip--hidden::after {
+  content: ' ✦';
+  color: var(--type-color);
+}
+
+/* ---------- Evolução ---------- */
+
+.details__evolution {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.evo-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.evo-item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.evo-item img {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+}
+
+.evo-item span {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text);
+  text-transform: capitalize;
+}
+
+.evo-item .evo-cond {
+  font-size: 0.58rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: none;
+}
+
+.muted {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+/* ---------- Ações (favoritar / baixar) ---------- */
+
+.details__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.btn-favorite {
+  flex: 1 1 100%;
+}
+
+.btn-download {
+  flex: 1 1 40%;
+}
+
+.btn-favorite,
+.btn-download {
+  padding: 12px;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.92rem;
+  cursor: pointer;
+  transition:
+    filter 0.2s ease,
+    transform 0.1s ease;
+}
+
+.btn-download {
+  background: var(--type-color);
+}
+
+.btn-favorite {
+  background: #f4b400;
+}
+
+.btn-favorite.is-active {
+  background: #e59400;
+}
+
+.btn-favorite:hover:not(:disabled),
+.btn-download:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.btn-favorite:active:not(:disabled),
+.btn-download:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.btn-favorite:disabled,
+.btn-download:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+

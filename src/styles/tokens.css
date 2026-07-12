@@ -1,0 +1,98 @@
+:root {
+  --type-color: #6ab7f5;
+
+  --bg: #eef1f7;
+  --surface: #ffffff;
+  --surface-2: #f3f5f9;
+  --text: #1f2733;
+  --text-muted: #6b7583;
+  --border: #e6e9ef;
+
+  /* Escala de espaçamento (mantém os gaps consistentes entre painéis/cards). */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 22px;
+
+  --radius: 16px;
+  --radius-sm: 10px;
+  --shadow: 0 10px 30px rgba(20, 30, 50, 0.08);
+  --shadow-sm: 0 3px 10px rgba(20, 30, 50, 0.07);
+
+  --font: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-display: 'Oxanium', sans-serif;
+}
+
+html.dark {
+  --bg: #0f1420;
+  --surface: #171d2b;
+  --surface-2: #1e2536;
+  --text: #e7ecf4;
+  --text-muted: #9aa4b4;
+  --border: #2b3346;
+  --shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  --shadow-sm: 0 3px 10px rgba(0, 0, 0, 0.35);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: var(--font);
+}
+
+body {
+  text-align: center;
+  color: var(--text);
+  /* Fallback sólido para navegadores sem color-mix() */
+  background: var(--bg);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--type-color) 42%, var(--bg)) 0%,
+    var(--bg) 440px
+  );
+  min-height: 100vh;
+  min-height: 100dvh;
+  transition:
+    background 0.4s ease,
+    color 0.3s ease;
+}
+
+:focus-visible {
+  outline: 2px solid var(--type-color);
+  outline-offset: 2px;
+}
+
+/* Foco elegante nos campos: borda tingida + anel suave (sem contorno duro). */
+.compare-input:focus,
+.compare-input:focus-visible,
+.team-input:focus,
+.team-input:focus-visible,
+.filter-type:focus,
+.filter-gen:focus,
+.filter-sort:focus {
+  outline: none;
+  border-color: var(--type-color);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--type-color) 22%, transparent);
+}
+
+/* Busca do dispositivo (retrô): só tinge a borda, preservando a sombra. */
+.input__search:focus,
+.input__search:focus-visible {
+  outline: none;
+  border-color: var(--type-color);
+}
+
+h1,
+h2,
+.brand,
+.pokemon__data,
+.section-title,
+.panel__title,
+.favorites__title,
+.compare__vs,
+.button {
+  font-family: var(--font-display);
+}
+
