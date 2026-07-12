@@ -117,6 +117,7 @@ export interface Translation {
   cardBuy: string;
   cardAttacks: string;
   cardBy: string;
+  metaDescription: string;
   quizTitle: string;
   quizNext: string;
   quizScore: string;
@@ -245,6 +246,7 @@ export const translations: Record<Lang, Translation> = {
     cardBuy: 'Ver à venda ↗',
     cardAttacks: 'Ataques',
     cardBy: 'Arte de',
+    metaDescription: 'Veja stats, tipos, fraquezas, evolução, cartas e mais na Pokédex.',
     quizTitle: '❓ Quem é esse Pokémon?',
     quizNext: 'Próximo',
     quizScore: 'Placar',
@@ -385,6 +387,7 @@ export const translations: Record<Lang, Translation> = {
     cardBuy: 'View listing ↗',
     cardAttacks: 'Attacks',
     cardBy: 'Art by',
+    metaDescription: 'See stats, types, weaknesses, evolution, cards and more in the Pokédex.',
     quizTitle: "❓ Who's that Pokémon?",
     quizNext: 'Next',
     quizScore: 'Score',

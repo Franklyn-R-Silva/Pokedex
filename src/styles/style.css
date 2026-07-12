@@ -1945,6 +1945,75 @@ html.dark .ctable .is-higher {
   filter: saturate(1.15) contrast(1.05);
 }
 
+/* Tilt holográfico 3D (segue o cursor) — cartas raras */
+.tcg-card.is-holo,
+.tcg-detail__img.is-holo {
+  transform-style: preserve-3d;
+  transition: transform 0.12s ease;
+}
+
+.tcg-card.is-holo.is-tilting,
+.tcg-detail__img.is-holo.is-tilting {
+  transform: perspective(650px) rotateX(var(--tilt-rx, 0)) rotateY(var(--tilt-ry, 0)) scale(1.06);
+  transition: none;
+}
+
+/* Brilho/holograma que segue o ponteiro (só no card-botão da galeria) */
+.tcg-card.is-holo.is-tilting::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    circle at var(--glare-x, 50%) var(--glare-y, 50%),
+    rgba(255, 255, 255, 0.55),
+    rgba(255, 255, 255, 0) 45%
+  );
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+
+.tcg-card.is-holo {
+  position: relative;
+}
+
+.tcg-detail__img.is-holo {
+  position: relative;
+}
+
+/* Loading das cartas */
+.tcg-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-5) 0;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--border);
+  border-top-color: var(--type-color);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation-duration: 2s;
+  }
+}
+
 /* Modal rico da carta (conteúdo + raridade + preço) */
 .tcg-detail {
   display: flex;

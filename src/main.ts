@@ -40,6 +40,7 @@ import { setupBattle } from './features/battle';
 import { renderMoves } from './features/moves';
 import { createDetailModals } from './features/detailModals';
 import { createCardModal } from './features/cardModal';
+import { applyTilt } from './features/tilt';
 import { radarSvg } from './features/radar';
 import { initLang, getLang, setLang, t } from './i18n';
 
@@ -450,7 +451,7 @@ async function renderCards(): Promise<void> {
   const dexId = currentPokemon.id;
   cardsLoadedFor = dexId;
 
-  cardsContainer.innerHTML = '<div class="skeleton"></div><div class="skeleton skeleton--sm"></div>';
+  cardsContainer.innerHTML = `<div class="tcg-loading"><span class="spinner" aria-hidden="true"></span>${t('loading')}</div>`;
   const cards = await fetchCards(dexId);
   if (reqId !== requestId) return;
 
@@ -474,7 +475,10 @@ async function renderCards(): Promise<void> {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'tcg-card';
-    if (isHolo(card.rarity)) btn.classList.add('is-holo');
+    if (isHolo(card.rarity)) {
+      btn.classList.add('is-holo');
+      applyTilt(btn, 10);
+    }
     const img = document.createElement('img');
     img.src = card.small;
     img.alt = `${card.name}${card.setName ? ` · ${card.setName}` : ''}`;
@@ -673,8 +677,44 @@ async function renderPokemon(pokemon: string | number): Promise<void> {
   pokemonImage.classList.add('pop');
   updateFavoriteButton();
   updateUrl(data.id);
+  updateSeo(data);
 
   renderDetails(data, reqId);
+  prefetchNeighbors(data.id);
+}
+
+// Pré-carrega o Pokémon anterior/seguinte em tempo ocioso — Prev/Next e as
+// setas ficam instantâneos (fetchPokemon já cacheia). Fallback p/ Safari.
+function prefetchNeighbors(id: number): void {
+  const schedule =
+    typeof window.requestIdleCallback === 'function'
+      ? window.requestIdleCallback.bind(window)
+      : (cb: () => void): number => window.setTimeout(cb, 400);
+  schedule(() => {
+    if (id < MAX_POKEMON) void fetchPokemon(id + 1);
+    if (id > 1) void fetchPokemon(id - 1);
+  });
+}
+
+// Atualiza título e meta tags Open Graph/Twitter para o Pokémon atual
+// (links compartilhados via ?pokemon=ID renderizam com nome e imagem certos).
+function updateSeo(data: Pokemon): void {
+  const nice = data.name.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  const title = `#${data.id} ${nice} · Pokédex`;
+  const typeNames = data.types.map((tp) => getTypeLabel(tp.type.name, getLang())).join(', ');
+  const desc = `${nice} — ${typeNames}. ${t('metaDescription')}`;
+  const image = getArtworkById(data.id);
+
+  document.title = title;
+  const setMeta = (selector: string, value: string): void => {
+    document.querySelector(selector)?.setAttribute('content', value);
+  };
+  setMeta('meta[property="og:title"]', title);
+  setMeta('meta[property="og:description"]', desc);
+  setMeta('meta[property="og:image"]', image);
+  setMeta('meta[property="og:url"]', window.location.href);
+  setMeta('meta[name="twitter:card"]', 'summary_large_image');
+  setMeta('meta[name="description"]', desc);
 }
 
 /** Baixa uma imagem por URL (blob), com fallback de abrir em nova aba. */

@@ -1,8 +1,9 @@
 // Modal rico de uma carta do TCG: arte grande + conteúdo (HP, tipos, ataques),
 // raridade e valor de mercado (TCGplayer USD / Cardmarket EUR).
 import type { TcgCard } from '../types';
-import { rarityTier, formatPrice } from '../services/tcg';
+import { rarityTier, formatPrice, isHolo } from '../services/tcg';
 import { getTypeColor } from '../domain/pokemonTypes';
+import { applyTilt } from './tilt';
 import { t } from '../i18n';
 
 interface CardModalOptions {
@@ -98,6 +99,10 @@ export function createCardModal({ modal, content, show }: CardModalOptions): (ca
     img.src = card.large;
     img.alt = card.name;
     img.loading = 'lazy';
+    if (isHolo(card.rarity)) {
+      img.classList.add('is-holo');
+      applyTilt(img, 14);
+    }
     layout.appendChild(img);
 
     const info = el('div', 'tcg-detail__info');
