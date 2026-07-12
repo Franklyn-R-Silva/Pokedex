@@ -1,0 +1,13 @@
+/* Barra de estilos — importa os módulos na ordem de cascata.
+   Cada arquivo cobre uma área/feature (ver CLAUDE.md). */
+@import './tokens.css';
+@import './header.css';
+@import './device.css';
+@import './details.css';
+@import './panels.css';
+@import './layout.css';
+@import './modals.css';
+@import './team-quiz.css';
+@import './tcg.css';
+@import './battle.css';
+@import './deck.css';

@@ -3,7 +3,7 @@ import { App } from './App';
 import { I18nProvider } from './i18n/I18nContext';
 import { ModalProvider } from './context/ModalContext';
 import { FavoritesProvider } from './context/FavoritesContext';
-import './styles/style.css';
+import './styles/index.css';
 
 // Sem StrictMode: os módulos vanilla reaproveitados (setup*) manipulam o DOM
 // de forma imperativa e não gostam do duplo-mount de efeitos do StrictMode.

@@ -1,0 +1,365 @@
+/* ---------- Cartas do TCG ---------- */
+
+.tcg-hint {
+  font-size: 0.72rem;
+  text-align: left;
+  margin-bottom: var(--space-3);
+}
+
+.tcg-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+  gap: var(--space-2);
+}
+
+.tcg-card {
+  padding: 0;
+  border: none;
+  background: none;
+  border-radius: 6px;
+  cursor: pointer;
+  line-height: 0;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.tcg-card img {
+  width: 100%;
+  border-radius: 6px;
+  box-shadow: var(--shadow-sm);
+}
+
+.tcg-card:hover {
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: var(--shadow);
+}
+
+/* Cartas raras ganham um brilho holográfico ao passar o mouse. */
+.tcg-card.is-holo:hover img {
+  box-shadow: 0 0 14px 2px color-mix(in srgb, var(--type-color) 60%, transparent);
+  filter: saturate(1.15) contrast(1.05);
+}
+
+/* Tilt holográfico 3D (segue o cursor) — cartas raras */
+.tcg-card.is-holo,
+.tcg-detail__img.is-holo {
+  transform-style: preserve-3d;
+  transition: transform 0.12s ease;
+}
+
+.tcg-card.is-holo.is-tilting,
+.tcg-detail__img.is-holo.is-tilting {
+  transform: perspective(650px) rotateX(var(--tilt-rx, 0)) rotateY(var(--tilt-ry, 0)) scale(1.06);
+  transition: none;
+}
+
+/* Brilho/holograma que segue o ponteiro (só no card-botão da galeria) */
+.tcg-card.is-holo.is-tilting::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    circle at var(--glare-x, 50%) var(--glare-y, 50%),
+    rgba(255, 255, 255, 0.55),
+    rgba(255, 255, 255, 0) 45%
+  );
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+
+.tcg-card.is-holo {
+  position: relative;
+}
+
+.tcg-detail__img.is-holo {
+  position: relative;
+}
+
+/* Loading das cartas */
+.tcg-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-5) 0;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--border);
+  border-top-color: var(--type-color);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation-duration: 2s;
+  }
+}
+
+/* Modal rico da carta (conteúdo + raridade + preço) */
+.tcg-detail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+@media (min-width: 480px) {
+  .tcg-detail {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+}
+
+.tcg-detail__img {
+  width: 160px;
+  align-self: center;
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+
+.tcg-detail__info {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+}
+
+.tcg-detail__name {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  margin-bottom: var(--space-2);
+}
+
+.tcg-detail__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: var(--space-2);
+}
+
+.tcg-rarity {
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: #fff;
+  background: var(--text-muted);
+}
+
+.tcg-rarity[data-tier='common'] {
+  background: #8b95a5;
+}
+.tcg-rarity[data-tier='uncommon'] {
+  background: #3fa34d;
+}
+.tcg-rarity[data-tier='rare'] {
+  background: #3b82f6;
+}
+.tcg-rarity[data-tier='ultra'] {
+  background: #a855f7;
+}
+.tcg-rarity[data-tier='secret'] {
+  background: linear-gradient(90deg, #f59e0b, #ef4444, #a855f7, #3b82f6);
+}
+
+.tcg-hp-badge {
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+
+.tcg-detail__meta {
+  font-size: 0.74rem;
+  margin-bottom: var(--space-3);
+}
+
+.tcg-price {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: var(--space-3);
+  margin-bottom: var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+
+.tcg-price__label {
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.tcg-price__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: baseline;
+}
+
+.tcg-price__value {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #16a34a;
+}
+
+.tcg-price__value--eur {
+  font-size: 1rem;
+  color: var(--text-muted);
+}
+
+.tcg-price__src {
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.tcg-price__updated {
+  font-size: 0.66rem;
+}
+
+.tcg-price__buy {
+  align-self: flex-start;
+  margin-top: 4px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--type-color);
+  text-decoration: none;
+}
+
+.tcg-price__buy:hover {
+  text-decoration: underline;
+}
+
+.tcg-section-title {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: var(--space-2);
+}
+
+.tcg-attack {
+  padding: var(--space-2) 0;
+  border-top: 1px solid var(--border);
+}
+
+.tcg-attack__head {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+  font-weight: 700;
+  font-size: 0.82rem;
+}
+
+.tcg-attack__damage {
+  color: var(--type-color);
+}
+
+.tcg-attack__cost {
+  font-size: 0.68rem;
+}
+
+.tcg-attack__text {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.tcg-detail__flavor {
+  margin-top: var(--space-3);
+  font-size: 0.76rem;
+  font-style: italic;
+  color: var(--text-muted);
+}
+
+
+/* Carta girável (análise 3D) */
+.tcg-rotate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  perspective: 1000px;
+}
+
+.tcg-rotate__inner {
+  position: relative;
+  width: 180px;
+  transform-style: preserve-3d;
+  cursor: grab;
+  transition: transform 0.08s ease;
+  touch-action: none;
+}
+
+.tcg-rotate__inner:active {
+  cursor: grabbing;
+}
+
+.tcg-rotate__inner.is-spinning {
+  animation: tcg-spin 0.9s ease;
+}
+
+@keyframes tcg-spin {
+  to {
+    transform: rotateY(360deg);
+  }
+}
+
+.tcg-rotate__img {
+  width: 100%;
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  display: block;
+  backface-visibility: hidden;
+}
+
+.tcg-rotate__glare {
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  background: radial-gradient(
+    circle at var(--gx, 50%) 30%,
+    rgba(255, 255, 255, 0.5),
+    rgba(255, 255, 255, 0) 55%
+  );
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+
+.tcg-rotate__spin {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.tcg-rotate__spin:hover {
+  border-color: var(--type-color);
+}

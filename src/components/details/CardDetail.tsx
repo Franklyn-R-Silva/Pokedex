@@ -1,8 +1,8 @@
-import { useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
+import type { PointerEvent as ReactPointerEvent } from 'react';
 import type { TcgCard } from '../../types';
-import { rarityTier, formatPrice, isHolo } from '../../services/tcg';
+import { rarityTier, formatPrice } from '../../services/tcg';
 import { getTypeColor } from '../../domain/pokemonTypes';
-import { applyTilt } from '../../features/tilt';
 import { useI18n } from '../../i18n/I18nContext';
 
 // Energias do TCG → tipos da PokéAPI (para reaproveitar as cores).
@@ -13,15 +13,60 @@ const TCG_TYPE: Record<string, string> = {
   lightning: 'electric',
 };
 
-// Modal rico da carta: arte grande (tilt), conteúdo, raridade e preço.
+const reduce =
+  typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// Carta girável para análise de perto: arraste para rotacionar em 3D + botão
+// de giro completo. O brilho holográfico acompanha a rotação.
+function RotatingCard({ card }: { card: TcgCard }) {
+  const [rot, setRot] = useState({ x: 0, y: 0 });
+  const [spinning, setSpinning] = useState(false);
+  const drag = useRef<{ x: number; y: number } | null>(null);
+
+  const onDown = (e: ReactPointerEvent) => {
+    drag.current = { x: e.clientX - rot.y, y: e.clientY + rot.x };
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+  };
+  const onMove = (e: ReactPointerEvent) => {
+    if (!drag.current || reduce) return;
+    setRot({
+      y: Math.max(-180, Math.min(180, e.clientX - drag.current.x)),
+      x: Math.max(-80, Math.min(80, drag.current.y - e.clientY)),
+    });
+  };
+  const onUp = () => (drag.current = null);
+
+  const spin = () => {
+    if (reduce) return;
+    setSpinning(true);
+    window.setTimeout(() => setSpinning(false), 900);
+  };
+
+  const glare = 50 + rot.y / 3.6;
+
+  return (
+    <div className="tcg-rotate">
+      <div
+        className={`tcg-rotate__inner ${spinning ? 'is-spinning' : ''}`}
+        style={{ transform: `rotateX(${rot.x}deg) rotateY(${rot.y}deg)` }}
+        onPointerDown={onDown}
+        onPointerMove={onMove}
+        onPointerUp={onUp}
+        onPointerLeave={onUp}
+      >
+        <img className="tcg-rotate__img" src={card.large} alt={card.name} />
+        <span className="tcg-rotate__glare" style={{ '--gx': `${glare}%` } as React.CSSProperties} />
+      </div>
+      <button type="button" className="tcg-rotate__spin" onClick={spin} aria-label="Girar carta">
+        🔄
+      </button>
+    </div>
+  );
+}
+
+// Modal rico da carta: análise girável + conteúdo, raridade e preço.
 export function CardDetail({ card }: { card: TcgCard }) {
   const { t } = useI18n();
-  const imgRef = useRef<HTMLImageElement>(null);
-  const holo = isHolo(card.rarity);
-
-  useEffect(() => {
-    if (holo && imgRef.current) applyTilt(imgRef.current, 14);
-  }, [holo]);
 
   const meta = [
     card.setName,
@@ -31,13 +76,7 @@ export function CardDetail({ card }: { card: TcgCard }) {
 
   return (
     <div className="tcg-detail">
-      <img
-        ref={imgRef}
-        className={`tcg-detail__img ${holo ? 'is-holo' : ''}`}
-        src={card.large}
-        alt={card.name}
-        loading="lazy"
-      />
+      <RotatingCard card={card} />
       <div className="tcg-detail__info">
         <h2 className="tcg-detail__name">{card.name}</h2>
 
