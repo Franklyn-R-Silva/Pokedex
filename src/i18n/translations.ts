@@ -77,6 +77,7 @@ export interface Translation {
   infoData: string;
   infoTranslate: string;
   infoShortcut: string;
+  install: string;
   movePower: string;
   moveAccuracy: string;
   movePp: string;
@@ -162,6 +163,7 @@ export const translations: Record<Lang, Translation> = {
     infoData: 'Dados fornecidos pela PokéAPI.',
     infoTranslate: 'Os textos em português são traduzidos automaticamente (a PokéAPI não tem PT).',
     infoShortcut: 'Dica: tecle "/" para buscar e ←/→ para navegar.',
+    install: '⬇ Instalar',
     movePower: 'Poder',
     moveAccuracy: 'Precisão',
     movePp: 'PP',
@@ -259,6 +261,7 @@ export const translations: Record<Lang, Translation> = {
     infoData: 'Data provided by the PokéAPI.',
     infoTranslate: 'Portuguese text is machine-translated (the PokéAPI has no PT).',
     infoShortcut: 'Tip: press "/" to search and ←/→ to navigate.',
+    install: '⬇ Install',
     movePower: 'Power',
     moveAccuracy: 'Accuracy',
     movePp: 'PP',

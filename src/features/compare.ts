@@ -90,8 +90,9 @@ export function setupCompare({ form, input, chipsEl, resultEl }: CompareOptions)
       const values = selected.map((p) => statValue(p, key));
       const max = Math.max(...values);
       html += `<div class="ctable-row" style="grid-template-columns:${cols}"><span class="ctable-label">${escapeHtml(labels[key])}</span>`;
-      values.forEach((v) => {
-        html += `<span class="${v === max ? 'is-higher' : ''}">${v}</span>`;
+      values.forEach((v, i) => {
+        const pct = Math.min((v / 255) * 100, 100);
+        html += `<div class="ctable-cell"><span class="${v === max ? 'is-higher' : ''}">${v}</span><div class="ctable-bar"><span style="width:${pct}%;background:${COLORS[i]}"></span></div></div>`;
       });
       html += '</div>';
     });

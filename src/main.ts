@@ -62,6 +62,20 @@ const STAT_ORDER: StatKey[] = [
 // A imagem do dispositivo é empacotada pelo Vite (URL com hash, cacheada pelo SW).
 qs<HTMLImageElement>('.pokedex').src = pokedexDeviceUrl;
 
+const skeletonRows = (n: number): string =>
+  Array.from({ length: n }, () => '<div class="skeleton"></div>').join('');
+
+let lastFocused: HTMLElement | null = null;
+function showModal(modal: HTMLElement): void {
+  lastFocused = document.activeElement as HTMLElement | null;
+  modal.hidden = false;
+  modal.querySelector<HTMLButtonElement>('.modal__close')?.focus();
+}
+function hideModal(modal: HTMLElement): void {
+  modal.hidden = true;
+  lastFocused?.focus();
+}
+
 const pokemonData = qs<HTMLElement>('.pokemon__data');
 const pokemonName = qs<HTMLElement>('.pokemon__name');
 const pokemonNumber = qs<HTMLElement>('.pokemon__number');
@@ -238,7 +252,7 @@ function renderAbilities(abilities: PokemonAbility[]): void {
 }
 
 async function renderEffectiveness(types: PokemonType[], reqId: number): Promise<void> {
-  effectivenessContainer.innerHTML = `<span class="muted">${t('loading')}</span>`;
+  effectivenessContainer.innerHTML = skeletonRows(2);
 
   const eff = await fetchEffectiveness(types);
   if (reqId !== requestId) return;
@@ -295,7 +309,7 @@ async function renderSpecies(data: Pokemon, reqId: number): Promise<void> {
   genusEl.textContent = '';
   descriptionEl.textContent = '';
   flagsContainer.innerHTML = '';
-  aboutContainer.innerHTML = '';
+  aboutContainer.innerHTML = skeletonRows(4);
 
   const species = await fetchSpecies(data.species.url);
   if (reqId !== requestId || !species) return;
@@ -323,6 +337,7 @@ async function renderSpecies(data: Pokemon, reqId: number): Promise<void> {
     flagsContainer.appendChild(badge);
   });
 
+  aboutContainer.innerHTML = '';
   aboutRows(data, species, t('genderless'), getLang()).forEach(({ key, value }) => {
     const cell = document.createElement('div');
     cell.className = 'about-cell';
@@ -458,7 +473,7 @@ async function renderEncounters(url: string, reqId: number): Promise<void> {
 }
 
 async function renderEvolution(speciesUrl: string, reqId: number): Promise<void> {
-  evolutionContainer.innerHTML = `<span class="muted">${t('loading')}</span>`;
+  evolutionContainer.innerHTML = skeletonRows(1);
 
   const chain = await fetchEvolutionChain(speciesUrl);
   if (reqId !== requestId) return;
@@ -470,7 +485,7 @@ async function renderEvolution(speciesUrl: string, reqId: number): Promise<void>
   }
 
   const lang = getLang();
-  chain.forEach(({ name, id, detail }) => {
+  chain.forEach(({ name, id, detail }, index) => {
     const item = document.createElement('button');
     item.type = 'button';
     item.className = 'evo-item';
@@ -495,6 +510,13 @@ async function renderEvolution(speciesUrl: string, reqId: number): Promise<void>
 
     item.addEventListener('click', () => void renderPokemon(name));
     evolutionContainer.appendChild(item);
+
+    if (index < chain.length - 1) {
+      const arrow = document.createElement('span');
+      arrow.className = 'evo-arrow';
+      arrow.textContent = '→';
+      evolutionContainer.appendChild(arrow);
+    }
   });
 }
 
@@ -803,13 +825,13 @@ function openLightbox(): void {
   });
 
   setMain(gallery[0].url);
-  lightbox.hidden = false;
+  showModal(lightbox);
 }
 
 // Modal de detalhes de habilidade (efeito) — endpoint /ability.
 async function openAbilityModal(url: string, title: string): Promise<void> {
   detailContent.innerHTML = `<span class="muted">${t('loading')}</span>`;
-  detailModal.hidden = false;
+  showModal(detailModal);
   const data = await fetchAbility(url);
   detailContent.innerHTML = '';
 
@@ -831,7 +853,7 @@ async function openAbilityModal(url: string, title: string): Promise<void> {
 // Modal de detalhes de golpe (tipo/poder/precisão/PP/categoria/efeito) — /move.
 async function openMoveModal(url: string, name: string): Promise<void> {
   detailContent.innerHTML = `<span class="muted">${t('loading')}</span>`;
-  detailModal.hidden = false;
+  showModal(detailModal);
   const data = await fetchMove(url);
   detailContent.innerHTML = '';
 
@@ -887,16 +909,14 @@ async function openMoveModal(url: string, name: string): Promise<void> {
 }
 
 pokemonImage.addEventListener('click', openLightbox);
-topbarInfo.addEventListener('click', () => {
-  infoModal.hidden = false;
-});
+topbarInfo.addEventListener('click', () => showModal(infoModal));
 
 document.querySelectorAll<HTMLElement>('.modal').forEach((modal) => {
   modal.addEventListener('click', (event) => {
-    if (event.target === modal) modal.hidden = true;
+    if (event.target === modal) hideModal(modal);
   });
   modal.querySelector<HTMLButtonElement>('.modal__close')?.addEventListener('click', () => {
-    modal.hidden = true;
+    hideModal(modal);
   });
 });
 
@@ -937,12 +957,30 @@ window.addEventListener('resize', () => {
 
 // Atalhos de teclado: "/" foca a busca, setas navegam, Esc sai da busca.
 document.addEventListener('keydown', (event) => {
-  if (event.key === 'Escape') {
-    const openModal = document.querySelector<HTMLElement>('.modal:not([hidden])');
-    if (openModal) {
-      openModal.hidden = true;
+  const openModal = document.querySelector<HTMLElement>('.modal:not([hidden])');
+  if (openModal) {
+    if (event.key === 'Escape') {
+      hideModal(openModal);
       return;
     }
+    // Foco preso dentro do modal (acessibilidade).
+    if (event.key === 'Tab') {
+      const focusables = openModal.querySelectorAll<HTMLElement>(
+        'button, a[href], input, select, [tabindex]:not([tabindex="-1"])',
+      );
+      if (focusables.length > 0) {
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+    }
+    return;
   }
 
   const target = event.target as HTMLElement | null;
@@ -1008,12 +1046,43 @@ setupAutocomplete({
   onSelect: (name) => void compareCtl?.add(name),
 });
 
-// Deep link: abre direto o Pokémon indicado em ?pokemon=ID (ou o #1).
+// PWA: mostra o botão "Instalar" quando o navegador oferece o prompt.
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: string }>;
+}
+let deferredPrompt: BeforeInstallPromptEvent | null = null;
+const installBtn = qs<HTMLButtonElement>('.install-btn');
+window.addEventListener('beforeinstallprompt', (event) => {
+  event.preventDefault();
+  deferredPrompt = event as BeforeInstallPromptEvent;
+  installBtn.hidden = false;
+});
+installBtn.addEventListener('click', () => {
+  if (!deferredPrompt) return;
+  void deferredPrompt.prompt();
+  installBtn.hidden = true;
+  deferredPrompt = null;
+});
+window.addEventListener('appinstalled', () => {
+  installBtn.hidden = true;
+});
+
+// Pokémon do dia (determinístico pela data) quando não há ?pokemon=ID.
+function pokemonOfTheDay(): number {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), 0, 0).getTime();
+  const dayOfYear = Math.floor((now.getTime() - start) / 86_400_000);
+  return ((dayOfYear * 7 + now.getFullYear()) % MAX_POKEMON) + 1;
+}
+
+// Deep link: abre direto o Pokémon indicado em ?pokemon=ID (ou o do dia).
 const initialParam = new URLSearchParams(window.location.search).get('pokemon');
-searchPokemon = Number(initialParam) || 1;
+const initial = initialParam ?? String(pokemonOfTheDay());
+searchPokemon = Number(initial) || 1;
 
 initLang();
 applyStaticI18n();
 renderFavorites();
-void renderPokemon(initialParam ?? searchPokemon);
+void renderPokemon(initial);
 loadNames();
