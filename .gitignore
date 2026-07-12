@@ -3,10 +3,6 @@ node_modules/
 
 # Build
 dist/
-dev-dist/
-
-# Cloudflare / Wrangler
-.wrangler/
 
 # Logs
 npm-debug.log*
@@ -25,3 +21,9 @@ Thumbs.db
 # Editores
 .vscode/
 .idea/
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+!.env.example

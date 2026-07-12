@@ -6,12 +6,13 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
-    "preview": "vite preview",
+    "preview": "npm run build && wrangler dev",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "format": "prettier --write .",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "deploy": "npm run build && wrangler deploy"
   },
   "keywords": [
     "pokedex",
@@ -22,6 +23,7 @@
   "author": "Franklyn (@Franklyn-R-Silva)",
   "license": "MIT",
   "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.44.0",
     "@eslint/js": "^9.15.0",
     "eslint": "^9.15.0",
     "globals": "^15.12.0",
