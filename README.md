@@ -12,6 +12,7 @@
   <img src="https://img.shields.io/badge/PWA-5A0FC8?style=flat&logo=pwa&logoColor=white" alt="PWA" />
   <img src="https://img.shields.io/badge/Vitest-6E9F18?style=flat&logo=vitest&logoColor=white" alt="Vitest" />
   <img src="https://img.shields.io/badge/Cloudflare%20Pages-F38020?style=flat&logo=cloudflare&logoColor=white" alt="Cloudflare Pages" />
+  <img src="https://img.shields.io/github/v/release/Franklyn-R-Silva/Pokedex?style=flat&label=release&color=blue" alt="Latest release" />
   <img src="https://img.shields.io/badge/license-MIT-green?style=flat" alt="MIT" />
 </p>
 
@@ -44,6 +45,7 @@ support and is deployed on **Cloudflare Pages**.
 - Clickable evolution chain (with methods), alternate forms, EV yield, shiny toggle, cry, and random
 - Image lightbox with a full sprite gallery (artwork, shiny, animated, front/back)
 - Compare up to 4 Pokémon (stat table + radar chart); filter by type and generation with pagination
+- Advanced Pokédex explorer (`?view=pokedex`): sidebar filters + full grid
 - **TCG cards** tab: browse a Pokémon's real trading cards with rarity, market price, and a 3D holo tilt effect (Pokémon TCG API)
 - **Team battle** mini-game: build a team and play a turn-based battle (items, win record)
 - **Deck builder** (`?view=deck`): assemble TCG decks with charts, a deck-health score, Standard/Expanded legality checks, and meta-deck import
@@ -58,7 +60,7 @@ support and is deployed on **Cloudflare Pages**.
 
 ## Tech stack
 
-React 19 · TypeScript · Vite · vite-plugin-pwa · Vitest · Playwright + axe-core · ESLint + Prettier · PokéAPI · Pokémon TCG API.
+React 19 · TypeScript · Vite · vite-plugin-pwa · Vitest · Playwright + axe-core · ESLint + Prettier · Supabase (optional) · PokéAPI · Pokémon TCG API.
 CI (GitHub Actions) runs lint, typecheck, unit tests, and build, plus an E2E
 job with an automated accessibility audit (fails on any critical WCAG 2 A/AA violation).
 
@@ -114,9 +116,34 @@ public/                  # Static assets, PWA icons, 404.html
 
 See [ARCHITECTURE.md](./ARCHITECTURE.md) for details.
 
+## Configuration
+
+The app runs with **no configuration**. The following environment variables are
+optional and only enable the account/collection features. Copy `.env.example` to
+`.env` (git-ignored) and fill in the values:
+
+| Variable                        | Purpose                                                      |
+| ------------------------------- | ----------------------------------------------------------- |
+| `VITE_SUPABASE_URL`             | Supabase project URL (auth + cloud persistence)             |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Supabase anon/publishable key — security is enforced by RLS |
+| `VITE_POKEMONTCG_KEY`           | Pokémon TCG API key — raises the request rate limit         |
+
+Without them, the app falls back to `localStorage` and public API rate limits.
+Database schema for the optional backend lives in `supabase/migrations/`.
+
 ## Deployment
 
 Deployed on **Cloudflare Pages** — build command `npm run build`, output directory `dist`.
+
+## Contributing
+
+Contributions are welcome! Please read the [contributing guide](./CONTRIBUTING.md)
+for how to set up the project, the coding guidelines, and the pull request
+checklist. Bug reports and feature ideas are welcome via
+[issues](https://github.com/Franklyn-R-Silva/Pokedex/issues).
+
+This project follows [Semantic Versioning](https://semver.org/); notable changes
+are recorded in the [CHANGELOG](./CHANGELOG.md).
 
 ## License
 

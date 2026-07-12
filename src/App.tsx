@@ -165,6 +165,16 @@ export function App() {
           <QuizPanel getNames={getNames} />
         </div>
       </main>
+      <footer className="site-footer">
+        {lang === 'pt' ? 'Feito por' : 'Made by'}{' '}
+        <a href="https://github.com/Franklyn-R-Silva" target="_blank" rel="noopener">
+          Franklyn
+        </a>{' '}
+        ·{' '}
+        <a href="https://github.com/Franklyn-R-Silva/Pokedex" target="_blank" rel="noopener">
+          ⭐ {lang === 'pt' ? 'Projeto no GitHub' : 'Project on GitHub'}
+        </a>
+      </footer>
     </>
   );
 }

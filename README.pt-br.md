@@ -12,6 +12,7 @@
   <img src="https://img.shields.io/badge/PWA-5A0FC8?style=flat&logo=pwa&logoColor=white" alt="PWA" />
   <img src="https://img.shields.io/badge/Vitest-6E9F18?style=flat&logo=vitest&logoColor=white" alt="Vitest" />
   <img src="https://img.shields.io/badge/Cloudflare%20Pages-F38020?style=flat&logo=cloudflare&logoColor=white" alt="Cloudflare Pages" />
+  <img src="https://img.shields.io/github/v/release/Franklyn-R-Silva/Pokedex?style=flat&label=release&color=blue" alt="Última release" />
   <img src="https://img.shields.io/badge/license-MIT-green?style=flat" alt="MIT" />
 </p>
 
@@ -45,6 +46,7 @@ Distribuída como **PWA** instalável com suporte offline e publicada no **Cloud
 - Cadeia de evolução clicável (com métodos), formas alternativas, EV yield, shiny, cry e aleatório
 - Lightbox da imagem com galeria de sprites (artwork, shiny, animado, frente/costas)
 - Comparação de até 4 Pokémon (tabela de stats + gráfico de radar); filtro por tipo e geração com paginação
+- Explorador avançado da Pokédex (`?view=pokedex`): filtros na barra lateral + grade completa
 - Aba de **cartas de TCG**: veja as cartas reais de um Pokémon com raridade, preço de mercado e efeito holo 3D (Pokémon TCG API)
 - Mini-game de **batalha em equipe**: monte um time e jogue uma batalha por turnos (itens, registro de vitórias)
 - **Deck builder** (`?view=deck`): monte decks de TCG com gráficos, score de saúde do deck, checagem de legalidade Standard/Expanded e importação de meta-decks
@@ -59,7 +61,7 @@ Distribuída como **PWA** instalável com suporte offline e publicada no **Cloud
 
 ## Tecnologias
 
-React 19 · TypeScript · Vite · vite-plugin-pwa · Vitest · Playwright + axe-core · ESLint + Prettier · PokéAPI · Pokémon TCG API.
+React 19 · TypeScript · Vite · vite-plugin-pwa · Vitest · Playwright + axe-core · ESLint + Prettier · Supabase (opcional) · PokéAPI · Pokémon TCG API.
 O CI (GitHub Actions) roda lint, typecheck, testes unitários e build, além de um
 job E2E com auditoria de acessibilidade (falha em qualquer violação crítica WCAG 2 A/AA).
 
@@ -115,9 +117,34 @@ public/                  # Assets, ícones do PWA, 404.html
 
 Detalhes em [ARCHITECTURE.md](./ARCHITECTURE.md).
 
+## Configuração
+
+O app roda **sem nenhuma configuração**. As variáveis de ambiente abaixo são
+opcionais e só habilitam os recursos de conta/coleção. Copie `.env.example` para
+`.env` (ignorado pelo git) e preencha os valores:
+
+| Variável                        | Função                                                          |
+| ------------------------------- | -------------------------------------------------------------- |
+| `VITE_SUPABASE_URL`             | URL do projeto Supabase (auth + persistência na nuvem)         |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Chave anon/publishable do Supabase — a segurança é o RLS       |
+| `VITE_POKEMONTCG_KEY`           | Chave da Pokémon TCG API — aumenta o limite de requisições     |
+
+Sem elas, o app usa o `localStorage` e os limites públicos das APIs. O schema do
+banco (backend opcional) fica em `supabase/migrations/`.
+
 ## Deploy
 
 Publicado no **Cloudflare Pages** — comando de build `npm run build`, diretório de saída `dist`.
+
+## Contribuindo
+
+Contribuições são bem-vindas! Leia o [guia de contribuição](./CONTRIBUTING.md)
+para saber como configurar o projeto, as diretrizes de código e o checklist do
+pull request. Relatos de bug e ideias de funcionalidades são bem-vindos via
+[issues](https://github.com/Franklyn-R-Silva/Pokedex/issues).
+
+O projeto segue o [Versionamento Semântico](https://semver.org/lang/pt-BR/); as
+mudanças relevantes ficam registradas no [CHANGELOG](./CHANGELOG.md).
 
 ## Licença
 

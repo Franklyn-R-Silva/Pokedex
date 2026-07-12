@@ -13,6 +13,10 @@ export function InfoModal() {
         <a href="https://github.com/Franklyn-R-Silva" target="_blank" rel="noopener">
           @Franklyn-R-Silva
         </a>{' '}
+        ·{' '}
+        <a href="https://github.com/Franklyn-R-Silva/Pokedex" target="_blank" rel="noopener">
+          GitHub
+        </a>{' '}
         · <a href="https://pokeapi.co/" target="_blank" rel="noopener">PokéAPI</a>
       </p>
     </>
