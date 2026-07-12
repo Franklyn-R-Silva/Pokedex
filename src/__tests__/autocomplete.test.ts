@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { filterNames } from './autocomplete.js';
+import { filterNames } from '../features/autocomplete';
 
 const NAMES = ['bulbasaur', 'ivysaur', 'venusaur', 'charmander', 'charizard', 'pikachu', 'raichu'];
 
@@ -11,7 +11,6 @@ describe('filterNames', () => {
   });
 
   it('prioriza correspondências no início', () => {
-    // "char" começa em charmander/charizard; nenhum outro contém "char".
     expect(filterNames(NAMES, 'char')).toEqual(['charmander', 'charizard']);
   });
 

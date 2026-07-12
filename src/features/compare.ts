@@ -1,26 +1,48 @@
 // Compara até 4 Pokémon lado a lado, com tabela de stats e gráfico de radar.
-import { fetchPokemon, getStaticImage } from './api.js';
-import { t } from './i18n.js';
-import { radarSvg } from './radar.js';
+import type { Pokemon } from '../types';
+import type { StatKey } from '../i18n/translations';
+import { fetchPokemon } from '../services/pokeapi';
+import { getStaticImage } from '../services/sprites';
+import { t } from '../i18n';
+import { radarSvg } from './radar';
 
 const MAX_COMPARE = 4;
 const COLORS = ['#ef5350', '#42a5f5', '#66bb6a', '#ab47bc'];
-const STAT_ORDER = ['hp', 'attack', 'defense', 'special-attack', 'special-defense', 'speed'];
+const STAT_ORDER: StatKey[] = [
+  'hp',
+  'attack',
+  'defense',
+  'special-attack',
+  'special-defense',
+  'speed',
+];
 
-const escapeHtml = (s) => String(s).replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
+const escapeHtml = (s: string): string => s.replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
 
-function statValue(pokemon, key) {
+function statValue(pokemon: Pokemon, key: StatKey): number {
   return pokemon.stats.find((s) => s.stat.name === key)?.base_stat ?? 0;
 }
 
-function statTotal(pokemon) {
+function statTotal(pokemon: Pokemon): number {
   return pokemon.stats.reduce((sum, s) => sum + s.base_stat, 0);
 }
 
-export function setupCompare({ form, input, chipsEl, resultEl }) {
-  let selected = [];
+interface CompareOptions {
+  form: HTMLFormElement;
+  input: HTMLInputElement;
+  chipsEl: HTMLElement;
+  resultEl: HTMLElement;
+}
 
-  function renderChips() {
+export interface CompareControls {
+  add: (nameOrId: string) => Promise<void>;
+  refresh: () => void;
+}
+
+export function setupCompare({ form, input, chipsEl, resultEl }: CompareOptions): CompareControls {
+  let selected: Pokemon[] = [];
+
+  function renderChips(): void {
     chipsEl.innerHTML = '';
     selected.forEach((pokemon, idx) => {
       const chip = document.createElement('div');
@@ -49,13 +71,12 @@ export function setupCompare({ form, input, chipsEl, resultEl }) {
     input.placeholder = full ? '' : t('comparePlaceholder');
   }
 
-  function tableHtml() {
+  function tableHtml(): string {
     const labels = t('statLabels');
     const cols = `minmax(44px, auto) repeat(${selected.length}, 1fr)`;
 
     let html = '<div class="ctable">';
 
-    // Cabeçalho: imagem + nome de cada Pokémon.
     html += `<div class="ctable-row ctable-head" style="grid-template-columns:${cols}"><span></span>`;
     selected.forEach((pokemon, idx) => {
       html += `<div class="ctable-poke" style="--pc:${COLORS[idx]}">
@@ -65,7 +86,6 @@ export function setupCompare({ form, input, chipsEl, resultEl }) {
     });
     html += '</div>';
 
-    // Linhas de stats (destaca o maior).
     STAT_ORDER.forEach((key) => {
       const values = selected.map((p) => statValue(p, key));
       const max = Math.max(...values);
@@ -76,7 +96,6 @@ export function setupCompare({ form, input, chipsEl, resultEl }) {
       html += '</div>';
     });
 
-    // Total.
     const totals = selected.map(statTotal);
     const maxTotal = Math.max(...totals);
     html += `<div class="ctable-row ctable-total" style="grid-template-columns:${cols}"><span class="ctable-label">${escapeHtml(t('total'))}</span>`;
@@ -88,7 +107,7 @@ export function setupCompare({ form, input, chipsEl, resultEl }) {
     return html;
   }
 
-  function render() {
+  function render(): void {
     renderChips();
 
     if (selected.length < 2) {
@@ -99,17 +118,17 @@ export function setupCompare({ form, input, chipsEl, resultEl }) {
     resultEl.innerHTML = `<div class="compare">${radarSvg(selected, COLORS)}${tableHtml()}</div>`;
   }
 
-  async function add(nameOrId) {
+  async function add(nameOrId: string): Promise<void> {
     const query = String(nameOrId).trim().toLowerCase();
     if (!query || selected.length >= MAX_COMPARE) return;
 
-    let data;
+    let data: Pokemon | null;
     try {
       data = await fetchPokemon(query);
     } catch {
       return;
     }
-    if (!data || selected.some((p) => p.id === data.id)) {
+    if (!data || selected.some((p) => p.id === data!.id)) {
       input.value = '';
       return;
     }
@@ -121,13 +140,10 @@ export function setupCompare({ form, input, chipsEl, resultEl }) {
 
   form.addEventListener('submit', (event) => {
     event.preventDefault();
-    add(input.value);
+    void add(input.value);
   });
 
   render();
 
-  return {
-    add,
-    refresh: render,
-  };
+  return { add, refresh: render };
 }

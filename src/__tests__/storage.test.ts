@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { getFavorites, isFavorite, toggleFavorite, getTheme, setTheme } from './storage.js';
+import { getFavorites, isFavorite, toggleFavorite, getTheme, setTheme } from '../services/storage';
 
 describe('storage — favoritos', () => {
   beforeEach(() => {
@@ -21,7 +21,8 @@ describe('storage — favoritos', () => {
   });
 
   it('mantém apenas o essencial (id, name)', () => {
-    toggleFavorite({ id: 1, name: 'bulbasaur', extra: 'ignorado' });
+    const withExtra = { id: 1, name: 'bulbasaur', extra: 'ignorado' };
+    toggleFavorite(withExtra);
     expect(getFavorites()).toEqual([{ id: 1, name: 'bulbasaur' }]);
   });
 });

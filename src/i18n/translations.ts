@@ -1,12 +1,55 @@
-// Internacionalização (PT-BR / EN) para o texto da interface.
-//
-// A PokéAPI não oferece português para descrição, genus, habilidades e tipos.
-// Estratégia: a interface e os tipos têm tradução real em PT; o conteúdo textual
-// da API (descrição/genus/habilidades) usa espanhol como aproximação no modo PT.
+import type { Lang } from '../types';
 
-const LANG_KEY = 'pokedex-lang';
+export type StatKey = 'hp' | 'attack' | 'defense' | 'special-attack' | 'special-defense' | 'speed';
 
-export const translations = {
+export type StatMap = Record<StatKey, string>;
+
+export interface Translation {
+  random: string;
+  shiny: string;
+  cry: string;
+  share: string;
+  copied: string;
+  weaknesses: string;
+  stats: string;
+  abilities: string;
+  evolution: string;
+  height: string;
+  weight: string;
+  favorite: string;
+  favorited: string;
+  favoritesTitle: string;
+  noFavorites: string;
+  loading: string;
+  notFound: string;
+  connError: string;
+  noEvolutions: string;
+  none: string;
+  searchPlaceholder: string;
+  themeDark: string;
+  themeLight: string;
+  noGif: string;
+  hiddenAbility: string;
+  removeFavorite: string;
+  exploreTitle: string;
+  allTypes: string;
+  allGens: string;
+  noResults: string;
+  compareTitle: string;
+  comparePlaceholder: string;
+  compareAddAria: string;
+  compareHint: string;
+  compareRemoveAria: string;
+  total: string;
+  filterTypeLabel: string;
+  filterGenLabel: string;
+  filterByType: string;
+  statsLegendAria: string;
+  statLabels: StatMap;
+  statNames: StatMap;
+}
+
+export const translations: Record<Lang, Translation> = {
   pt: {
     random: '🎲 Aleatório',
     shiny: '✨ Shiny',
@@ -39,7 +82,6 @@ export const translations = {
     allGens: 'Todas as gerações',
     noResults: 'Nada encontrado',
     compareTitle: '⚔️ Comparar',
-    compareButton: 'Comparar',
     comparePlaceholder: 'Adicionar Pokémon',
     compareAddAria: 'Adicionar Pokémon',
     compareHint: 'Adicione pelo menos 2 Pokémon (até 4).',
@@ -98,7 +140,6 @@ export const translations = {
     allGens: 'All generations',
     noResults: 'Nothing found',
     compareTitle: '⚔️ Compare',
-    compareButton: 'Compare',
     comparePlaceholder: 'Add Pokémon',
     compareAddAria: 'Add Pokémon',
     compareHint: 'Add at least 2 Pokémon (up to 4).',
@@ -126,32 +167,3 @@ export const translations = {
     },
   },
 };
-
-let currentLang = 'pt';
-
-export function getLang() {
-  return localStorage.getItem(LANG_KEY) ?? 'pt';
-}
-
-export function setLang(lang) {
-  currentLang = lang;
-  localStorage.setItem(LANG_KEY, lang);
-}
-
-export function initLang() {
-  currentLang = getLang();
-  return currentLang;
-}
-
-/** Texto da UI para a chave no idioma atual. */
-export function t(key) {
-  return translations[currentLang][key];
-}
-
-/**
- * Idioma para o conteúdo textual da API (descrição/genus/habilidades).
- * PT não existe na PokéAPI, então usamos espanhol como aproximação.
- */
-export function contentLang() {
-  return currentLang === 'pt' ? 'es' : 'en';
-}

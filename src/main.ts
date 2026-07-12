@@ -1,4 +1,9 @@
-import './style.css';
+import './styles/style.css';
+import type { Pokemon, PokemonType, PokemonStat, PokemonAbility } from './types';
+import type { StatKey, Translation } from './i18n/translations';
+import type { Theme } from './services/storage';
+import type { FilterControls } from './features/filter';
+import type { CompareControls } from './features/compare';
 import {
   fetchPokemon,
   fetchAllPokemonNames,
@@ -8,74 +13,94 @@ import {
   getFlavorText,
   getGenus,
   getAbilityName,
+  MAX_POKEMON,
+} from './services/pokeapi';
+import {
   getPokemonSprite,
   getStaticImage,
   getAnimatedGif,
   getArtworkById,
-  MAX_POKEMON,
-} from './api.js';
-import { getTypeColor, getTypeLabel } from './pokemonTypes.js';
-import { getTheme, setTheme, getFavorites, isFavorite, toggleFavorite } from './storage.js';
-import { setupAutocomplete } from './autocomplete.js';
-import { setupFilter } from './filter.js';
-import { setupCompare } from './compare.js';
-import { radarSvg } from './radar.js';
-import { initLang, getLang, setLang, t, contentLang } from './i18n.js';
+} from './services/sprites';
+import { getTypeColor, getTypeLabel } from './domain/pokemonTypes';
+import { getTheme, setTheme, getFavorites, isFavorite, toggleFavorite } from './services/storage';
+import { setupAutocomplete } from './features/autocomplete';
+import { setupFilter } from './features/filter';
+import { setupCompare } from './features/compare';
+import { radarSvg } from './features/radar';
+import { initLang, getLang, setLang, t, contentLang } from './i18n';
 
-const pokemonData = document.querySelector('.pokemon__data');
-const pokemonName = document.querySelector('.pokemon__name');
-const pokemonNumber = document.querySelector('.pokemon__number');
-const pokemonImage = document.querySelector('.pokemon__image');
+/** querySelector tipado (assume que o elemento existe no HTML). */
+const qs = <T extends Element>(selector: string): T => document.querySelector(selector) as T;
 
-const form = document.querySelector('.form');
-const input = document.querySelector('.input__search');
-const suggestions = document.querySelector('.suggestions');
-const buttonPrev = document.querySelector('.btn-prev');
-const buttonNext = document.querySelector('.btn-next');
-const buttonDownloadPng = document.querySelector('.btn-download--png');
-const buttonDownloadGif = document.querySelector('.btn-download--gif');
-const buttonFavorite = document.querySelector('.btn-favorite');
-const buttonRandom = document.querySelector('.btn-random');
-const buttonShiny = document.querySelector('.btn-shiny');
-const buttonCry = document.querySelector('.btn-cry');
-const buttonShare = document.querySelector('.btn-share');
-const themeToggle = document.querySelector('.theme-toggle');
-const langToggle = document.querySelector('.lang-toggle');
-const compareInfo = document.querySelector('.compare-info');
-const compareLegend = document.querySelector('.compare-legend');
-
-const typesContainer = document.querySelector('.details__types');
-const genusEl = document.querySelector('.details__genus');
-const descriptionEl = document.querySelector('.details__description');
-const heightValue = document.querySelector('.height');
-const weightValue = document.querySelector('.weight');
-const weaknessesContainer = document.querySelector('.details__weaknesses');
-const detailsRadar = document.querySelector('.details__radar');
-const statsContainer = document.querySelector('.details__stats');
-const abilitiesContainer = document.querySelector('.details__abilities');
-const evolutionContainer = document.querySelector('.details__evolution');
-const details = document.querySelector('.details');
-const favoritesList = document.querySelector('.favorites__list');
-
-let searchPokemon = 1;
-let currentPokemon = null; // dados completos do Pokémon exibido.
-let currentImages = null; // { png, gif, name } do Pokémon exibido (para download).
-let currentCry = ''; // URL do cry do Pokémon exibido.
-let shiny = false; // exibindo a versão shiny?
-let requestId = 0; // token para descartar renders assíncronos obsoletos.
-let allNames = []; // todos os nomes de Pokémon (para o autocomplete).
-let filterCtl = null;
-let compareCtl = null;
-
-function setLoading() {
-  pokemonName.innerHTML = t('loading');
-  pokemonNumber.innerHTML = '';
+interface CurrentImages {
+  png: string;
+  gif: string;
+  name: string;
 }
 
-function showError(message) {
+const STAT_ORDER: StatKey[] = [
+  'hp',
+  'attack',
+  'defense',
+  'special-attack',
+  'special-defense',
+  'speed',
+];
+
+const pokemonData = qs<HTMLElement>('.pokemon__data');
+const pokemonName = qs<HTMLElement>('.pokemon__name');
+const pokemonNumber = qs<HTMLElement>('.pokemon__number');
+const pokemonImage = qs<HTMLImageElement>('.pokemon__image');
+
+const form = qs<HTMLFormElement>('.form');
+const input = qs<HTMLInputElement>('.input__search');
+const suggestions = qs<HTMLElement>('.suggestions');
+const buttonPrev = qs<HTMLButtonElement>('.btn-prev');
+const buttonNext = qs<HTMLButtonElement>('.btn-next');
+const buttonDownloadPng = qs<HTMLButtonElement>('.btn-download--png');
+const buttonDownloadGif = qs<HTMLButtonElement>('.btn-download--gif');
+const buttonFavorite = qs<HTMLButtonElement>('.btn-favorite');
+const buttonRandom = qs<HTMLButtonElement>('.btn-random');
+const buttonShiny = qs<HTMLButtonElement>('.btn-shiny');
+const buttonCry = qs<HTMLButtonElement>('.btn-cry');
+const buttonShare = qs<HTMLButtonElement>('.btn-share');
+const themeToggle = qs<HTMLButtonElement>('.theme-toggle');
+const langToggle = qs<HTMLButtonElement>('.lang-toggle');
+const compareInfo = qs<HTMLButtonElement>('.compare-info');
+const compareLegend = qs<HTMLElement>('.compare-legend');
+
+const typesContainer = qs<HTMLElement>('.details__types');
+const genusEl = qs<HTMLElement>('.details__genus');
+const descriptionEl = qs<HTMLElement>('.details__description');
+const heightValue = qs<HTMLElement>('.height');
+const weightValue = qs<HTMLElement>('.weight');
+const weaknessesContainer = qs<HTMLElement>('.details__weaknesses');
+const detailsRadar = qs<HTMLElement>('.details__radar');
+const statsContainer = qs<HTMLElement>('.details__stats');
+const abilitiesContainer = qs<HTMLElement>('.details__abilities');
+const evolutionContainer = qs<HTMLElement>('.details__evolution');
+const details = qs<HTMLElement>('.details');
+const favoritesList = qs<HTMLElement>('.favorites__list');
+
+let searchPokemon = 1;
+let currentPokemon: Pokemon | null = null;
+let currentImages: CurrentImages | null = null;
+let currentCry = '';
+let shiny = false;
+let requestId = 0;
+let allNames: string[] = [];
+let filterCtl: FilterControls | null = null;
+let compareCtl: CompareControls | null = null;
+
+function setLoading(): void {
+  pokemonName.textContent = t('loading');
+  pokemonNumber.textContent = '';
+}
+
+function showError(message: string): void {
   pokemonImage.style.display = 'none';
-  pokemonName.innerHTML = message;
-  pokemonNumber.innerHTML = '';
+  pokemonName.textContent = message;
+  pokemonNumber.textContent = '';
   details.classList.remove('is-visible');
   currentPokemon = null;
   currentImages = null;
@@ -88,7 +113,7 @@ function showError(message) {
   document.documentElement.style.removeProperty('--type-color');
 }
 
-function renderTypes(types) {
+function renderTypes(types: PokemonType[]): void {
   const lang = getLang();
   typesContainer.innerHTML = '';
   types.forEach(({ type }) => {
@@ -100,15 +125,13 @@ function renderTypes(types) {
     badge.title = t('filterByType');
     badge.addEventListener('click', () => {
       filterCtl?.setType(type.name);
-      document
-        .querySelector('.panel.filter')
-        ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      qs<HTMLElement>('.panel.filter').scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
     typesContainer.appendChild(badge);
   });
 }
 
-function renderStats(stats) {
+function renderStats(stats: PokemonStat[]): void {
   const labels = t('statLabels');
   statsContainer.innerHTML = '';
   stats.forEach(({ base_stat: base, stat }) => {
@@ -117,26 +140,25 @@ function renderStats(stats) {
 
     const label = document.createElement('span');
     label.className = 'stat__label';
-    label.textContent = labels[stat.name] ?? stat.name;
+    label.textContent = labels[stat.name as StatKey] ?? stat.name;
 
     const bar = document.createElement('div');
     bar.className = 'stat__bar';
     const fill = document.createElement('div');
     fill.className = 'stat__fill';
-    // Base máxima comum ~255; limitamos a 100% da barra.
     fill.style.width = `${Math.min((base / 255) * 100, 100)}%`;
     bar.appendChild(fill);
 
     const value = document.createElement('span');
     value.className = 'stat__value';
-    value.textContent = base;
+    value.textContent = String(base);
 
     item.append(label, bar, value);
     statsContainer.appendChild(item);
   });
 }
 
-async function renderAbilities(abilities, reqId) {
+async function renderAbilities(abilities: PokemonAbility[], reqId: number): Promise<void> {
   abilitiesContainer.innerHTML = `<span class="muted">${t('loading')}</span>`;
   const lang = contentLang();
   const names = await Promise.all(abilities.map((ability) => getAbilityName(ability, lang)));
@@ -155,7 +177,7 @@ async function renderAbilities(abilities, reqId) {
   });
 }
 
-async function renderWeaknesses(types, reqId) {
+async function renderWeaknesses(types: PokemonType[], reqId: number): Promise<void> {
   weaknessesContainer.innerHTML = `<span class="muted">${t('loading')}</span>`;
 
   const weaknesses = await fetchWeaknesses(types);
@@ -178,7 +200,7 @@ async function renderWeaknesses(types, reqId) {
   });
 }
 
-async function renderSpeciesInfo(speciesUrl, reqId) {
+async function renderSpeciesInfo(speciesUrl: string, reqId: number): Promise<void> {
   genusEl.textContent = '';
   descriptionEl.textContent = '';
 
@@ -190,7 +212,7 @@ async function renderSpeciesInfo(speciesUrl, reqId) {
   descriptionEl.textContent = getFlavorText(species, lang);
 }
 
-async function renderEvolution(speciesUrl, reqId) {
+async function renderEvolution(speciesUrl: string, reqId: number): Promise<void> {
   evolutionContainer.innerHTML = `<span class="muted">${t('loading')}</span>`;
 
   const chain = await fetchEvolutionChain(speciesUrl);
@@ -216,19 +238,19 @@ async function renderEvolution(speciesUrl, reqId) {
     label.textContent = name;
 
     item.append(image, label);
-    item.addEventListener('click', () => renderPokemon(name));
+    item.addEventListener('click', () => void renderPokemon(name));
     evolutionContainer.appendChild(item);
   });
 }
 
-function updateFavoriteButton() {
+function updateFavoriteButton(): void {
   if (!currentPokemon) return;
   const favorited = isFavorite(currentPokemon.id);
   buttonFavorite.textContent = favorited ? t('favorited') : t('favorite');
   buttonFavorite.classList.toggle('is-active', favorited);
 }
 
-function renderFavorites() {
+function renderFavorites(): void {
   const favorites = getFavorites();
   favoritesList.innerHTML = '';
 
@@ -245,7 +267,7 @@ function renderFavorites() {
     load.type = 'button';
     load.className = 'favorite-chip__load';
     load.textContent = `#${favorite.id} ${favorite.name}`;
-    load.addEventListener('click', () => renderPokemon(favorite.name));
+    load.addEventListener('click', () => void renderPokemon(favorite.name));
 
     const remove = document.createElement('button');
     remove.type = 'button';
@@ -264,7 +286,7 @@ function renderFavorites() {
 }
 
 // Atualiza a imagem exibida e os alvos de download conforme o estado shiny.
-function updateImages() {
+function updateImages(): void {
   if (!currentPokemon) return;
   const data = currentPokemon;
   const baseName = shiny ? `${data.name}-shiny` : data.name;
@@ -278,9 +300,8 @@ function updateImages() {
   buttonDownloadGif.title = gif ? '' : t('noGif');
 }
 
-// Reduz a fonte do nome/número até caber em uma linha na tela do dispositivo
-// (nomes de forma como "squawkabilly-white-plumage" são longos).
-function fitPokemonName() {
+// Reduz a fonte do nome/número até caber em uma linha na tela do dispositivo.
+function fitPokemonName(): void {
   pokemonData.style.fontSize = '';
   let size = parseFloat(getComputedStyle(pokemonData).fontSize);
   let guard = 0;
@@ -291,14 +312,14 @@ function fitPokemonName() {
   }
 }
 
-function updateUrl(id) {
+function updateUrl(id: number): void {
   const url = new URL(window.location.href);
-  url.searchParams.set('pokemon', id);
+  url.searchParams.set('pokemon', String(id));
   window.history.replaceState({}, '', url);
 }
 
-function renderDetails(data, reqId) {
-  const primaryType = data.types[0]?.type?.name;
+function renderDetails(data: Pokemon, reqId: number): void {
+  const primaryType = data.types[0]?.type?.name ?? 'normal';
   document.documentElement.style.setProperty('--type-color', getTypeColor(primaryType));
 
   renderTypes(data.types);
@@ -306,19 +327,19 @@ function renderDetails(data, reqId) {
   weightValue.textContent = `${(data.weight / 10).toFixed(1)} kg`;
   detailsRadar.innerHTML = radarSvg([data], [getTypeColor(primaryType)]);
   renderStats(data.stats);
-  renderAbilities(data.abilities, reqId);
-  renderSpeciesInfo(data.species.url, reqId);
-  renderWeaknesses(data.types, reqId);
-  renderEvolution(data.species.url, reqId);
+  void renderAbilities(data.abilities, reqId);
+  void renderSpeciesInfo(data.species.url, reqId);
+  void renderWeaknesses(data.types, reqId);
+  void renderEvolution(data.species.url, reqId);
 
   details.classList.add('is-visible');
 }
 
-async function renderPokemon(pokemon) {
+async function renderPokemon(pokemon: string | number): Promise<void> {
   const reqId = ++requestId;
   setLoading();
 
-  let data;
+  let data: Pokemon | null;
   try {
     data = await fetchPokemon(pokemon);
   } catch {
@@ -326,7 +347,7 @@ async function renderPokemon(pokemon) {
     return;
   }
 
-  if (reqId !== requestId) return; // navegação mais recente já em andamento.
+  if (reqId !== requestId) return;
 
   if (!data) {
     showError(t('notFound'));
@@ -336,7 +357,7 @@ async function renderPokemon(pokemon) {
   pokemonImage.style.display = 'block';
   pokemonImage.alt = data.name;
   pokemonName.textContent = data.name.replace(/-/g, ' ');
-  pokemonNumber.textContent = data.id;
+  pokemonNumber.textContent = String(data.id);
   fitPokemonName();
   input.value = '';
   searchPokemon = data.id;
@@ -357,14 +378,11 @@ async function renderPokemon(pokemon) {
   renderDetails(data, reqId);
 }
 
-/**
- * Baixa uma imagem por URL. Faz fetch do blob (a PokéAPI serve os sprites
- * com CORS liberado); em caso de falha, abre a imagem em nova aba.
- */
-async function downloadImage(url, name) {
+/** Baixa uma imagem por URL (blob), com fallback de abrir em nova aba. */
+async function downloadImage(url: string, name: string): Promise<void> {
   if (!url) return;
 
-  const extension = url.split('.').pop().split('?')[0] || 'png';
+  const extension = url.split('.').pop()?.split('?')[0] || 'png';
 
   try {
     const response = await fetch(url);
@@ -383,19 +401,19 @@ async function downloadImage(url, name) {
   }
 }
 
-function playCry() {
+function playCry(): void {
   if (!currentCry) return;
   const audio = new Audio(currentCry);
   audio.volume = 0.4;
-  audio.play().catch(() => {
+  void audio.play().catch(() => {
     /* autoplay bloqueado ou formato não suportado */
   });
 }
 
-async function sharePokemon() {
+async function sharePokemon(): Promise<void> {
   if (!currentPokemon) return;
   const url = new URL(window.location.href);
-  url.searchParams.set('pokemon', currentPokemon.id);
+  url.searchParams.set('pokemon', String(currentPokemon.id));
   const link = url.toString();
 
   try {
@@ -414,24 +432,22 @@ async function sharePokemon() {
   }
 }
 
-async function loadNames() {
+async function loadNames(): Promise<void> {
   allNames = await fetchAllPokemonNames();
 }
 
-function applyTheme(theme) {
+function applyTheme(theme: Theme): void {
   document.documentElement.classList.toggle('dark', theme === 'dark');
   themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
   themeToggle.setAttribute('aria-label', theme === 'dark' ? t('themeLight') : t('themeDark'));
 }
 
-// Aplica o idioma a todos os textos estáticos da interface.
 // Preenche a legenda de atributos (HP → Vida, etc.) no idioma atual.
-function renderCompareLegend() {
+function renderCompareLegend(): void {
   const labels = t('statLabels');
   const names = t('statNames');
-  const order = ['hp', 'attack', 'defense', 'special-attack', 'special-defense', 'speed'];
   compareLegend.innerHTML = '';
-  order.forEach((key) => {
+  STAT_ORDER.forEach((key) => {
     const item = document.createElement('div');
     item.className = 'legend-item';
     const abbr = document.createElement('strong');
@@ -441,15 +457,16 @@ function renderCompareLegend() {
   });
 }
 
-function applyStaticI18n() {
-  document.querySelectorAll('[data-i18n]').forEach((el) => {
-    el.textContent = t(el.dataset.i18n);
+// Aplica o idioma a todos os textos estáticos da interface.
+function applyStaticI18n(): void {
+  document.querySelectorAll<HTMLElement>('[data-i18n]').forEach((el) => {
+    el.textContent = t(el.dataset.i18n as keyof Translation) as string;
   });
-  document.querySelectorAll('[data-i18n-ph]').forEach((el) => {
-    el.placeholder = t(el.dataset.i18nPh);
+  document.querySelectorAll<HTMLInputElement>('[data-i18n-ph]').forEach((el) => {
+    el.placeholder = t(el.dataset.i18nPh as keyof Translation) as string;
   });
-  document.querySelectorAll('[data-i18n-aria]').forEach((el) => {
-    el.setAttribute('aria-label', t(el.dataset.i18nAria));
+  document.querySelectorAll<HTMLElement>('[data-i18n-aria]').forEach((el) => {
+    el.setAttribute('aria-label', t(el.dataset.i18nAria as keyof Translation) as string);
   });
   renderCompareLegend();
   langToggle.textContent = getLang().toUpperCase();
@@ -459,21 +476,19 @@ function applyStaticI18n() {
 form.addEventListener('submit', (event) => {
   event.preventDefault();
   const query = input.value.trim().toLowerCase();
-  if (query) {
-    renderPokemon(query);
-  }
+  if (query) void renderPokemon(query);
 });
 
 buttonPrev.addEventListener('click', () => {
-  if (searchPokemon > 1) renderPokemon(searchPokemon - 1);
+  if (searchPokemon > 1) void renderPokemon(searchPokemon - 1);
 });
 
 buttonNext.addEventListener('click', () => {
-  if (searchPokemon < MAX_POKEMON) renderPokemon(searchPokemon + 1);
+  if (searchPokemon < MAX_POKEMON) void renderPokemon(searchPokemon + 1);
 });
 
 buttonRandom.addEventListener('click', () => {
-  renderPokemon(Math.floor(Math.random() * MAX_POKEMON) + 1);
+  void renderPokemon(Math.floor(Math.random() * MAX_POKEMON) + 1);
 });
 
 buttonShiny.addEventListener('click', () => {
@@ -484,7 +499,7 @@ buttonShiny.addEventListener('click', () => {
 });
 
 buttonCry.addEventListener('click', playCry);
-buttonShare.addEventListener('click', sharePokemon);
+buttonShare.addEventListener('click', () => void sharePokemon());
 
 compareInfo.addEventListener('click', () => {
   const willOpen = compareLegend.hidden;
@@ -493,11 +508,11 @@ compareInfo.addEventListener('click', () => {
 });
 
 buttonDownloadPng.addEventListener('click', () => {
-  if (currentImages?.png) downloadImage(currentImages.png, currentImages.name);
+  if (currentImages?.png) void downloadImage(currentImages.png, currentImages.name);
 });
 
 buttonDownloadGif.addEventListener('click', () => {
-  if (currentImages?.gif) downloadImage(currentImages.gif, `${currentImages.name}-animado`);
+  if (currentImages?.gif) void downloadImage(currentImages.gif, `${currentImages.name}-animado`);
 });
 
 buttonFavorite.addEventListener('click', () => {
@@ -508,7 +523,7 @@ buttonFavorite.addEventListener('click', () => {
 });
 
 themeToggle.addEventListener('click', () => {
-  const next = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
+  const next: Theme = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
   setTheme(next);
   applyTheme(next);
 });
@@ -520,20 +535,18 @@ langToggle.addEventListener('click', () => {
   renderFavorites();
   filterCtl?.refresh();
   compareCtl?.refresh();
-  if (currentPokemon) renderPokemon(currentPokemon.id);
+  if (currentPokemon) void renderPokemon(currentPokemon.id);
 });
 
-// Reajusta o tamanho do nome quando o dispositivo muda de tamanho.
 window.addEventListener('resize', () => {
   if (currentPokemon) fitPokemonName();
 });
 
 // Atalhos de teclado: "/" foca a busca, setas navegam, Esc sai da busca.
 document.addEventListener('keydown', (event) => {
+  const target = event.target as HTMLElement | null;
   const typing =
-    document.activeElement === input ||
-    event.target.tagName === 'INPUT' ||
-    event.target.tagName === 'SELECT';
+    document.activeElement === input || target?.tagName === 'INPUT' || target?.tagName === 'SELECT';
 
   if (event.key === '/' && !typing) {
     event.preventDefault();
@@ -553,34 +566,34 @@ setupAutocomplete({
   input,
   container: suggestions,
   getNames: () => allNames,
-  onSelect: (name) => renderPokemon(name),
+  onSelect: (name) => void renderPokemon(name),
 });
 
 filterCtl = setupFilter({
-  typeSelect: document.querySelector('.filter-type'),
-  genSelect: document.querySelector('.filter-gen'),
-  resultsEl: document.querySelector('.filter-results'),
-  paginationEl: document.querySelector('.filter-pagination'),
+  typeSelect: qs<HTMLSelectElement>('.filter-type'),
+  genSelect: qs<HTMLSelectElement>('.filter-gen'),
+  resultsEl: qs<HTMLElement>('.filter-results'),
+  paginationEl: qs<HTMLElement>('.filter-pagination'),
   onSelect: (name) => {
-    renderPokemon(name);
+    void renderPokemon(name);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   },
 });
 
-const compareInput = document.querySelector('.compare-input');
+const compareInput = qs<HTMLInputElement>('.compare-input');
 compareCtl = setupCompare({
-  form: document.querySelector('.compare__controls'),
+  form: qs<HTMLFormElement>('.compare__controls'),
   input: compareInput,
-  chipsEl: document.querySelector('.compare-chips'),
-  resultEl: document.querySelector('.compare-result'),
+  chipsEl: qs<HTMLElement>('.compare-chips'),
+  resultEl: qs<HTMLElement>('.compare-result'),
 });
 
 // Autocomplete por nome; escolher uma sugestão adiciona à comparação.
 setupAutocomplete({
   input: compareInput,
-  container: document.querySelector('.compare-suggest'),
+  container: qs<HTMLElement>('.compare-suggest'),
   getNames: () => allNames,
-  onSelect: (name) => compareCtl.add(name),
+  onSelect: (name) => void compareCtl?.add(name),
 });
 
 // Deep link: abre direto o Pokémon indicado em ?pokemon=ID (ou o #1).
@@ -590,5 +603,5 @@ searchPokemon = Number(initialParam) || 1;
 initLang();
 applyStaticI18n();
 renderFavorites();
-renderPokemon(initialParam || searchPokemon);
+void renderPokemon(initialParam ?? searchPokemon);
 loadNames();

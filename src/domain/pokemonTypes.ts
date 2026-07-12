@@ -1,5 +1,7 @@
+import type { Lang } from '../types';
+
 // Cor oficial de cada tipo de Pokémon (usada em badges e no tema da tela).
-export const TYPE_COLORS = {
+export const TYPE_COLORS: Record<string, string> = {
   normal: '#A8A77A',
   fire: '#EE8130',
   water: '#6390F0',
@@ -21,7 +23,7 @@ export const TYPE_COLORS = {
 };
 
 // Tradução dos tipos para português (exibição nas badges).
-export const TYPE_LABELS = {
+export const TYPE_LABELS: Record<string, string> = {
   normal: 'Normal',
   fire: 'Fogo',
   water: 'Água',
@@ -45,11 +47,11 @@ export const TYPE_LABELS = {
 // Lista fixa dos tipos (para o filtro).
 export const TYPE_NAMES = Object.keys(TYPE_COLORS);
 
-export function getTypeColor(type) {
+export function getTypeColor(type: string): string {
   return TYPE_COLORS[type] ?? '#777';
 }
 
-export function getTypeLabel(type, lang = 'pt') {
+export function getTypeLabel(type: string, lang: Lang = 'pt'): string {
   if (lang === 'en') return type.charAt(0).toUpperCase() + type.slice(1);
   return TYPE_LABELS[type] ?? type;
 }

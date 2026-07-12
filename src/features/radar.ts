@@ -1,20 +1,24 @@
-// Gera um gráfico de radar (SVG) dos 6 stats base — reutilizado no card de
-// detalhes (1 Pokémon) e na comparação (até 4 Pokémon sobrepostos).
-import { t } from './i18n.js';
+import type { Pokemon } from '../types';
+import type { StatKey } from '../i18n/translations';
+import { t } from '../i18n';
 
-const STAT_ORDER = ['hp', 'attack', 'defense', 'special-attack', 'special-defense', 'speed'];
-const escapeHtml = (s) => String(s).replace(/[&<>"]/g, (ch) => `&#${ch.charCodeAt(0)};`);
+const STAT_ORDER: StatKey[] = [
+  'hp',
+  'attack',
+  'defense',
+  'special-attack',
+  'special-defense',
+  'speed',
+];
 
-function statValue(pokemon, key) {
+const escapeHtml = (s: string): string => s.replace(/[&<>"]/g, (ch) => `&#${ch.charCodeAt(0)};`);
+
+function statValue(pokemon: Pokemon, key: StatKey): number {
   return pokemon.stats.find((s) => s.stat.name === key)?.base_stat ?? 0;
 }
 
-/**
- * @param {object[]} list  Pokémon(s) a plotar.
- * @param {string[]} colors  Cor de cada polígono (por índice).
- * @returns {string} markup SVG.
- */
-export function radarSvg(list, colors) {
+/** Gera um gráfico de radar (SVG) dos 6 stats base — 1 polígono por Pokémon. */
+export function radarSvg(list: Pokemon[], colors: string[]): string {
   const size = 240;
   const c = size / 2;
   const R = 82;
@@ -22,9 +26,12 @@ export function radarSvg(list, colors) {
   const labels = t('statLabels');
   const maxStat = Math.max(100, ...list.flatMap((p) => p.stats.map((s) => s.base_stat)));
 
-  const angle = (i) => ((i * 360) / n - 90) * (Math.PI / 180);
-  const point = (r, i) => [c + r * Math.cos(angle(i)), c + r * Math.sin(angle(i))];
-  const poly = (r, mapFn) =>
+  const angle = (i: number): number => ((i * 360) / n - 90) * (Math.PI / 180);
+  const point = (r: number, i: number): [number, number] => [
+    c + r * Math.cos(angle(i)),
+    c + r * Math.sin(angle(i)),
+  ];
+  const poly = (r: number, mapFn?: (key: StatKey) => number): string =>
     STAT_ORDER.map((key, i) =>
       point(mapFn ? r * mapFn(key) : r, i)
         .map((v) => v.toFixed(1))

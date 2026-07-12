@@ -38,8 +38,8 @@
 
 ## Tecnologias
 
-JavaScript puro (módulos ES) · Vite · vite-plugin-pwa · Vitest · ESLint + Prettier · PokéAPI.
-O CI (GitHub Actions) roda lint, testes e build a cada push e PR.
+TypeScript · Vite · vite-plugin-pwa · Vitest · ESLint + Prettier · PokéAPI.
+O CI (GitHub Actions) roda lint, typecheck, testes e build a cada push e PR.
 
 ## Como executar
 
@@ -54,30 +54,35 @@ npm run dev
 
 Acesse a URL exibida no terminal (por padrão `http://localhost:5173`).
 
-| Script            | Descrição                    |
-| ----------------- | ---------------------------- |
-| `npm run dev`     | Servidor de desenvolvimento  |
-| `npm run build`   | Build de produção em `dist/` |
-| `npm run preview` | Pré-visualiza o build        |
-| `npm run test`    | Testes unitários (Vitest)    |
-| `npm run lint`    | Verifica o código (ESLint)   |
-| `npm run format`  | Formata o código (Prettier)  |
+| Script              | Descrição                                |
+| ------------------- | ---------------------------------------- |
+| `npm run dev`       | Servidor de desenvolvimento              |
+| `npm run build`     | Typecheck + build de produção em `dist/` |
+| `npm run preview`   | Pré-visualiza o build                    |
+| `npm run typecheck` | Checagem de tipos (`tsc --noEmit`)       |
+| `npm run test`      | Testes unitários (Vitest)                |
+| `npm run lint`      | Verifica o código (ESLint)               |
+| `npm run format`    | Formata o código (Prettier)              |
 
 ## Estrutura do projeto
 
 ```
-index.html               # Ponto de entrada
+index.html               # Ponto de entrada (carrega src/main.ts)
 src/
-  main.js                # Orquestração: DOM, render e eventos
-  api.js                 # PokéAPI: fetch, cache, sprites, evolução, fraquezas
-  i18n.js                # Traduções PT-BR / EN
-  pokemonTypes.js        # Cores e nomes dos tipos
-  storage.js             # Tema e favoritos (localStorage)
-  autocomplete.js        # Sugestões de busca por substring
-  filter.js              # Filtro por tipo / geração
-  compare.js             # Comparação lado a lado
-  style.css              # Estilos
-  *.test.js              # Testes (Vitest)
+  main.ts                # Composition root: DOM, render e eventos
+  types.ts               # Tipos compartilhados da PokéAPI
+  services/              # Dados & IO
+    pokeapi.ts           # fetch + cache em memória
+    sprites.ts           # helpers de imagem
+    storage.ts           # tema & favoritos (localStorage)
+  domain/
+    pokemonTypes.ts      # cores & labels dos tipos
+  i18n/
+    index.ts             # getLang / setLang / t / contentLang
+    translations.ts      # dicionários PT-BR / EN
+  features/              # autocomplete · filter · compare · radar
+  styles/style.css
+  __tests__/*.test.ts    # Vitest
 public/                  # Assets, ícones do PWA, 404.html
 ```
 

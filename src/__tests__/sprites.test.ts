@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { getPokemonSprite, getStaticImage, getAnimatedGif, getArtworkById } from './api.js';
+import {
+  getPokemonSprite,
+  getStaticImage,
+  getAnimatedGif,
+  getArtworkById,
+} from '../services/sprites';
+import type { Pokemon } from '../types';
 
 // Dados mínimos imitando a forma dos sprites da PokéAPI.
 const genV = {
@@ -17,7 +23,7 @@ const genV = {
       'official-artwork': { front_default: 'art.png', front_shiny: 'art-shiny.png' },
     },
   },
-};
+} as unknown as Pokemon;
 
 const genIX = {
   sprites: {
@@ -25,7 +31,7 @@ const genIX = {
     versions: { 'generation-v': { 'black-white': { animated: { front_default: null } } } },
     other: { 'official-artwork': { front_default: 'art.png' } },
   },
-};
+} as unknown as Pokemon;
 
 describe('getPokemonSprite', () => {
   it('prefere o gif animado quando existe', () => {

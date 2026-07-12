@@ -1,16 +1,37 @@
 // Filtro por tipo e/ou geração: mostra um grid paginado de Pokémon clicáveis.
-import { fetchByType, fetchByGeneration, getArtworkById } from './api.js';
-import { TYPE_NAMES, getTypeLabel } from './pokemonTypes.js';
-import { t, getLang } from './i18n.js';
+import type { RefItem } from '../types';
+import { fetchByType, fetchByGeneration } from '../services/pokeapi';
+import { getArtworkById } from '../services/sprites';
+import { TYPE_NAMES, getTypeLabel } from '../domain/pokemonTypes';
+import { t, getLang } from '../i18n';
 
 const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 const PAGE_SIZE = 24;
 
-export function setupFilter({ typeSelect, genSelect, resultsEl, paginationEl, onSelect }) {
-  let lastResults = [];
+interface FilterOptions {
+  typeSelect: HTMLSelectElement;
+  genSelect: HTMLSelectElement;
+  resultsEl: HTMLElement;
+  paginationEl: HTMLElement;
+  onSelect: (name: string) => void;
+}
+
+export interface FilterControls {
+  refresh: () => void;
+  setType: (typeName: string) => void;
+}
+
+export function setupFilter({
+  typeSelect,
+  genSelect,
+  resultsEl,
+  paginationEl,
+  onSelect,
+}: FilterOptions): FilterControls {
+  let lastResults: RefItem[] = [];
   let page = 0;
 
-  function populateSelects() {
+  function populateSelects(): void {
     const lang = getLang();
     const currentType = typeSelect.value;
     const currentGen = genSelect.value;
@@ -29,7 +50,7 @@ export function setupFilter({ typeSelect, genSelect, resultsEl, paginationEl, on
     genSelect.value = currentGen;
   }
 
-  function renderPagination() {
+  function renderPagination(): void {
     paginationEl.innerHTML = '';
     const total = lastResults.length;
     const pages = Math.ceil(total / PAGE_SIZE);
@@ -62,7 +83,7 @@ export function setupFilter({ typeSelect, genSelect, resultsEl, paginationEl, on
     paginationEl.append(prev, info, next);
   }
 
-  function renderPage() {
+  function renderPage(): void {
     resultsEl.innerHTML = '';
     const start = page * PAGE_SIZE;
     lastResults.slice(start, start + PAGE_SIZE).forEach(({ name, id }) => {
@@ -86,7 +107,7 @@ export function setupFilter({ typeSelect, genSelect, resultsEl, paginationEl, on
     renderPagination();
   }
 
-  function renderResults(list) {
+  function renderResults(list: RefItem[]): void {
     lastResults = list;
     page = 0;
 
@@ -99,7 +120,7 @@ export function setupFilter({ typeSelect, genSelect, resultsEl, paginationEl, on
     renderPage();
   }
 
-  async function apply() {
+  async function apply(): Promise<void> {
     const type = typeSelect.value;
     const gen = genSelect.value;
 
@@ -113,7 +134,7 @@ export function setupFilter({ typeSelect, genSelect, resultsEl, paginationEl, on
     resultsEl.innerHTML = `<span class="muted">${t('loading')}</span>`;
     paginationEl.innerHTML = '';
 
-    let list;
+    let list: RefItem[];
     if (type && gen) {
       const [byType, byGen] = await Promise.all([fetchByType(type), fetchByGeneration(gen)]);
       const genIds = new Set(byGen.map((p) => p.id));
@@ -131,16 +152,14 @@ export function setupFilter({ typeSelect, genSelect, resultsEl, paginationEl, on
   genSelect.addEventListener('change', apply);
   populateSelects();
 
-  // Re-aplica rótulos ao trocar de idioma, preservando resultados e página.
   return {
     refresh() {
       populateSelects();
       if (lastResults.length) renderPage();
     },
-    // Define o tipo e aplica (usado ao clicar num badge de tipo).
-    setType(typeName) {
+    setType(typeName: string) {
       typeSelect.value = typeName;
-      apply();
+      void apply();
     },
   };
 }

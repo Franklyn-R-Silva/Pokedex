@@ -1,18 +1,12 @@
 // Autocomplete por substring (busca em qualquer parte do nome), com navegação
 // por teclado. Substitui o <datalist> nativo, que só sugere por prefixo.
 
-/**
- * Filtra nomes por substring, priorizando quem começa com a busca.
- * @param {string[]} names
- * @param {string} query
- * @param {number} [limit=8]
- * @returns {string[]}
- */
-export function filterNames(names, query, limit = 8) {
+/** Filtra nomes por substring, priorizando quem começa com a busca. */
+export function filterNames(names: string[], query: string, limit = 8): string[] {
   const q = query.toLowerCase();
   if (!q) return [];
-  const starts = [];
-  const contains = [];
+  const starts: string[] = [];
+  const contains: string[] = [];
   for (const name of names) {
     const pos = name.indexOf(q);
     if (pos === 0) starts.push(name);
@@ -21,19 +15,25 @@ export function filterNames(names, query, limit = 8) {
   return [...starts, ...contains].slice(0, limit);
 }
 
-/**
- * @param {object} options
- * @param {HTMLInputElement} options.input
- * @param {HTMLElement} options.container  Lista onde as sugestões são renderizadas.
- * @param {() => string[]} options.getNames  Retorna a lista completa de nomes.
- * @param {(name: string) => void} options.onSelect  Chamado ao escolher uma sugestão.
- * @param {number} [options.limit]  Máximo de sugestões exibidas.
- */
-export function setupAutocomplete({ input, container, getNames, onSelect, limit = 8 }) {
-  let matches = [];
+interface AutocompleteOptions {
+  input: HTMLInputElement;
+  container: HTMLElement;
+  getNames: () => string[];
+  onSelect: (name: string) => void;
+  limit?: number;
+}
+
+export function setupAutocomplete({
+  input,
+  container,
+  getNames,
+  onSelect,
+  limit = 8,
+}: AutocompleteOptions): { close: () => void } {
+  let matches: string[] = [];
   let activeIndex = -1;
 
-  function close() {
+  function close(): void {
     container.innerHTML = '';
     container.classList.remove('is-open');
     input.setAttribute('aria-expanded', 'false');
@@ -41,8 +41,7 @@ export function setupAutocomplete({ input, container, getNames, onSelect, limit 
     activeIndex = -1;
   }
 
-  // Monta o texto da sugestão destacando o trecho que casou com a busca.
-  function highlight(name, query) {
+  function highlight(name: string, query: string): DocumentFragment {
     const index = name.indexOf(query);
     const fragment = document.createDocumentFragment();
     if (index < 0) {
@@ -56,7 +55,7 @@ export function setupAutocomplete({ input, container, getNames, onSelect, limit 
     return fragment;
   }
 
-  function render(query) {
+  function render(query: string): void {
     container.innerHTML = '';
     if (matches.length === 0) {
       close();
@@ -72,7 +71,6 @@ export function setupAutocomplete({ input, container, getNames, onSelect, limit 
         item.setAttribute('aria-selected', 'true');
       }
       item.appendChild(highlight(name, query));
-      // mousedown (não click) para disparar antes do blur do input.
       item.addEventListener('mousedown', (event) => {
         event.preventDefault();
         select(name);
@@ -84,7 +82,7 @@ export function setupAutocomplete({ input, container, getNames, onSelect, limit 
     input.setAttribute('aria-expanded', 'true');
   }
 
-  function select(name) {
+  function select(name: string): void {
     input.value = name;
     close();
     onSelect(name);
@@ -96,16 +94,7 @@ export function setupAutocomplete({ input, container, getNames, onSelect, limit 
       close();
       return;
     }
-    // Prioriza quem começa com a busca; depois os demais que a contêm.
-    const names = getNames();
-    const starts = [];
-    const contains = [];
-    for (const name of names) {
-      const pos = name.indexOf(query);
-      if (pos === 0) starts.push(name);
-      else if (pos > 0) contains.push(name);
-    }
-    matches = [...starts, ...contains].slice(0, limit);
+    matches = filterNames(getNames(), query, limit);
     activeIndex = -1;
     render(query);
   });
@@ -131,7 +120,6 @@ export function setupAutocomplete({ input, container, getNames, onSelect, limit 
     }
   });
 
-  // Fecha ao sair do campo (com atraso para permitir o clique na sugestão).
   input.addEventListener('blur', () => {
     setTimeout(close, 120);
   });
