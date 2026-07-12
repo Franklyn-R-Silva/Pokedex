@@ -11,6 +11,7 @@ import { t, getLang } from '../i18n';
 const LEVEL = 50;
 const MAX_FOES = 6;
 const HEAL_BETWEEN = 0.3; // recupera 30% do HP entre as fases
+const RECORD_KEY = 'pokedex-battle-record';
 
 const wait = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -140,6 +141,11 @@ export function setupBattle({ modal, content, getTeam, getNames, show }: BattleO
   function renderSetup(): void {
     content.innerHTML = '';
     content.appendChild(el('h2', 'battle-title', t('battleTitle')));
+
+    const record = Number(localStorage.getItem(RECORD_KEY) ?? 0);
+    if (record > 0) {
+      content.appendChild(el('p', 'battle-note muted', `🏅 ${t('battleRecord')}: ${record}`));
+    }
 
     const team = getTeam();
     if (team.length === 0) {
@@ -275,6 +281,7 @@ export function setupBattle({ modal, content, getTeam, getNames, show }: BattleO
   async function startGauntlet(championData: Pokemon, foesData: Pokemon[]): Promise<void> {
     content.innerHTML = `<p class="battle-note muted">${t('loading')}</p>`;
     const champion = await buildFighter(championData);
+    const potions = { n: 2 }; // itens compartilhados durante todo o gauntlet
     let phase = 0;
 
     const nextPhase = async (): Promise<void> => {
@@ -284,10 +291,11 @@ export function setupBattle({ modal, content, getTeam, getNames, show }: BattleO
       renderArena(champion, foe, {
         phase: phase + 1,
         total: foesData.length,
+        potions,
         onWin: () => {
           phase += 1;
           if (phase < foesData.length) void nextPhase();
-          else showVictory(champion);
+          else showVictory(champion, foesData.length);
         },
       });
     };
@@ -295,7 +303,11 @@ export function setupBattle({ modal, content, getTeam, getNames, show }: BattleO
     void nextPhase();
   }
 
-  function showVictory(champion: Fighter): void {
+  function showVictory(champion: Fighter, cleared: number): void {
+    const prev = Number(localStorage.getItem(RECORD_KEY) ?? 0);
+    const record = Math.max(prev, cleared);
+    if (record > prev) localStorage.setItem(RECORD_KEY, String(record));
+
     content.innerHTML = '';
     content.appendChild(el('h2', 'battle-title', t('battleTitle')));
     const img = el<HTMLImageElement>('img', 'battle-side__img battle-champion');
@@ -303,6 +315,7 @@ export function setupBattle({ modal, content, getTeam, getNames, show }: BattleO
     img.alt = champion.data.name;
     content.appendChild(img);
     content.appendChild(el('p', 'battle-result', `🏆 ${champion.data.name} ${t('battleChampion')}`));
+    content.appendChild(el('p', 'battle-note muted', `🏅 ${t('battleRecord')}: ${record}`));
     const again = el<HTMLButtonElement>('button', 'battle-again', t('battleAgain'));
     again.type = 'button';
     again.addEventListener('click', renderSetup);
@@ -313,7 +326,7 @@ export function setupBattle({ modal, content, getTeam, getNames, show }: BattleO
   function renderArena(
     you: Fighter,
     foe: Fighter,
-    meta: { phase: number; total: number; onWin: () => void },
+    meta: { phase: number; total: number; onWin: () => void; potions: { n: number } },
   ): void {
     content.innerHTML = '';
     content.appendChild(el('h2', 'battle-title', t('battleTitle')));
@@ -447,6 +460,36 @@ export function setupBattle({ modal, content, getTeam, getNames, show }: BattleO
       btn.addEventListener('click', () => void round(move));
       moves.appendChild(btn);
     });
+
+    // Item: Poção (cura ~40% do HP; gasta o turno — o oponente revida).
+    const potionLabel = () => `🧪 ${t('battlePotion')} (${meta.potions.n})`;
+    const potionBtn = el<HTMLButtonElement>('button', 'battle-move battle-potion', potionLabel());
+    potionBtn.type = 'button';
+    potionBtn.disabled = meta.potions.n <= 0;
+    potionBtn.addEventListener('click', () => void usePotion());
+    moves.appendChild(potionBtn);
+
+    async function usePotion(): Promise<void> {
+      if (over || busy || meta.potions.n <= 0 || you.hp >= you.maxHp) return;
+      busy = true;
+      moves.querySelectorAll('button').forEach((b) => (b.disabled = true));
+      const heal = Math.round(you.maxHp * 0.4);
+      you.hp = Math.min(you.maxHp, you.hp + heal);
+      meta.potions.n -= 1;
+      paint(youSideCard, you);
+      pushLog(`${you.data.name} ${t('battleUsedPotion')} (+${heal})`);
+      await wait(450);
+      // O oponente aproveita e ataca.
+      const fainted = await performAttack(foe, you, foeMove(), foeSide, youSideCard, false);
+      if (fainted) {
+        finish(foe, you, false);
+        return;
+      }
+      busy = false;
+      potionBtn.textContent = potionLabel();
+      moves.querySelectorAll('button').forEach((b) => (b.disabled = false));
+      potionBtn.disabled = meta.potions.n <= 0;
+    }
 
     pushLog(t('battleYourTurn'));
   }

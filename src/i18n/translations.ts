@@ -102,6 +102,9 @@ export interface Translation {
   battleSwap: string;
   battleYou: string;
   battleFoe: string;
+  battlePotion: string;
+  battleUsedPotion: string;
+  battleRecord: string;
   battleFoesTitle: string;
   battleRandom: string;
   battleAddFoe: string;
@@ -231,6 +234,9 @@ export const translations: Record<Lang, Translation> = {
     battleSwap: 'Trocar Pokémon',
     battleYou: 'Você',
     battleFoe: 'Oponente',
+    battlePotion: 'Poção',
+    battleUsedPotion: 'usou Poção',
+    battleRecord: 'Recorde',
     battleFoesTitle: 'Inimigos (fases)',
     battleRandom: '🎲 Aleatório',
     battleAddFoe: 'Adicionar por nome',
@@ -372,6 +378,9 @@ export const translations: Record<Lang, Translation> = {
     battleSwap: 'Change Pokémon',
     battleYou: 'You',
     battleFoe: 'Opponent',
+    battlePotion: 'Potion',
+    battleUsedPotion: 'used a Potion',
+    battleRecord: 'Record',
     battleFoesTitle: 'Opponents (phases)',
     battleRandom: '🎲 Random',
     battleAddFoe: 'Add by name',
