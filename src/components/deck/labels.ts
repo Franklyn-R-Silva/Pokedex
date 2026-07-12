@@ -24,6 +24,7 @@ const L = {
   analysis: ['Análise', 'Analysis'],
   meta: ['Decks do meta:', 'Meta decks:'],
   buildingMeta: ['Montando deck…', 'Building deck…'],
+  expertTips: ['Sugestões do especialista', 'Expert suggestions'],
 } as const;
 
 export function dl(lang: Lang, key: keyof typeof L): string {
@@ -64,6 +65,33 @@ export function issueText(lang: Lang, code: string, value?: string | number): st
       return pt
         ? `Linha incompleta: falta "${value}".`
         : `Incomplete evolution line: missing "${value}".`;
+    // Sugestões de especialista
+    case 'tipFewPokemon':
+      return pt
+        ? `Poucos Pokémon (${value}) — o ideal é ~12–20 para não ficar sem atacante.`
+        : `Few Pokémon (${value}) — aim for ~12–20 so you always have an attacker.`;
+    case 'tipManyPokemon':
+      return pt
+        ? `Muitos Pokémon (${value}) — corte alguns por mais Treinadores de consistência.`
+        : `Too many Pokémon (${value}) — cut a few for consistency Trainers.`;
+    case 'tipDraw':
+      return pt
+        ? `Poucos Supporters de compra (${value}) — mire ~6–10 (Professor's Research, Iono…).`
+        : `Few draw Supporters (${value}) — aim for ~6–10 (Professor's Research, Iono…).`;
+    case 'tipManyEnergy':
+      return pt
+        ? `Muita Energia (${value}) — a maioria dos decks roda ~8–15; troque por Treinadores.`
+        : `Lots of Energy (${value}) — most decks run ~8–15; swap some for Trainers.`;
+    case 'tipFewEnergy':
+      return pt
+        ? `Pouca Energia (${value}) — pode faltar para atacar; considere +energia ou aceleração.`
+        : `Low Energy (${value}) — you may whiff attacks; add energy or acceleration.`;
+    case 'tipHighCurve':
+      return pt
+        ? 'Curva de energia alta — inclua aceleração de energia para atacar mais cedo.'
+        : 'High energy curve — add energy acceleration to attack sooner.';
+    case 'tipSolid':
+      return pt ? 'Deck sólido e consistente! 👌' : 'Solid, consistent deck! 👌';
     default:
       return code;
   }

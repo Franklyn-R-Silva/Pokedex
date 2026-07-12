@@ -29,13 +29,27 @@ export function DeckBuilder({ onClose }: { onClose: () => void }) {
     const total = template.cards.length;
     setProgress({ done: 0, total });
     let done = 0;
-    // Busca em paralelo (com cache); atualiza o progresso a cada resposta.
+
+    // Escolhe o melhor match: nome exato > primeiro. Tenta 2x (rate-limit).
+    const findCard = async (query: string) => {
+      for (let attempt = 0; attempt < 2; attempt++) {
+        const { cards } = await searchCards({ name: query });
+        if (cards.length) {
+          const q = query.toLowerCase();
+          return cards.find((c) => c.name.toLowerCase() === q) ?? cards[0];
+        }
+      }
+      return null;
+    };
+
+    // Busca em paralelo (com cache); atualiza o progresso a cada resposta e
+    // mantém a quantidade (count) de cada carta do arquétipo.
     const results = await Promise.all(
       template.cards.map((c) =>
-        searchCards({ name: c.query }).then((r) => {
+        findCard(c.query).then((card) => {
           done += 1;
           setProgress({ done, total });
-          return { card: r.cards[0], count: c.count };
+          return { card, count: c.count };
         }),
       ),
     );

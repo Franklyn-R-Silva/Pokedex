@@ -108,6 +108,20 @@ export function DeckAnalysis({ entries }: { entries: DeckEntry[] }) {
           </li>
         ))}
       </ul>
+
+      {a.tips.length > 0 && (
+        <>
+          <h4 className="deck-missing-title">💡 {dl(lang, 'expertTips')}</h4>
+          <ul className="deck-issues">
+            {a.tips.map((tip, i) => (
+              <li className={`deck-issue deck-issue--${tip.level}`} key={i}>
+                <span className="deck-issue__icon">{tip.level === 'ok' ? '✔' : '💡'}</span>
+                {issueText(lang, tip.code, tip.value)}
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
     </div>
   );
 }
