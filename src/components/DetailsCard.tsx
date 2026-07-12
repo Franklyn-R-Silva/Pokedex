@@ -11,6 +11,7 @@ import { Effectiveness } from './details/Effectiveness';
 import { Evolution } from './details/Evolution';
 import { Moves } from './details/Moves';
 import { Cards } from './details/Cards';
+import { DetailsActions } from './DetailsActions';
 
 type Tab = 'about' | 'stats' | 'moves' | 'evo' | 'cards';
 
@@ -24,10 +25,11 @@ const TABS: { id: Tab; label: keyof import('../i18n/translations').Translation }
 
 interface DetailsCardProps {
   pokemon: Pokemon;
+  shiny: boolean;
   onSelect: (nameOrId: string | number) => void;
 }
 
-export function DetailsCard({ pokemon, onSelect }: DetailsCardProps) {
+export function DetailsCard({ pokemon, shiny, onSelect }: DetailsCardProps) {
   const { t } = useI18n();
   const [tab, setTab] = useState<Tab>('about');
   const species = useSpecies(pokemon.species.url);
@@ -81,6 +83,8 @@ export function DetailsCard({ pokemon, onSelect }: DetailsCardProps) {
         )}
 
         {tab === 'cards' && <Cards dexId={pokemon.id} />}
+
+        <DetailsActions pokemon={pokemon} shiny={shiny} />
       </section>
     </div>
   );

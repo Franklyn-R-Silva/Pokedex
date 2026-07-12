@@ -1,24 +1,41 @@
-import { useState, useEffect } from 'react';
-import { MAX_POKEMON } from './services/pokeapi';
-import { getTypeColor } from './domain/pokemonTypes';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { MAX_POKEMON, fetchAllPokemonNames } from './services/pokeapi';
+import { getTypeColor, getTypeLabel } from './domain/pokemonTypes';
+import { getArtworkById } from './services/sprites';
 import { useI18n } from './i18n/I18nContext';
 import { usePokemon } from './hooks/usePokemon';
 import { Header } from './components/Header';
 import { PokedexDevice } from './components/PokedexDevice';
 import { DetailsCard } from './components/DetailsCard';
+import { FavoritesPanel } from './components/panels/FavoritesPanel';
+import { FilterPanel } from './components/panels/FilterPanel';
+import { ComparePanel } from './components/panels/ComparePanel';
+import { TeamPanel } from './components/panels/TeamPanel';
+import { QuizPanel } from './components/panels/QuizPanel';
 
 function initialQuery(): string {
-  const fromUrl = new URLSearchParams(window.location.search).get('pokemon');
-  return fromUrl ?? '1';
+  return new URLSearchParams(window.location.search).get('pokemon') ?? '1';
 }
 
 export function App() {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const [query, setQuery] = useState<string>(initialQuery);
   const [shiny, setShiny] = useState(false);
   const { pokemon, loading, error } = usePokemon(query);
 
-  // Tema por tipo + URL + título sincronizados com o Pokémon atual.
+  const allNamesRef = useRef<string[]>([]);
+  useEffect(() => {
+    void fetchAllPokemonNames().then((names) => (allNamesRef.current = names));
+  }, []);
+  const getNames = useCallback(() => allNamesRef.current, []);
+
+  const go = useCallback(
+    (id: number) => setQuery(String(Math.min(MAX_POKEMON, Math.max(1, id)))),
+    [],
+  );
+  const onSelect = useCallback((q: string | number) => setQuery(String(q).toLowerCase()), []);
+
+  // Tema por tipo + URL + SEO/OG sincronizados com o Pokémon atual.
   useEffect(() => {
     if (!pokemon) return;
     const primary = pokemon.types[0]?.type.name ?? 'normal';
@@ -26,11 +43,39 @@ export function App() {
     const url = new URL(window.location.href);
     url.searchParams.set('pokemon', String(pokemon.id));
     window.history.replaceState({}, '', url);
-    const nice = pokemon.name.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-    document.title = `#${pokemon.id} ${nice} · Pokédex`;
-  }, [pokemon]);
 
-  const go = (id: number) => setQuery(String(Math.min(MAX_POKEMON, Math.max(1, id))));
+    const nice = pokemon.name.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+    const title = `#${pokemon.id} ${nice} · Pokédex`;
+    const types = pokemon.types.map((tp) => getTypeLabel(tp.type.name, lang)).join(', ');
+    const desc = `${nice} — ${types}. ${t('metaDescription')}`;
+    document.title = title;
+    const setMeta = (sel: string, v: string) =>
+      document.querySelector(sel)?.setAttribute('content', v);
+    setMeta('meta[property="og:title"]', title);
+    setMeta('meta[property="og:description"]', desc);
+    setMeta('meta[property="og:image"]', getArtworkById(pokemon.id));
+    setMeta('meta[property="og:url"]', window.location.href);
+    setMeta('meta[name="description"]', desc);
+  }, [pokemon, lang, t]);
+
+  // Teclado: ←/→ navegam, "/" foca a busca (fora de campos e sem modal aberto).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const el = document.activeElement;
+      const typing =
+        el instanceof HTMLElement && ['INPUT', 'SELECT', 'TEXTAREA'].includes(el.tagName);
+      if (e.key === '/' && !typing) {
+        e.preventDefault();
+        document.querySelector<HTMLInputElement>('.input__search')?.focus();
+        return;
+      }
+      if (typing || document.querySelector('.modal')) return;
+      if (e.key === 'ArrowLeft' && pokemon) go(pokemon.id - 1);
+      if (e.key === 'ArrowRight' && pokemon) go(pokemon.id + 1);
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [pokemon, go]);
 
   return (
     <>
@@ -39,6 +84,7 @@ export function App() {
         <PokedexDevice
           pokemon={pokemon}
           shiny={shiny}
+          getNames={getNames}
           onSearch={(q) => setQuery(q.toLowerCase())}
           onPrev={() => pokemon && go(pokemon.id - 1)}
           onNext={() => pokemon && go(pokemon.id + 1)}
@@ -48,17 +94,14 @@ export function App() {
 
         {error && <p className="error-message">{t('notFound')}</p>}
         {loading && !pokemon && <p className="loading-note muted">{t('loading')}</p>}
-        {pokemon && (
-          <DetailsCard pokemon={pokemon} onSelect={(q) => setQuery(String(q).toLowerCase())} />
-        )}
+        {pokemon && <DetailsCard pokemon={pokemon} shiny={shiny} onSelect={onSelect} />}
 
         <div className="col col--panels">
-          <section className="panel">
-            <p className="muted" style={{ padding: '8px' }}>
-              🚧 Painéis (favoritos, filtro, comparar, time, quiz, batalha, cartas, deck) sendo
-              migrados para React nas próximas fases.
-            </p>
-          </section>
+          <FavoritesPanel onSelect={onSelect} />
+          <FilterPanel onSelect={onSelect} />
+          <ComparePanel getNames={getNames} />
+          <TeamPanel getNames={getNames} onSelect={onSelect} />
+          <QuizPanel getNames={getNames} />
         </div>
       </main>
     </>
