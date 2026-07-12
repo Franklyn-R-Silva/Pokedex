@@ -1715,3 +1715,129 @@ html.dark .ctable .is-higher {
   height: 100%;
   border-radius: 999px;
 }
+
+/* ---------- Time (team builder) ---------- */
+
+.team__controls {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.team-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.team-list:empty {
+  display: none;
+}
+
+.team-member {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+
+.team-member img {
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+  cursor: pointer;
+}
+
+.team-member__remove {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 18px;
+  height: 18px;
+  border: none;
+  border-radius: 50%;
+  background: #e05252;
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* ---------- Quiz ---------- */
+
+.quiz-score {
+  margin-left: auto;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.quiz-img {
+  display: block;
+  margin: 0 auto 12px;
+  width: 130px;
+  height: 130px;
+  object-fit: contain;
+  transition: filter 0.3s ease;
+}
+
+.quiz-img.is-silhouette {
+  filter: brightness(0);
+}
+
+.quiz-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.quiz-option {
+  padding: 9px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--text);
+  font-weight: 600;
+  font-size: 0.8rem;
+  cursor: pointer;
+  text-transform: capitalize;
+}
+
+.quiz-option:hover:not(:disabled) {
+  border-color: var(--type-color);
+}
+
+.quiz-option.is-correct {
+  background: #16a34a;
+  border-color: #16a34a;
+  color: #fff;
+}
+
+.quiz-option.is-wrong {
+  background: #e05252;
+  border-color: #e05252;
+  color: #fff;
+}
+
+.quiz-next {
+  width: 100%;
+  margin-top: 10px;
+  padding: 9px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--type-color);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.quiz-next[hidden] {
+  display: none;
+}

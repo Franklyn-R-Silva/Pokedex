@@ -81,6 +81,13 @@ export interface Translation {
   infoTranslate: string;
   infoShortcut: string;
   install: string;
+  teamTitle: string;
+  teamPlaceholder: string;
+  teamWeaknesses: string;
+  teamEmpty: string;
+  quizTitle: string;
+  quizNext: string;
+  quizScore: string;
   movePower: string;
   moveAccuracy: string;
   movePp: string;
@@ -170,6 +177,13 @@ export const translations: Record<Lang, Translation> = {
     infoTranslate: 'Os textos em português são traduzidos automaticamente (a PokéAPI não tem PT).',
     infoShortcut: 'Dica: tecle "/" para buscar e ←/→ para navegar.',
     install: '⬇ Instalar',
+    teamTitle: '🛡️ Meu time',
+    teamPlaceholder: 'Adicionar ao time',
+    teamWeaknesses: 'Fraquezas do time',
+    teamEmpty: 'Monte um time de até 6',
+    quizTitle: '❓ Quem é esse Pokémon?',
+    quizNext: 'Próximo',
+    quizScore: 'Placar',
     movePower: 'Poder',
     moveAccuracy: 'Precisão',
     movePp: 'PP',
@@ -271,6 +285,13 @@ export const translations: Record<Lang, Translation> = {
     infoTranslate: 'Portuguese text is machine-translated (the PokéAPI has no PT).',
     infoShortcut: 'Tip: press "/" to search and ←/→ to navigate.',
     install: '⬇ Install',
+    teamTitle: '🛡️ My team',
+    teamPlaceholder: 'Add to team',
+    teamWeaknesses: 'Team weaknesses',
+    teamEmpty: 'Build a team of up to 6',
+    quizTitle: "❓ Who's that Pokémon?",
+    quizNext: 'Next',
+    quizScore: 'Score',
     movePower: 'Power',
     moveAccuracy: 'Accuracy',
     movePp: 'PP',

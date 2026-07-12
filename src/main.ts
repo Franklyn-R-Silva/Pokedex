@@ -5,6 +5,8 @@ import type { StatKey, Translation } from './i18n/translations';
 import type { Theme } from './services/storage';
 import type { FilterControls } from './features/filter';
 import type { CompareControls } from './features/compare';
+import type { TeamControls } from './features/team';
+import type { QuizControls } from './features/quiz';
 import {
   fetchPokemon,
   fetchAllPokemonNames,
@@ -38,6 +40,8 @@ import { getTheme, setTheme, getFavorites, isFavorite, toggleFavorite } from './
 import { setupAutocomplete } from './features/autocomplete';
 import { setupFilter } from './features/filter';
 import { setupCompare } from './features/compare';
+import { setupTeam } from './features/team';
+import { setupQuiz } from './features/quiz';
 import { radarSvg } from './features/radar';
 import { initLang, getLang, setLang, t } from './i18n';
 
@@ -133,6 +137,8 @@ let requestId = 0;
 let allNames: string[] = [];
 let filterCtl: FilterControls | null = null;
 let compareCtl: CompareControls | null = null;
+let teamCtl: TeamControls | null = null;
+let quizCtl: QuizControls | null = null;
 
 function setLoading(): void {
   pokemonName.textContent = t('loading');
@@ -962,6 +968,8 @@ langToggle.addEventListener('click', () => {
   renderFavorites();
   filterCtl?.refresh();
   compareCtl?.refresh();
+  teamCtl?.refresh();
+  quizCtl?.refresh();
   if (currentPokemon) void renderPokemon(currentPokemon.id);
 });
 
@@ -1059,6 +1067,30 @@ setupAutocomplete({
   container: qs<HTMLElement>('.compare-suggest'),
   getNames: () => allNames,
   onSelect: (name) => void compareCtl?.add(name),
+});
+
+const teamInput = qs<HTMLInputElement>('.team-input');
+teamCtl = setupTeam({
+  form: qs<HTMLFormElement>('.team__controls'),
+  input: teamInput,
+  listEl: qs<HTMLElement>('.team-list'),
+  resultEl: qs<HTMLElement>('.team-result'),
+  onSelect: (name) => {
+    void renderPokemon(name);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  },
+});
+setupAutocomplete({
+  input: teamInput,
+  container: qs<HTMLElement>('.team-suggest'),
+  getNames: () => allNames,
+  onSelect: (name) => void teamCtl?.add(name),
+});
+
+quizCtl = setupQuiz({
+  container: qs<HTMLElement>('.quiz-body'),
+  scoreEl: qs<HTMLElement>('.quiz-score'),
+  getNames: () => allNames,
 });
 
 // PWA: mostra o botão "Instalar" quando o navegador oferece o prompt.

@@ -220,6 +220,40 @@
           <div class="compare-chips"></div>
           <div class="compare-result"></div>
         </section>
+
+        <section class="panel team">
+          <div class="panel__head">
+            <h2 class="panel__title" data-i18n="teamTitle">🛡️ Meu time</h2>
+          </div>
+          <form class="team__controls">
+            <div class="compare-field">
+              <input
+                class="team-input"
+                type="search"
+                placeholder="Adicionar ao time"
+                data-i18n-ph="teamPlaceholder"
+                data-i18n-aria="teamPlaceholder"
+                aria-label="Adicionar ao time"
+                autocomplete="off"
+                role="combobox"
+                aria-autocomplete="list"
+                aria-expanded="false"
+              />
+              <ul class="suggestions team-suggest" role="listbox"></ul>
+            </div>
+            <button class="compare-add" type="submit" aria-label="Adicionar">＋</button>
+          </form>
+          <div class="team-list"></div>
+          <div class="team-result"></div>
+        </section>
+
+        <section class="panel quiz">
+          <div class="panel__head">
+            <h2 class="panel__title" data-i18n="quizTitle">❓ Quem é esse Pokémon?</h2>
+            <span class="quiz-score"></span>
+          </div>
+          <div class="quiz-body"></div>
+        </section>
       </div>
     </main>
 
