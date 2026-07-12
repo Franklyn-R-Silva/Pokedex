@@ -111,6 +111,12 @@ export interface Translation {
   cards: string;
   cardsNone: string;
   cardsHint: string;
+  cardPriceTitle: string;
+  cardNoPrice: string;
+  cardUpdated: string;
+  cardBuy: string;
+  cardAttacks: string;
+  cardBy: string;
   quizTitle: string;
   quizNext: string;
   quizScore: string;
@@ -232,7 +238,13 @@ export const translations: Record<Lang, Translation> = {
     battleChampion: 'venceu todas as fases! 🏆',
     cards: 'Cartas',
     cardsNone: 'Nenhuma carta encontrada para este Pokémon.',
-    cardsHint: 'Cartas do TCG · clique para ampliar',
+    cardsHint: 'Cartas do TCG · clique para ver detalhes e preço',
+    cardPriceTitle: 'Valor de mercado',
+    cardNoPrice: 'Preço indisponível',
+    cardUpdated: 'Atualizado em',
+    cardBuy: 'Ver à venda ↗',
+    cardAttacks: 'Ataques',
+    cardBy: 'Arte de',
     quizTitle: '❓ Quem é esse Pokémon?',
     quizNext: 'Próximo',
     quizScore: 'Placar',
@@ -366,7 +378,13 @@ export const translations: Record<Lang, Translation> = {
     battleChampion: 'cleared all phases! 🏆',
     cards: 'Cards',
     cardsNone: 'No cards found for this Pokémon.',
-    cardsHint: 'TCG cards · click to enlarge',
+    cardsHint: 'TCG cards · click for details and price',
+    cardPriceTitle: 'Market value',
+    cardNoPrice: 'Price unavailable',
+    cardUpdated: 'Updated',
+    cardBuy: 'View listing ↗',
+    cardAttacks: 'Attacks',
+    cardBy: 'Art by',
     quizTitle: "❓ Who's that Pokémon?",
     quizNext: 'Next',
     quizScore: 'Score',

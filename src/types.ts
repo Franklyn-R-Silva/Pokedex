@@ -172,7 +172,15 @@ export interface Favorite {
   name: string;
 }
 
-/** Carta do TCG (Pokémon TCG API — api.pokemontcg.io), campos usados na galeria. */
+/** Ataque de uma carta do TCG. */
+export interface TcgAttack {
+  name: string;
+  cost: string[];
+  damage: string;
+  text: string;
+}
+
+/** Carta do TCG (Pokémon TCG API — api.pokemontcg.io). */
 export interface TcgCard {
   id: string;
   name: string;
@@ -180,6 +188,18 @@ export interface TcgCard {
   large: string;
   rarity: string;
   setName: string;
+  number: string;
+  hp: string;
+  types: string[];
+  subtypes: string[];
+  artist: string;
+  flavorText: string;
+  attacks: TcgAttack[];
+  /** Preço de mercado (TCGplayer, USD) e tendência (Cardmarket, EUR). */
+  priceUsd: number | null;
+  priceEur: number | null;
+  priceUrl: string;
+  priceUpdated: string;
 }
 
 export type Lang = 'pt' | 'en';

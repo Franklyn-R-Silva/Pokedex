@@ -39,6 +39,7 @@ import { setupQuiz } from './features/quiz';
 import { setupBattle } from './features/battle';
 import { renderMoves } from './features/moves';
 import { createDetailModals } from './features/detailModals';
+import { createCardModal } from './features/cardModal';
 import { radarSvg } from './features/radar';
 import { initLang, getLang, setLang, t } from './i18n';
 
@@ -116,6 +117,7 @@ const { openAbility: openAbilityModal, openMove: openMoveModal } = createDetailM
   content: detailContent,
   show: showModal,
 });
+const openCardModal = createCardModal({ modal: detailModal, content: detailContent, show: showModal });
 const movesContainer = qs<HTMLElement>('.details__moves');
 const locationsContainer = qs<HTMLElement>('.details__locations');
 const genusEl = qs<HTMLElement>('.details__genus');
@@ -441,14 +443,6 @@ async function renderEncounters(url: string, reqId: number): Promise<void> {
   locationsContainer.appendChild(chips);
 }
 
-// Abre uma única carta (imagem grande) reaproveitando o lightbox.
-function openCardImage(url: string, alt: string): void {
-  lightboxImg.src = url;
-  lightboxImg.alt = alt;
-  lightboxThumbs.innerHTML = '';
-  showModal(lightbox);
-}
-
 // Carrega as cartas do TCG sob demanda (só quando a aba "Cartas" é aberta).
 async function renderCards(): Promise<void> {
   if (!currentPokemon || cardsLoadedFor === currentPokemon.id) return;
@@ -486,7 +480,7 @@ async function renderCards(): Promise<void> {
     img.alt = `${card.name}${card.setName ? ` · ${card.setName}` : ''}`;
     img.loading = 'lazy';
     btn.appendChild(img);
-    btn.addEventListener('click', () => openCardImage(card.large, img.alt));
+    btn.addEventListener('click', () => openCardModal(card));
     grid.appendChild(btn);
   });
 

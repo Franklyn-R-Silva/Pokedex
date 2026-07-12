@@ -1,21 +1,44 @@
 // Cartas do TCG via Pokémon TCG API (api.pokemontcg.io), separada da PokéAPI.
-// Busca por número da Pokédex nacional (casa com o id do app) e cacheia o
-// resultado (memória + localStorage) para respeitar o limite gratuito da API.
-import type { TcgCard } from '../types';
+// Busca por número da Pokédex nacional (casa com o id do app), traz conteúdo +
+// preços de mercado embutidos e cacheia (memória + localStorage) para respeitar
+// o limite gratuito da API.
+import type { TcgCard, TcgAttack } from '../types';
 
 const API = 'https://api.pokemontcg.io/v2/cards';
 const STORE_KEY = 'pokedex-tcg';
+const SELECT =
+  'id,name,number,rarity,artist,flavorText,hp,types,subtypes,set,images,attacks,tcgplayer,cardmarket';
 const memory = new Map<number, TcgCard[]>();
 
 // Chave opcional: sem ela a API funciona com limite reduzido (1000/dia).
 const API_KEY = import.meta.env.VITE_POKEMONTCG_KEY as string | undefined;
 
+interface PriceBlock {
+  low?: number;
+  mid?: number;
+  high?: number;
+  market?: number;
+}
+
 interface ApiCard {
   id: string;
   name: string;
+  number?: string;
   rarity?: string;
+  artist?: string;
+  flavorText?: string;
+  hp?: string;
+  types?: string[];
+  subtypes?: string[];
   set?: { name?: string };
   images?: { small?: string; large?: string };
+  attacks?: TcgAttack[];
+  tcgplayer?: { url?: string; updatedAt?: string; prices?: Record<string, PriceBlock> };
+  cardmarket?: {
+    url?: string;
+    updatedAt?: string;
+    prices?: { trendPrice?: number; averageSellPrice?: number };
+  };
 }
 
 function loadStore(): Record<string, TcgCard[]> {
@@ -34,6 +57,39 @@ function saveStore(store: Record<string, TcgCard[]>): void {
   }
 }
 
+// Melhor preço de mercado disponível (TCGplayer USD) entre as variantes.
+function marketUsd(tp?: ApiCard['tcgplayer']): number | null {
+  if (!tp?.prices) return null;
+  const preferred = ['holofoil', 'normal', 'reverseHolofoil', 'unlimitedHolofoil'];
+  for (const key of [...preferred, ...Object.keys(tp.prices)]) {
+    const market = tp.prices[key]?.market;
+    if (typeof market === 'number') return market;
+  }
+  return null;
+}
+
+function toCard(c: ApiCard): TcgCard {
+  return {
+    id: c.id,
+    name: c.name,
+    small: c.images!.small!,
+    large: c.images?.large ?? c.images!.small!,
+    rarity: c.rarity ?? '',
+    setName: c.set?.name ?? '',
+    number: c.number ?? '',
+    hp: c.hp ?? '',
+    types: c.types ?? [],
+    subtypes: c.subtypes ?? [],
+    artist: c.artist ?? '',
+    flavorText: c.flavorText ?? '',
+    attacks: c.attacks ?? [],
+    priceUsd: marketUsd(c.tcgplayer),
+    priceEur: c.cardmarket?.prices?.trendPrice ?? c.cardmarket?.prices?.averageSellPrice ?? null,
+    priceUrl: c.tcgplayer?.url ?? c.cardmarket?.url ?? '',
+    priceUpdated: c.tcgplayer?.updatedAt ?? c.cardmarket?.updatedAt ?? '',
+  };
+}
+
 /** Cartas do Pokémon (por nº da Pokédex). Retorna [] em erro/sem resultado. */
 export async function fetchCards(dexId: number): Promise<TcgCard[]> {
   if (memory.has(dexId)) return memory.get(dexId)!;
@@ -46,9 +102,7 @@ export async function fetchCards(dexId: number): Promise<TcgCard[]> {
   }
 
   try {
-    const url =
-      `${API}?q=nationalPokedexNumbers:${dexId}` +
-      `&orderBy=-set.releaseDate&pageSize=24&select=id,name,rarity,set,images`;
+    const url = `${API}?q=nationalPokedexNumbers:${dexId}&orderBy=-set.releaseDate&pageSize=24&select=${SELECT}`;
     const headers: Record<string, string> = {};
     if (API_KEY) headers['X-Api-Key'] = API_KEY;
 
@@ -56,16 +110,7 @@ export async function fetchCards(dexId: number): Promise<TcgCard[]> {
     if (!response.ok) return [];
 
     const json = (await response.json()) as { data?: ApiCard[] };
-    const cards: TcgCard[] = (json.data ?? [])
-      .filter((c) => c.images?.small)
-      .map((c) => ({
-        id: c.id,
-        name: c.name,
-        small: c.images!.small!,
-        large: c.images?.large ?? c.images!.small!,
-        rarity: c.rarity ?? '',
-        setName: c.set?.name ?? '',
-      }));
+    const cards: TcgCard[] = (json.data ?? []).filter((c) => c.images?.small).map(toCard);
 
     memory.set(dexId, cards);
     store[String(dexId)] = cards;
@@ -81,4 +126,23 @@ export function isHolo(rarity: string): boolean {
   return /rare|holo|ex|gx|vmax|vstar|\bv\b|full art|rainbow|secret|shiny|amazing|radiant/i.test(
     rarity,
   );
+}
+
+/** Faixa de raridade → tier para colorir o badge (common/uncommon/rare/ultra/secret). */
+export function rarityTier(rarity: string): string {
+  const r = rarity.toLowerCase();
+  if (/rainbow|secret|gold|hyper/.test(r)) return 'secret';
+  if (/ultra|vmax|vstar|full art|\bgx\b|\bex\b|\bv\b|amazing|radiant|illustration/.test(r))
+    return 'ultra';
+  if (/holo|rare/.test(r)) return 'rare';
+  if (/uncommon/.test(r)) return 'uncommon';
+  return 'common';
+}
+
+/** Formata um preço em USD/EUR (Intl). */
+export function formatPrice(value: number, currency: 'USD' | 'EUR'): string {
+  return new Intl.NumberFormat(currency === 'USD' ? 'en-US' : 'de-DE', {
+    style: 'currency',
+    currency,
+  }).format(value);
 }

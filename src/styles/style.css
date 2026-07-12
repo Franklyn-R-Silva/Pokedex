@@ -1944,6 +1944,191 @@ html.dark .ctable .is-higher {
   filter: saturate(1.15) contrast(1.05);
 }
 
+/* Modal rico da carta (conteúdo + raridade + preço) */
+.tcg-detail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+@media (min-width: 480px) {
+  .tcg-detail {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+}
+
+.tcg-detail__img {
+  width: 160px;
+  align-self: center;
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+
+.tcg-detail__info {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+}
+
+.tcg-detail__name {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  margin-bottom: var(--space-2);
+}
+
+.tcg-detail__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: var(--space-2);
+}
+
+.tcg-rarity {
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: #fff;
+  background: var(--text-muted);
+}
+
+.tcg-rarity[data-tier='common'] {
+  background: #8b95a5;
+}
+.tcg-rarity[data-tier='uncommon'] {
+  background: #3fa34d;
+}
+.tcg-rarity[data-tier='rare'] {
+  background: #3b82f6;
+}
+.tcg-rarity[data-tier='ultra'] {
+  background: #a855f7;
+}
+.tcg-rarity[data-tier='secret'] {
+  background: linear-gradient(90deg, #f59e0b, #ef4444, #a855f7, #3b82f6);
+}
+
+.tcg-hp-badge {
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+
+.tcg-detail__meta {
+  font-size: 0.74rem;
+  margin-bottom: var(--space-3);
+}
+
+.tcg-price {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: var(--space-3);
+  margin-bottom: var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+
+.tcg-price__label {
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.tcg-price__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: baseline;
+}
+
+.tcg-price__value {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #16a34a;
+}
+
+.tcg-price__value--eur {
+  font-size: 1rem;
+  color: var(--text-muted);
+}
+
+.tcg-price__src {
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.tcg-price__updated {
+  font-size: 0.66rem;
+}
+
+.tcg-price__buy {
+  align-self: flex-start;
+  margin-top: 4px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--type-color);
+  text-decoration: none;
+}
+
+.tcg-price__buy:hover {
+  text-decoration: underline;
+}
+
+.tcg-section-title {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: var(--space-2);
+}
+
+.tcg-attack {
+  padding: var(--space-2) 0;
+  border-top: 1px solid var(--border);
+}
+
+.tcg-attack__head {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+  font-weight: 700;
+  font-size: 0.82rem;
+}
+
+.tcg-attack__damage {
+  color: var(--type-color);
+}
+
+.tcg-attack__cost {
+  font-size: 0.68rem;
+}
+
+.tcg-attack__text {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.tcg-detail__flavor {
+  margin-top: var(--space-3);
+  font-size: 0.76rem;
+  font-style: italic;
+  color: var(--text-muted);
+}
+
 /* ---------- Batalha (mini-jogo) ---------- */
 
 .btn-battle {
