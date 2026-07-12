@@ -15,8 +15,6 @@ import {
   fetchSpecies,
   fetchEffectiveness,
   fetchEncounters,
-  fetchAbility,
-  fetchMove,
   getFlavorText,
   getGenus,
   MAX_POKEMON,
@@ -31,13 +29,7 @@ import {
   getSpriteGallery,
 } from './services/sprites';
 import { getTypeColor, getTypeLabel } from './domain/pokemonTypes';
-import {
-  aboutRows,
-  speciesFlags,
-  groupMoves,
-  titleize,
-  formatEvolution,
-} from './domain/pokemonInfo';
+import { aboutRows, speciesFlags, titleize, formatEvolution } from './domain/pokemonInfo';
 import { getTheme, setTheme, getFavorites, isFavorite, toggleFavorite } from './services/storage';
 import { setupAutocomplete } from './features/autocomplete';
 import { setupFilter } from './features/filter';
@@ -45,6 +37,8 @@ import { setupCompare } from './features/compare';
 import { setupTeam } from './features/team';
 import { setupQuiz } from './features/quiz';
 import { setupBattle } from './features/battle';
+import { renderMoves } from './features/moves';
+import { createDetailModals } from './features/detailModals';
 import { radarSvg } from './features/radar';
 import { initLang, getLang, setLang, t } from './i18n';
 
@@ -117,6 +111,11 @@ const infoModal = qs<HTMLElement>('.info-modal');
 const topbarInfo = qs<HTMLButtonElement>('.topbar-info');
 const detailModal = qs<HTMLElement>('.detail-modal');
 const detailContent = qs<HTMLElement>('.detail-modal__content');
+const { openAbility: openAbilityModal, openMove: openMoveModal } = createDetailModals({
+  modal: detailModal,
+  content: detailContent,
+  show: showModal,
+});
 const movesContainer = qs<HTMLElement>('.details__moves');
 const locationsContainer = qs<HTMLElement>('.details__locations');
 const genusEl = qs<HTMLElement>('.details__genus');
@@ -412,103 +411,6 @@ function renderHeldItems(data: Pokemon): void {
   heldContainer.append(label, document.createTextNode(names));
 }
 
-function renderMoves(data: Pokemon): void {
-  movesContainer.innerHTML = '';
-  const groups = groupMoves(data);
-  const methods = Object.keys(groups);
-  if (methods.length === 0) return;
-
-  const total = new Set(data.moves.map((m) => m.move.name)).size;
-
-  const toggle = document.createElement('button');
-  toggle.type = 'button';
-  toggle.className = 'collapse-toggle';
-  toggle.textContent = `${t('showMoves')} (${total})`;
-  toggle.setAttribute('aria-expanded', 'false');
-
-  const body = document.createElement('div');
-  body.className = 'moves-body';
-  body.hidden = true;
-
-  // Campo de busca (lupa) para filtrar a lista longa de golpes.
-  const search = document.createElement('div');
-  search.className = 'moves-search';
-  const searchIcon = document.createElement('span');
-  searchIcon.className = 'moves-search__icon';
-  searchIcon.setAttribute('aria-hidden', 'true');
-  searchIcon.textContent = '🔍';
-  const searchInput = document.createElement('input');
-  searchInput.type = 'search';
-  searchInput.className = 'moves-search__input';
-  searchInput.placeholder = t('moveSearch');
-  searchInput.setAttribute('aria-label', t('moveSearch'));
-  search.append(searchIcon, searchInput);
-
-  const empty = document.createElement('p');
-  empty.className = 'moves-empty muted';
-  empty.textContent = t('moveNoResults');
-  empty.hidden = true;
-
-  const methodLabels: Record<string, string> = {
-    'level-up': t('moveLevel'),
-    machine: t('moveMachine'),
-    egg: t('moveEgg'),
-    tutor: t('moveTutor'),
-  };
-  const order = ['level-up', 'machine', 'egg', 'tutor'];
-  [...methods]
-    .sort((a, b) => (order.indexOf(a) + 1 || 99) - (order.indexOf(b) + 1 || 99))
-    .forEach((method) => {
-      const group = document.createElement('div');
-      group.className = 'moves-group';
-      const gtitle = document.createElement('h3');
-      gtitle.className = 'moves-group__title';
-      gtitle.textContent = methodLabels[method] ?? titleize(method);
-      const chips = document.createElement('div');
-      chips.className = 'moves-chips';
-      groups[method].forEach(({ name, level, url }) => {
-        const chip = document.createElement('button');
-        chip.type = 'button';
-        chip.className = 'move-chip is-clickable';
-        chip.textContent = level > 0 ? `${titleize(name)} · ${level}` : titleize(name);
-        chip.dataset.move = `${name} ${titleize(name)}`.toLowerCase();
-        chip.addEventListener('click', () => void openMoveModal(url, name));
-        chips.appendChild(chip);
-      });
-      group.append(gtitle, chips);
-      body.appendChild(group);
-    });
-
-  // Filtra os chips pela busca; oculta grupos vazios e mostra aviso se nada casar.
-  searchInput.addEventListener('input', () => {
-    const q = searchInput.value.trim().toLowerCase();
-    let anyVisible = false;
-    body.querySelectorAll<HTMLElement>('.moves-group').forEach((group) => {
-      let groupVisible = false;
-      group.querySelectorAll<HTMLElement>('.move-chip').forEach((chip) => {
-        const match = !q || (chip.dataset.move ?? '').includes(q);
-        chip.hidden = !match;
-        if (match) groupVisible = true;
-      });
-      group.hidden = !groupVisible;
-      if (groupVisible) anyVisible = true;
-    });
-    empty.hidden = anyVisible;
-  });
-
-  body.prepend(search);
-  body.appendChild(empty);
-
-  toggle.addEventListener('click', () => {
-    const open = body.hidden;
-    body.hidden = !open;
-    toggle.setAttribute('aria-expanded', String(open));
-    if (open) searchInput.focus();
-  });
-
-  movesContainer.append(toggle, body);
-}
-
 async function renderEncounters(url: string, reqId: number): Promise<void> {
   locationsContainer.innerHTML = '';
 
@@ -728,7 +630,7 @@ function renderDetails(data: Pokemon, reqId: number): void {
   detailsRadar.innerHTML = radarSvg([data], [getTypeColor(primaryType)]);
   renderStats(data.stats);
   renderHeldItems(data);
-  renderMoves(data);
+  renderMoves(movesContainer, data, (url, name) => void openMoveModal(url, name));
   renderAbilities(data.abilities);
   void renderSpecies(data, reqId);
   void renderEffectiveness(data.types, reqId);
@@ -949,86 +851,6 @@ function openLightbox(): void {
 
   setMain(gallery[0].url);
   showModal(lightbox);
-}
-
-// Modal de detalhes de habilidade (efeito) — endpoint /ability.
-async function openAbilityModal(url: string, title: string): Promise<void> {
-  detailContent.innerHTML = `<span class="muted">${t('loading')}</span>`;
-  showModal(detailModal);
-  const data = await fetchAbility(url);
-  detailContent.innerHTML = '';
-
-  const heading = document.createElement('h2');
-  heading.className = 'detail-title';
-  heading.textContent = title;
-  detailContent.appendChild(heading);
-
-  const entry = data?.effect_entries.find((e) => e.language.name === 'en');
-  const effect = entry?.short_effect ?? entry?.effect ?? t('none');
-  const p = document.createElement('p');
-  p.className = 'detail-effect';
-  p.textContent = effect;
-  detailContent.appendChild(p);
-
-  if (getLang() === 'pt' && effect) void translateToPt(effect).then((tr) => (p.textContent = tr));
-}
-
-// Modal de detalhes de golpe (tipo/poder/precisão/PP/categoria/efeito) — /move.
-async function openMoveModal(url: string, name: string): Promise<void> {
-  detailContent.innerHTML = `<span class="muted">${t('loading')}</span>`;
-  showModal(detailModal);
-  const data = await fetchMove(url);
-  detailContent.innerHTML = '';
-
-  const heading = document.createElement('h2');
-  heading.className = 'detail-title';
-  heading.textContent = titleize(name);
-  detailContent.appendChild(heading);
-
-  if (!data) {
-    const muted = document.createElement('span');
-    muted.className = 'muted';
-    muted.textContent = t('notFound');
-    detailContent.appendChild(muted);
-    return;
-  }
-
-  const lang = getLang();
-  const badge = document.createElement('span');
-  badge.className = 'type-badge';
-  badge.style.backgroundColor = getTypeColor(data.type.name);
-  badge.textContent = getTypeLabel(data.type.name, lang);
-  detailContent.appendChild(badge);
-
-  const grid = document.createElement('div');
-  grid.className = 'detail-grid';
-  const addCell = (label: string, value: string): void => {
-    const cell = document.createElement('div');
-    cell.className = 'about-cell';
-    const l = document.createElement('span');
-    l.className = 'about-label';
-    l.textContent = label;
-    const v = document.createElement('span');
-    v.className = 'about-value';
-    v.textContent = value;
-    cell.append(l, v);
-    grid.appendChild(cell);
-  };
-  addCell(t('moveCategory'), t(data.damage_class.name as keyof Translation) as string);
-  addCell(t('movePower'), data.power != null ? String(data.power) : '—');
-  addCell(t('moveAccuracy'), data.accuracy != null ? `${data.accuracy}%` : '—');
-  addCell(t('movePp'), data.pp != null ? String(data.pp) : '—');
-  detailContent.appendChild(grid);
-
-  const entry = data.effect_entries.find((e) => e.language.name === 'en');
-  const effect = (entry?.short_effect ?? '').replace(/\$effect_chance/g, '—');
-  if (effect) {
-    const p = document.createElement('p');
-    p.className = 'detail-effect';
-    p.textContent = effect;
-    detailContent.appendChild(p);
-    if (lang === 'pt') void translateToPt(effect).then((tr) => (p.textContent = tr));
-  }
 }
 
 pokemonImage.addEventListener('click', openLightbox);
