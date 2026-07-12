@@ -180,6 +180,62 @@ export async function searchCards(
   }
 }
 
+const NAMES_STORE = 'pokedex-tcg-names';
+
+/** Busca várias cartas por nome em UMA query (name:"A" OR name:"B" …) e devolve
+ *  um mapa nome→melhor carta (match exato preferido). Cacheado em memória +
+ *  localStorage — a importação de um meta-deck vira 1 request (ou 0 no reuso). */
+export async function fetchCardsByNames(names: string[]): Promise<Map<string, TcgCard>> {
+  const unique = [...new Set(names.map((n) => n.trim()).filter(Boolean))];
+  const cacheKey = unique.map((n) => n.toLowerCase()).sort().join('|');
+
+  const result = new Map<string, TcgCard>();
+  const assign = (cards: TcgCard[]) => {
+    for (const name of unique) {
+      const nl = name.toLowerCase();
+      const exact = cards.find((c) => c.name.toLowerCase() === nl);
+      const partial = exact ?? cards.find((c) => c.name.toLowerCase().startsWith(nl));
+      if (partial) result.set(nl, partial);
+    }
+  };
+
+  // Cache persistente por conjunto de nomes.
+  try {
+    const store = JSON.parse(localStorage.getItem(NAMES_STORE) ?? '{}') as Record<string, TcgCard[]>;
+    if (store[cacheKey]) {
+      assign(store[cacheKey]);
+      return result;
+    }
+  } catch {
+    /* ignora */
+  }
+
+  try {
+    const q = unique.map((n) => `name:"${n.replace(/"/g, '')}"`).join(' OR ');
+    const url = `${API}?q=${encodeURIComponent(q)}&pageSize=250&select=${SELECT}`;
+    const headers: Record<string, string> = {};
+    if (API_KEY) headers['X-Api-Key'] = API_KEY;
+
+    const response = await fetch(url, { headers });
+    if (!response.ok) return result;
+    const json = (await response.json()) as { data?: ApiCard[] };
+    const cards = (json.data ?? []).filter((c) => c.images?.small).map(toCard);
+    assign(cards);
+
+    // Guarda só as cartas escolhidas (uma por nome) — leve para o localStorage.
+    try {
+      const store = JSON.parse(localStorage.getItem(NAMES_STORE) ?? '{}') as Record<string, TcgCard[]>;
+      store[cacheKey] = [...result.values()];
+      localStorage.setItem(NAMES_STORE, JSON.stringify(store));
+    } catch {
+      /* cota */
+    }
+    return result;
+  } catch {
+    return result;
+  }
+}
+
 /** Rarezas "brilhantes" que recebem o efeito holográfico no hover. */
 export function isHolo(rarity: string): boolean {
   return /rare|holo|ex|gx|vmax|vstar|\bv\b|full art|rainbow|secret|shiny|amazing|radiant/i.test(

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useDeck } from '../../hooks/useDeck';
 import { deckSize, DECK_SIZE } from '../../domain/deck';
 import { META_DECKS } from '../../domain/metaDecks';
-import { searchCards } from '../../services/tcg';
+import { fetchCardsByNames } from '../../services/tcg';
 import { useI18n } from '../../i18n/I18nContext';
 import { dl } from './labels';
 import { Catalog } from './Catalog';
@@ -28,33 +28,14 @@ export function DeckBuilder({ onClose }: { onClose: () => void }) {
     clear();
     const total = template.cards.length;
     setProgress({ done: 0, total });
-    let done = 0;
 
-    // Escolhe o melhor match: nome exato > primeiro. Tenta 2x (rate-limit).
-    const findCard = async (query: string) => {
-      for (let attempt = 0; attempt < 2; attempt++) {
-        const { cards } = await searchCards({ name: query });
-        if (cards.length) {
-          const q = query.toLowerCase();
-          return cards.find((c) => c.name.toLowerCase() === q) ?? cards[0];
-        }
-      }
-      return null;
-    };
-
-    // Busca em paralelo (com cache); atualiza o progresso a cada resposta e
-    // mantém a quantidade (count) de cada carta do arquétipo.
-    const results = await Promise.all(
-      template.cards.map((c) =>
-        findCard(c.query).then((card) => {
-          done += 1;
-          setProgress({ done, total });
-          return { card, count: c.count };
-        }),
-      ),
-    );
-    results.forEach(({ card, count }) => {
-      if (card) addMany(card, count);
+    // UMA única query com todos os nomes (+ cache localStorage) — bem mais
+    // rápido que ~13 requests. Mantém a quantidade (count) de cada carta.
+    const byName = await fetchCardsByNames(template.cards.map((c) => c.query));
+    template.cards.forEach((c, i) => {
+      const card = byName.get(c.query.toLowerCase());
+      if (card) addMany(card, c.count);
+      setProgress({ done: i + 1, total });
     });
     setBuilding(false);
   };
