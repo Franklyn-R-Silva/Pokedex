@@ -12,6 +12,7 @@ import { FilterPanel } from './components/panels/FilterPanel';
 import { ComparePanel } from './components/panels/ComparePanel';
 import { TeamPanel } from './components/panels/TeamPanel';
 import { QuizPanel } from './components/panels/QuizPanel';
+import { DeckBuilder } from './components/deck/DeckBuilder';
 
 function initialQuery(): string {
   return new URLSearchParams(window.location.search).get('pokemon') ?? '1';
@@ -22,6 +23,17 @@ export function App() {
   const [query, setQuery] = useState<string>(initialQuery);
   const [shiny, setShiny] = useState(false);
   const { pokemon, loading, error } = usePokemon(query);
+  const [view, setView] = useState<'main' | 'deck'>(() =>
+    new URLSearchParams(window.location.search).get('view') === 'deck' ? 'deck' : 'main',
+  );
+
+  const setViewUrl = (next: 'main' | 'deck') => {
+    const url = new URL(window.location.href);
+    if (next === 'deck') url.searchParams.set('view', 'deck');
+    else url.searchParams.delete('view');
+    window.history.replaceState({}, '', url);
+    setView(next);
+  };
 
   const allNamesRef = useRef<string[]>([]);
   useEffect(() => {
@@ -77,9 +89,11 @@ export function App() {
     return () => document.removeEventListener('keydown', onKey);
   }, [pokemon, go]);
 
+  if (view === 'deck') return <DeckBuilder onClose={() => setViewUrl('main')} />;
+
   return (
     <>
-      <Header />
+      <Header onOpenDeck={() => setViewUrl('deck')} />
       <main>
         <PokedexDevice
           pokemon={pokemon}

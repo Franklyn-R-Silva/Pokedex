@@ -1,0 +1,68 @@
+import type { Lang } from '../../types';
+
+// Rótulos do construtor de deck (PT, EN) — feature autocontida.
+const L = {
+  title: ['🃏 Construtor de Deck', '🃏 Deck Builder'],
+  open: ['🃏 Deck', '🃏 Deck'],
+  back: ['← Voltar', '← Back'],
+  searchPlaceholder: ['Buscar carta pelo nome…', 'Search cards by name…'],
+  all: ['Todas', 'All'],
+  pokemon: ['Pokémon', 'Pokémon'],
+  trainer: ['Treinador', 'Trainer'],
+  energy: ['Energia', 'Energy'],
+  deck: ['Deck', 'Deck'],
+  clear: ['Limpar', 'Clear'],
+  empty: ['Seu deck está vazio. Busque cartas ao lado e clique para adicionar.', 'Your deck is empty. Search cards and click to add.'],
+  loading: ['Carregando…', 'Loading…'],
+  noResults: ['Nenhuma carta encontrada.', 'No cards found.'],
+  composition: ['Composição', 'Composition'],
+  energyCurve: ['Custo de energia dos ataques', 'Attack energy cost'],
+  basics: ['Pokémon Básicos', 'Basic Pokémon'],
+  score: ['Nota do deck', 'Deck score'],
+  whatsMissing: ['Análise — o que falta', 'Analysis — what to improve'],
+  catalog: ['Catálogo', 'Catalog'],
+  analysis: ['Análise', 'Analysis'],
+} as const;
+
+export function dl(lang: Lang, key: keyof typeof L): string {
+  return L[key][lang === 'pt' ? 0 : 1];
+}
+
+// Texto dos apontamentos da análise (por código), com valor interpolado.
+export function issueText(lang: Lang, code: string, value?: string | number): string {
+  const pt = lang === 'pt';
+  switch (code) {
+    case 'tooFew':
+      return pt ? `Faltam ${value} cartas para 60.` : `${value} cards short of 60.`;
+    case 'tooMany':
+      return pt ? `${value} cartas a mais (máx. 60).` : `${value} cards over the 60 limit.`;
+    case 'sizeOk':
+      return pt ? 'Deck com 60 cartas.' : 'Deck has 60 cards.';
+    case 'noPokemon':
+      return pt ? 'Sem Pokémon — adicione ao menos 1 Básico.' : 'No Pokémon — add at least 1 Basic.';
+    case 'fewBasics':
+      return pt
+        ? `Poucos Pokémon Básicos (${value}) — risco de mão travada, ideal ≥ 8.`
+        : `Too few Basic Pokémon (${value}) — mulligan risk, aim for ≥ 8.`;
+    case 'basicsOk':
+      return pt ? 'Bons Pokémon Básicos.' : 'Healthy Basic Pokémon count.';
+    case 'noEnergy':
+      return pt ? 'Sem Energia para os seus atacantes.' : 'No Energy for your attackers.';
+    case 'energyMissing':
+      return pt
+        ? `Energia ${value} insuficiente para os custos dos seus atacantes.`
+        : `Not enough ${value} Energy for your attackers' costs.`;
+    case 'fewTrainers':
+      return pt
+        ? `Poucos Treinadores (${value}) — deck forte costuma ter ~25–35.`
+        : `Few Trainers (${value}) — strong decks run ~25–35.`;
+    case 'tooManyCopies':
+      return pt ? `Mais de 4 cópias de "${value}".` : `More than 4 copies of "${value}".`;
+    case 'evoGap':
+      return pt
+        ? `Linha incompleta: falta "${value}".`
+        : `Incomplete evolution line: missing "${value}".`;
+    default:
+      return code;
+  }
+}
