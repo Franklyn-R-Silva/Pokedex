@@ -1,10 +1,12 @@
 import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
 // base: './' garante que os assets funcionem em qualquer subpasta (ex.: Cloudflare Pages).
 export default defineConfig({
   base: './',
   plugins: [
+    react(),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicons/favicon-16x16.png', 'icons/icon-192.png'],
