@@ -1,0 +1,28 @@
+{
+  "name": "pokedex",
+  "version": "1.0.0",
+  "description": "Uma Pokédex web que consome a PokéAPI, feita com HTML, CSS e JavaScript.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --ext .js",
+    "format": "prettier --write ."
+  },
+  "keywords": [
+    "pokedex",
+    "pokeapi",
+    "javascript",
+    "vite"
+  ],
+  "author": "Franklyn (@hadesfranklyn)",
+  "license": "MIT",
+  "devDependencies": {
+    "@eslint/js": "^9.15.0",
+    "eslint": "^9.15.0",
+    "globals": "^15.12.0",
+    "prettier": "^3.4.1",
+    "vite": "^6.0.3"
+  }
+}
