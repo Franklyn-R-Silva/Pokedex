@@ -1,0 +1,10 @@
+{
+  // Deploy estático no Cloudflare (Workers Static Assets) — sem script de Worker.
+  // A app usa query string (?pokemon=ID) na raiz; rotas desconhecidas caem no 404.html.
+  "name": "pokedex",
+  "compatibility_date": "2026-07-12",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "404-page"
+  }
+}
