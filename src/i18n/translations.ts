@@ -45,6 +45,29 @@ export interface Translation {
   filterGenLabel: string;
   filterByType: string;
   statsLegendAria: string;
+  about: string;
+  heldItems: string;
+  moves: string;
+  locations: string;
+  baseExp: string;
+  captureRate: string;
+  happiness: string;
+  growth: string;
+  gender: string;
+  eggGroups: string;
+  hatch: string;
+  generation: string;
+  habitat: string;
+  genderless: string;
+  legendary: string;
+  mythical: string;
+  baby: string;
+  moveLevel: string;
+  moveMachine: string;
+  moveEgg: string;
+  moveTutor: string;
+  showMoves: string;
+  noLocations: string;
   statLabels: StatMap;
   statNames: StatMap;
 }
@@ -91,6 +114,29 @@ export const translations: Record<Lang, Translation> = {
     filterGenLabel: 'Geração',
     filterByType: 'Filtrar por este tipo',
     statsLegendAria: 'O que significa cada atributo',
+    about: 'Sobre',
+    heldItems: 'Itens segurados',
+    moves: 'Golpes',
+    locations: 'Onde encontrar',
+    baseExp: 'XP base',
+    captureRate: 'Captura',
+    happiness: 'Felicidade',
+    growth: 'Crescimento',
+    gender: 'Gênero',
+    eggGroups: 'Grupos de ovo',
+    hatch: 'Ciclos de choco',
+    generation: 'Geração',
+    habitat: 'Habitat',
+    genderless: 'Sem gênero',
+    legendary: 'Lendário',
+    mythical: 'Mítico',
+    baby: 'Bebê',
+    moveLevel: 'Por nível',
+    moveMachine: 'MT/MO',
+    moveEgg: 'Ovo',
+    moveTutor: 'Tutor',
+    showMoves: 'Ver golpes',
+    noLocations: 'Indisponível na natureza',
     statLabels: {
       hp: 'HP',
       attack: 'ATQ',
@@ -149,6 +195,29 @@ export const translations: Record<Lang, Translation> = {
     filterGenLabel: 'Generation',
     filterByType: 'Filter by this type',
     statsLegendAria: 'What each stat means',
+    about: 'About',
+    heldItems: 'Held items',
+    moves: 'Moves',
+    locations: 'Where to find',
+    baseExp: 'Base XP',
+    captureRate: 'Capture',
+    happiness: 'Happiness',
+    growth: 'Growth',
+    gender: 'Gender',
+    eggGroups: 'Egg groups',
+    hatch: 'Hatch cycles',
+    generation: 'Generation',
+    habitat: 'Habitat',
+    genderless: 'Genderless',
+    legendary: 'Legendary',
+    mythical: 'Mythical',
+    baby: 'Baby',
+    moveLevel: 'By level',
+    moveMachine: 'TM/HM',
+    moveEgg: 'Egg',
+    moveTutor: 'Tutor',
+    showMoves: 'Show moves',
+    noLocations: 'Not found in the wild',
     statLabels: {
       hp: 'HP',
       attack: 'ATK',

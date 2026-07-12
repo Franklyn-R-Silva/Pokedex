@@ -64,6 +64,10 @@ Camada fina sobre `localStorage`: tema (`getTheme`/`setTheme`) e favoritos (`[{ 
 
 `TYPE_COLORS`/`TYPE_LABELS`/`TYPE_NAMES` (18 tipos) e getters. A cor do tipo primário alimenta a variável CSS `--type-color`.
 
+### `src/domain/pokemonInfo.ts` — dados derivados
+
+Helpers puros para o conteúdo extra da PokéAPI: `aboutRows` (XP base, captura, felicidade, crescimento, gênero, grupos de ovo, ciclos de choco, habitat, geração), `speciesFlags` (lendário/mítico/bebê), `groupMoves` (golpes agrupados por método, sem duplicatas) e formatadores (`formatGeneration`, `formatGender`, `titleize`). A busca de locais usa `fetchEncounters` (endpoint `/pokemon/{id}/encounters`).
+
 ### `src/i18n/` — internacionalização
 
 `translations.ts` define a interface `Translation` e os dicionários PT/EN (incluindo os `StatMap` de `statLabels`/`statNames`). `index.ts` expõe `t(key)` (tipado pela chave), `getLang`/`setLang` e `contentLang()` (`pt`→`es`, pois a PokéAPI não tem português). Textos estáticos usam `data-i18n` / `data-i18n-ph` / `data-i18n-aria`.

@@ -10,6 +10,7 @@ import {
   fetchEvolutionChain,
   fetchSpecies,
   fetchWeaknesses,
+  fetchEncounters,
   getFlavorText,
   getGenus,
   getAbilityName,
@@ -22,6 +23,7 @@ import {
   getArtworkById,
 } from './services/sprites';
 import { getTypeColor, getTypeLabel } from './domain/pokemonTypes';
+import { aboutRows, speciesFlags, groupMoves, titleize } from './domain/pokemonInfo';
 import { getTheme, setTheme, getFavorites, isFavorite, toggleFavorite } from './services/storage';
 import { setupAutocomplete } from './features/autocomplete';
 import { setupFilter } from './features/filter';
@@ -70,6 +72,11 @@ const compareInfo = qs<HTMLButtonElement>('.compare-info');
 const compareLegend = qs<HTMLElement>('.compare-legend');
 
 const typesContainer = qs<HTMLElement>('.details__types');
+const flagsContainer = qs<HTMLElement>('.details__flags');
+const aboutContainer = qs<HTMLElement>('.details__about');
+const heldContainer = qs<HTMLElement>('.details__held');
+const movesContainer = qs<HTMLElement>('.details__moves');
+const locationsContainer = qs<HTMLElement>('.details__locations');
 const genusEl = qs<HTMLElement>('.details__genus');
 const descriptionEl = qs<HTMLElement>('.details__description');
 const heightValue = qs<HTMLElement>('.height');
@@ -200,16 +207,136 @@ async function renderWeaknesses(types: PokemonType[], reqId: number): Promise<vo
   });
 }
 
-async function renderSpeciesInfo(speciesUrl: string, reqId: number): Promise<void> {
+// Descrição, genus, flags e grid "Sobre" (precisa da espécie + do Pokémon).
+async function renderSpecies(data: Pokemon, reqId: number): Promise<void> {
   genusEl.textContent = '';
   descriptionEl.textContent = '';
+  flagsContainer.innerHTML = '';
+  aboutContainer.innerHTML = '';
 
-  const species = await fetchSpecies(speciesUrl);
+  const species = await fetchSpecies(data.species.url);
   if (reqId !== requestId || !species) return;
 
   const lang = contentLang();
   genusEl.textContent = getGenus(species, lang);
   descriptionEl.textContent = getFlavorText(species, lang);
+
+  speciesFlags(species).forEach((flag) => {
+    const badge = document.createElement('span');
+    badge.className = `flag flag--${flag}`;
+    badge.textContent = t(flag as keyof Translation) as string;
+    flagsContainer.appendChild(badge);
+  });
+
+  aboutRows(data, species, t('genderless')).forEach(({ key, value }) => {
+    const cell = document.createElement('div');
+    cell.className = 'about-cell';
+    const label = document.createElement('span');
+    label.className = 'about-label';
+    label.textContent = t(key as keyof Translation) as string;
+    const val = document.createElement('span');
+    val.className = 'about-value';
+    val.textContent = value;
+    cell.append(label, val);
+    aboutContainer.appendChild(cell);
+  });
+}
+
+function renderHeldItems(data: Pokemon): void {
+  heldContainer.innerHTML = '';
+  if (data.held_items.length === 0) return;
+  const label = document.createElement('strong');
+  label.textContent = `${t('heldItems')}: `;
+  const names = data.held_items.map((h) => titleize(h.item.name)).join(', ');
+  heldContainer.append(label, document.createTextNode(names));
+}
+
+function renderMoves(data: Pokemon): void {
+  movesContainer.innerHTML = '';
+  const groups = groupMoves(data);
+  const methods = Object.keys(groups);
+  if (methods.length === 0) return;
+
+  const total = new Set(data.moves.map((m) => m.move.name)).size;
+
+  const title = document.createElement('h2');
+  title.className = 'section-title';
+  title.textContent = t('moves');
+
+  const toggle = document.createElement('button');
+  toggle.type = 'button';
+  toggle.className = 'collapse-toggle';
+  toggle.textContent = `${t('showMoves')} (${total})`;
+  toggle.setAttribute('aria-expanded', 'false');
+
+  const body = document.createElement('div');
+  body.className = 'moves-body';
+  body.hidden = true;
+
+  const methodLabels: Record<string, string> = {
+    'level-up': t('moveLevel'),
+    machine: t('moveMachine'),
+    egg: t('moveEgg'),
+    tutor: t('moveTutor'),
+  };
+  const order = ['level-up', 'machine', 'egg', 'tutor'];
+  [...methods]
+    .sort((a, b) => (order.indexOf(a) + 1 || 99) - (order.indexOf(b) + 1 || 99))
+    .forEach((method) => {
+      const group = document.createElement('div');
+      group.className = 'moves-group';
+      const gtitle = document.createElement('h3');
+      gtitle.className = 'moves-group__title';
+      gtitle.textContent = methodLabels[method] ?? titleize(method);
+      const chips = document.createElement('div');
+      chips.className = 'moves-chips';
+      groups[method].forEach(({ name, level }) => {
+        const chip = document.createElement('span');
+        chip.className = 'move-chip';
+        chip.textContent = level > 0 ? `${titleize(name)} · ${level}` : titleize(name);
+        chips.appendChild(chip);
+      });
+      group.append(gtitle, chips);
+      body.appendChild(group);
+    });
+
+  toggle.addEventListener('click', () => {
+    const open = body.hidden;
+    body.hidden = !open;
+    toggle.setAttribute('aria-expanded', String(open));
+  });
+
+  movesContainer.append(title, toggle, body);
+}
+
+async function renderEncounters(url: string, reqId: number): Promise<void> {
+  locationsContainer.innerHTML = '';
+
+  const locations = await fetchEncounters(url);
+  if (reqId !== requestId) return;
+
+  const title = document.createElement('h2');
+  title.className = 'section-title';
+  title.textContent = t('locations');
+  locationsContainer.appendChild(title);
+
+  if (locations.length === 0) {
+    const muted = document.createElement('span');
+    muted.className = 'muted';
+    muted.textContent = t('noLocations');
+    locationsContainer.appendChild(muted);
+    return;
+  }
+
+  const chips = document.createElement('div');
+  chips.className = 'moves-chips';
+  locations.forEach((loc) => {
+    const chip = document.createElement('span');
+    chip.className = 'move-chip';
+    chip.textContent = titleize(loc);
+    chips.appendChild(chip);
+  });
+  locationsContainer.appendChild(chips);
 }
 
 async function renderEvolution(speciesUrl: string, reqId: number): Promise<void> {
@@ -327,10 +454,13 @@ function renderDetails(data: Pokemon, reqId: number): void {
   weightValue.textContent = `${(data.weight / 10).toFixed(1)} kg`;
   detailsRadar.innerHTML = radarSvg([data], [getTypeColor(primaryType)]);
   renderStats(data.stats);
+  renderHeldItems(data);
+  renderMoves(data);
   void renderAbilities(data.abilities, reqId);
-  void renderSpeciesInfo(data.species.url, reqId);
+  void renderSpecies(data, reqId);
   void renderWeaknesses(data.types, reqId);
   void renderEvolution(data.species.url, reqId);
+  void renderEncounters(data.location_area_encounters, reqId);
 
   details.classList.add('is-visible');
 }

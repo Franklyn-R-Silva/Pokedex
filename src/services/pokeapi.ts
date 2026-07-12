@@ -5,6 +5,7 @@ import type {
   AbilityData,
   EvolutionChain,
   EvolutionNode,
+  EncounterLocation,
   RefItem,
   Weakness,
   PokemonType,
@@ -181,6 +182,18 @@ export async function fetchWeaknesses(types: PokemonType[]): Promise<Weakness[]>
       .filter(([, m]) => m > 1)
       .sort((a, b) => b[1] - a[1])
       .map(([name, multiplier]) => ({ name, multiplier }));
+  } catch {
+    return [];
+  }
+}
+
+/** Locais onde o Pokémon é encontrado (nomes das áreas, sem duplicatas). */
+export async function fetchEncounters(url: string): Promise<string[]> {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) return [];
+    const data = (await response.json()) as EncounterLocation[];
+    return [...new Set(data.map((e) => e.location_area.name))];
   } catch {
     return [];
   }

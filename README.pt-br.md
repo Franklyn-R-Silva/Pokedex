@@ -25,7 +25,8 @@
 ## Funcionalidades
 
 - Busca por nome (sugestões por qualquer parte) ou número, com Prev/Next e setas do teclado
-- Tipos, stats base, habilidades (com destaque das ocultas), fraquezas e descrição da espécie
+- Tipos, stats base (com gráfico de radar), habilidades (com destaque das ocultas), fraquezas e descrição
+- Dados ricos: XP base, taxa de captura, felicidade, crescimento, gênero, grupos de ovo, ciclos de choco, habitat, geração, itens segurados, lista de golpes, onde encontrar e flags lendário/mítico
 - Cadeia de evolução clicável, alternância shiny, cry (som) e Pokémon aleatório
 - Comparação de até 4 Pokémon (tabela de stats + gráfico de radar); filtro por tipo e geração com paginação
 - Interface bilíngue (PT-BR / EN); favoritos e tema salvos no navegador

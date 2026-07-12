@@ -461,6 +461,150 @@ main {
   justify-content: flex-start;
 }
 
+/* ---------- Flags (lendário / mítico / bebê) ---------- */
+
+.details__flags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.details__flags:empty {
+  display: none;
+}
+
+.flag {
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #fff;
+}
+
+.flag--legendary {
+  background: #d4a017;
+}
+
+.flag--mythical {
+  background: #8e44ad;
+}
+
+.flag--baby {
+  background: #e07a9c;
+}
+
+/* ---------- Grid "Sobre" ---------- */
+
+.details__about {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 14px;
+}
+
+.about-cell {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.about-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+.about-value {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.details__held {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  text-align: left;
+  margin-top: 8px;
+}
+
+.details__held:empty {
+  display: none;
+}
+
+.details__held strong {
+  color: var(--text);
+}
+
+/* ---------- Golpes / locais (recolhível + chips) ---------- */
+
+.details__moves:empty,
+.details__locations:empty {
+  display: none;
+}
+
+.collapse-toggle {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--text);
+  font-weight: 700;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.collapse-toggle:hover {
+  background: var(--type-color);
+  border-color: var(--type-color);
+  color: #fff;
+}
+
+.moves-body {
+  margin-top: 10px;
+}
+
+.moves-body[hidden] {
+  display: none;
+}
+
+.moves-group {
+  margin-bottom: 12px;
+}
+
+.moves-group__title {
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  text-align: left;
+  margin-bottom: 6px;
+}
+
+.moves-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.move-chip {
+  padding: 4px 9px;
+  border-radius: 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text);
+  text-transform: capitalize;
+}
+
 /* ---------- Stats ---------- */
 
 .details__radar {

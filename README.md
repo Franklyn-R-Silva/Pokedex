@@ -25,7 +25,8 @@
 ## Features
 
 - Search by name (substring suggestions) or number, with Prev/Next and keyboard arrows
-- Types, base stats, abilities (hidden ones flagged), type weaknesses, and species description
+- Types, base stats (with radar chart), abilities (hidden ones flagged), type weaknesses, and description
+- Rich data: base XP, capture rate, happiness, growth, gender ratio, egg groups, hatch cycles, habitat, generation, held items, full move list, encounter locations, and legendary/mythical flags
 - Clickable evolution chain, shiny toggle, Pokémon cry, and random Pokémon
 - Compare up to 4 Pokémon (stat table + radar chart); filter by type and generation with pagination
 - Bilingual UI (PT-BR / EN); favorites and theme persisted locally

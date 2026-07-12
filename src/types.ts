@@ -37,14 +37,34 @@ export interface PokemonAbility {
   slot: number;
 }
 
+export interface MoveVersionDetail {
+  level_learned_at: number;
+  move_learn_method: NamedResource;
+  version_group: NamedResource;
+}
+
+export interface PokemonMove {
+  move: NamedResource;
+  version_group_details: MoveVersionDetail[];
+}
+
+export interface HeldItem {
+  item: NamedResource;
+}
+
 export interface Pokemon {
   id: number;
   name: string;
   height: number;
   weight: number;
+  base_experience: number;
   types: PokemonType[];
   stats: PokemonStat[];
   abilities: PokemonAbility[];
+  moves: PokemonMove[];
+  held_items: HeldItem[];
+  forms: NamedResource[];
+  location_area_encounters: string;
   species: NamedResource;
   sprites: Sprites;
   cries?: { latest?: string | null };
@@ -58,6 +78,21 @@ export interface Species {
   flavor_text_entries: (LocalizedEntry & { flavor_text: string })[];
   genera: (LocalizedEntry & { genus: string })[];
   evolution_chain: { url: string };
+  gender_rate: number;
+  capture_rate: number;
+  base_happiness: number;
+  hatch_counter: number;
+  is_baby: boolean;
+  is_legendary: boolean;
+  is_mythical: boolean;
+  growth_rate: NamedResource | null;
+  egg_groups: NamedResource[];
+  habitat: NamedResource | null;
+  generation: NamedResource;
+}
+
+export interface EncounterLocation {
+  location_area: NamedResource;
 }
 
 export interface EvolutionNode {
