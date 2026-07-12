@@ -296,70 +296,161 @@
 }
 
 
-/* Carta girável (análise 3D) */
-.tcg-rotate {
+/* ---------- Card 3D (análise: frente + verso, zoom, raridade) ---------- */
+.card3d {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-2);
-  perspective: 1000px;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  align-self: center;
 }
 
-.tcg-rotate__inner {
+.card3d__stage {
   position: relative;
-  width: 180px;
+  width: 200px;
+  height: 279px;
   transform-style: preserve-3d;
   cursor: grab;
-  transition: transform 0.08s ease;
   touch-action: none;
+  will-change: transform;
 }
 
-.tcg-rotate__inner:active {
+.card3d__stage.is-anim {
+  transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.card3d__stage:active {
   cursor: grabbing;
 }
 
-.tcg-rotate__inner.is-spinning {
-  animation: tcg-spin 0.9s ease;
-}
-
-@keyframes tcg-spin {
-  to {
-    transform: rotateY(360deg);
-  }
-}
-
-.tcg-rotate__img {
-  width: 100%;
-  border-radius: 10px;
-  box-shadow: var(--shadow);
-  display: block;
-  backface-visibility: hidden;
-}
-
-.tcg-rotate__glare {
+.card3d__face {
   position: absolute;
   inset: 0;
-  border-radius: 10px;
-  background: radial-gradient(
-    circle at var(--gx, 50%) 30%,
-    rgba(255, 255, 255, 0.5),
-    rgba(255, 255, 255, 0) 55%
-  );
-  mix-blend-mode: overlay;
-  pointer-events: none;
+  backface-visibility: hidden;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
 }
 
-.tcg-rotate__spin {
-  width: 36px;
-  height: 36px;
+.card3d__face--front img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.card3d__face--back {
+  transform: rotateY(180deg);
+}
+
+.card-back {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.card-back__word {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 26px;
+  fill: #ffcb05;
+  stroke: #2a3a8c;
+  stroke-width: 3px;
+  paint-order: stroke;
+  letter-spacing: -1px;
+}
+
+/* Brilho/holografia que segue a rotação */
+.card3d__shine {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mix-blend-mode: color-dodge;
+  opacity: 0.5;
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.55) var(--gx, 50%),
+    transparent 70%
+  );
+}
+
+/* Efeitos por raridade (mais forte quanto mais rara) */
+.card3d__face--front[data-tier='common'] .card3d__shine {
+  opacity: 0.18;
+}
+
+.card3d__face--front[data-tier='uncommon'] .card3d__shine {
+  opacity: 0.3;
+}
+
+.card3d__face--front[data-tier='rare'] .card3d__shine {
+  opacity: 0.55;
+}
+
+.card3d__face--front[data-tier='ultra'] .card3d__shine {
+  opacity: 0.7;
+  background:
+    linear-gradient(115deg, transparent 0%, rgba(255, 255, 255, 0.7) var(--gx, 50%), transparent 70%),
+    linear-gradient(60deg, #ff5a5a55, #ffd60055, #5affa055, #5ab8ff55, #b45aff55);
+  background-blend-mode: screen;
+}
+
+.card3d__face--front[data-tier='secret'] .card3d__shine {
+  opacity: 0.85;
+  background:
+    linear-gradient(115deg, transparent 0%, rgba(255, 255, 255, 0.85) var(--gx, 50%), transparent 65%),
+    repeating-linear-gradient(
+      45deg,
+      #ff5a5a55 0 12px,
+      #ffd60055 12px 24px,
+      #5affa055 24px 36px,
+      #5ab8ff55 36px 48px,
+      #b45aff55 48px 60px
+    );
+  background-blend-mode: screen;
+}
+
+.card3d__face--front[data-tier='ultra'],
+.card3d__face--front[data-tier='secret'] {
+  box-shadow:
+    0 12px 28px rgba(0, 0, 0, 0.45),
+    0 0 18px 2px color-mix(in srgb, var(--type-color) 55%, transparent);
+}
+
+.card3d__controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.card3d__controls button {
+  width: 38px;
+  height: 38px;
   border: 1px solid var(--border);
   border-radius: 50%;
   background: var(--surface-2);
   color: var(--text);
   font-size: 1rem;
   cursor: pointer;
+  transition: border-color 0.15s ease;
 }
 
-.tcg-rotate__spin:hover {
+.card3d__controls button:hover {
   border-color: var(--type-color);
+}
+
+.card3d__zoom {
+  width: 110px;
+  accent-color: var(--type-color);
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card3d__stage.is-anim {
+    transition: none;
+  }
 }

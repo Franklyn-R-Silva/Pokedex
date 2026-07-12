@@ -94,7 +94,7 @@ export function App() {
         document.querySelector<HTMLInputElement>('.input__search')?.focus();
         return;
       }
-      if (typing || document.querySelector('.modal')) return;
+      if (typing || document.querySelector('.modal:not([hidden])')) return;
       if (e.key === 'ArrowLeft' && pokemon) go(pokemon.id - 1);
       if (e.key === 'ArrowRight' && pokemon) go(pokemon.id + 1);
     };
