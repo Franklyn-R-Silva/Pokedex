@@ -102,6 +102,12 @@ export interface Translation {
   battleSwap: string;
   battleYou: string;
   battleFoe: string;
+  battleFoesTitle: string;
+  battleRandom: string;
+  battleAddFoe: string;
+  battleStart: string;
+  battlePhase: string;
+  battleChampion: string;
   cards: string;
   cardsNone: string;
   cardsHint: string;
@@ -218,6 +224,12 @@ export const translations: Record<Lang, Translation> = {
     battleSwap: 'Trocar Pokémon',
     battleYou: 'Você',
     battleFoe: 'Oponente',
+    battleFoesTitle: 'Inimigos (fases)',
+    battleRandom: '🎲 Aleatório',
+    battleAddFoe: 'Adicionar por nome',
+    battleStart: '▶ Iniciar batalha',
+    battlePhase: 'Fase',
+    battleChampion: 'venceu todas as fases! 🏆',
     cards: 'Cartas',
     cardsNone: 'Nenhuma carta encontrada para este Pokémon.',
     cardsHint: 'Cartas do TCG · clique para ampliar',
@@ -346,6 +358,12 @@ export const translations: Record<Lang, Translation> = {
     battleSwap: 'Change Pokémon',
     battleYou: 'You',
     battleFoe: 'Opponent',
+    battleFoesTitle: 'Opponents (phases)',
+    battleRandom: '🎲 Random',
+    battleAddFoe: 'Add by name',
+    battleStart: '▶ Start battle',
+    battlePhase: 'Phase',
+    battleChampion: 'cleared all phases! 🏆',
     cards: 'Cards',
     cardsNone: 'No cards found for this Pokémon.',
     cardsHint: 'TCG cards · click to enlarge',

@@ -1022,6 +1022,7 @@ battleCtl = setupBattle({
   modal: qs<HTMLElement>('.battle-modal'),
   content: qs<HTMLElement>('.battle-content'),
   getTeam: () => teamCtl?.getTeam() ?? [],
+  getNames: () => allNames,
   show: showModal,
 });
 qs<HTMLButtonElement>('.btn-battle').addEventListener('click', () => battleCtl?.open());
