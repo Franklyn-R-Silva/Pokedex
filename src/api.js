@@ -64,6 +64,31 @@ export function getPokemonSprite(data) {
 }
 
 /**
+ * Imagem estática (PNG) de melhor qualidade: artwork oficial, com fallbacks.
+ * @param {object} data
+ * @returns {string}
+ */
+export function getStaticImage(data) {
+  const sprites = data.sprites ?? {};
+  return (
+    sprites.other?.['official-artwork']?.front_default ||
+    sprites.other?.dream_world?.front_default ||
+    sprites.front_default ||
+    ''
+  );
+}
+
+/**
+ * GIF animado (Gen V black-white). Retorna '' quando não existe (Gen VI+).
+ * @param {object} data
+ * @returns {string}
+ */
+export function getAnimatedGif(data) {
+  const sprites = data.sprites ?? {};
+  return sprites.versions?.['generation-v']?.['black-white']?.animated?.front_default || '';
+}
+
+/**
  * Monta a URL do artwork oficial a partir do id (sem requisição extra).
  * @param {number} id
  * @returns {string}

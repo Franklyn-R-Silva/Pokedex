@@ -37,7 +37,7 @@
 - 🧬 Ver **habilidades** (destacando as ocultas) e a **cadeia de evolução** (clicável)
 - 🎨 **Tema por tipo**: as cores da interface mudam conforme o Pokémon
 - 🌙 **Modo escuro** e ⭐ **favoritar Pokémon** (persistidos no navegador)
-- ⬇️ **Baixar a imagem/GIF** do Pokémon
+- ⬇️ **Baixar** a imagem estática (**PNG**) e o **GIF** animado do Pokémon
 - 📱 Layout **responsivo** para celular
 - ⚡ **Cache** de requisições e mensagens de erro/carregamento
 

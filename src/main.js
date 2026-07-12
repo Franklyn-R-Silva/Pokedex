@@ -4,6 +4,8 @@ import {
   fetchAllPokemonNames,
   fetchEvolutionChain,
   getPokemonSprite,
+  getStaticImage,
+  getAnimatedGif,
   getArtworkById,
   MAX_POKEMON,
 } from './api.js';
@@ -20,7 +22,8 @@ const input = document.querySelector('.input__search');
 const suggestions = document.querySelector('.suggestions');
 const buttonPrev = document.querySelector('.btn-prev');
 const buttonNext = document.querySelector('.btn-next');
-const buttonDownload = document.querySelector('.btn-download');
+const buttonDownloadPng = document.querySelector('.btn-download--png');
+const buttonDownloadGif = document.querySelector('.btn-download--gif');
 const buttonFavorite = document.querySelector('.btn-favorite');
 const themeToggle = document.querySelector('.theme-toggle');
 
@@ -45,7 +48,7 @@ const STAT_LABELS = {
 
 let searchPokemon = 1;
 let currentPokemon = null; // dados completos do Pokémon exibido.
-let currentSprite = null; // { url, name } do Pokémon exibido (para download).
+let currentImages = null; // { png, gif, name } do Pokémon exibido (para download).
 let requestId = 0; // token para descartar renders assíncronos obsoletos.
 let allNames = []; // todos os nomes de Pokémon (para o autocomplete).
 
@@ -60,8 +63,9 @@ function showError(message) {
   pokemonNumber.innerHTML = '';
   details.classList.remove('is-visible');
   currentPokemon = null;
-  currentSprite = null;
-  buttonDownload.disabled = true;
+  currentImages = null;
+  buttonDownloadPng.disabled = true;
+  buttonDownloadGif.disabled = true;
   buttonFavorite.disabled = true;
   document.documentElement.style.removeProperty('--type-color');
 }
@@ -234,9 +238,13 @@ async function renderPokemon(pokemon) {
   input.value = '';
   searchPokemon = data.id;
 
+  const png = getStaticImage(data);
+  const gif = getAnimatedGif(data);
   currentPokemon = data;
-  currentSprite = { url: sprite, name: data.name };
-  buttonDownload.disabled = !sprite;
+  currentImages = { png, gif, name: data.name };
+  buttonDownloadPng.disabled = !png;
+  buttonDownloadGif.disabled = !gif;
+  buttonDownloadGif.title = gif ? '' : 'Sem GIF animado para este Pokémon';
   buttonFavorite.disabled = false;
   updateFavoriteButton();
 
@@ -244,13 +252,14 @@ async function renderPokemon(pokemon) {
 }
 
 /**
- * Baixa a imagem do Pokémon exibido. Faz fetch do blob (a PokéAPI serve
- * os sprites com CORS liberado); em caso de falha, abre a imagem em nova aba.
+ * Baixa uma imagem por URL. Faz fetch do blob (a PokéAPI serve os sprites
+ * com CORS liberado); em caso de falha, abre a imagem em nova aba.
+ * @param {string} url
+ * @param {string} name  Nome base do arquivo (sem extensão).
  */
-async function downloadSprite() {
-  if (!currentSprite?.url) return;
+async function downloadImage(url, name) {
+  if (!url) return;
 
-  const { url, name } = currentSprite;
   const extension = url.split('.').pop().split('?')[0] || 'png';
 
   try {
@@ -303,7 +312,13 @@ buttonNext.addEventListener('click', () => {
   }
 });
 
-buttonDownload.addEventListener('click', downloadSprite);
+buttonDownloadPng.addEventListener('click', () => {
+  if (currentImages?.png) downloadImage(currentImages.png, currentImages.name);
+});
+
+buttonDownloadGif.addEventListener('click', () => {
+  if (currentImages?.gif) downloadImage(currentImages.gif, `${currentImages.name}-animado`);
+});
 
 buttonFavorite.addEventListener('click', () => {
   if (!currentPokemon) return;
