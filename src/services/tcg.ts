@@ -130,7 +130,10 @@ export interface CardSearch {
   supertype?: string;
   subtype?: string;
   type?: string;
+  rarity?: string;
+  orderBy?: string;
   page?: number;
+  pageSize?: number;
 }
 
 const searchCache = new Map<string, { cards: TcgCard[]; totalCount: number }>();
@@ -145,16 +148,19 @@ export async function searchCards(
   if (opts.supertype) parts.push(`supertype:"${opts.supertype}"`);
   if (opts.subtype) parts.push(`subtypes:"${opts.subtype}"`);
   if (opts.type) parts.push(`types:${opts.type}`);
+  if (opts.rarity) parts.push(`rarity:"${opts.rarity}"`);
   const query = parts.join(' ') || 'supertype:Pokémon';
+  const orderBy = opts.orderBy ?? '-set.releaseDate';
+  const pageSize = opts.pageSize ?? 24;
 
-  const cacheKey = `${query}#${opts.page ?? 1}`;
+  const cacheKey = `${query}#${orderBy}#${opts.page ?? 1}#${pageSize}`;
   const cached = searchCache.get(cacheKey);
   if (cached) return cached;
 
   try {
     const url =
-      `${API}?q=${encodeURIComponent(query)}&orderBy=-set.releaseDate` +
-      `&page=${opts.page ?? 1}&pageSize=24&select=${SELECT}`;
+      `${API}?q=${encodeURIComponent(query)}&orderBy=${encodeURIComponent(orderBy)}` +
+      `&page=${opts.page ?? 1}&pageSize=${pageSize}&select=${SELECT}`;
     const headers: Record<string, string> = {};
     if (API_KEY) headers['X-Api-Key'] = API_KEY;
 

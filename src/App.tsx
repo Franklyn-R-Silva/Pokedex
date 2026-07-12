@@ -18,6 +18,11 @@ import { QuizPanel } from './components/panels/QuizPanel';
 const DeckBuilder = lazy(() =>
   import('./components/deck/DeckBuilder').then((m) => ({ default: m.DeckBuilder })),
 );
+const CardBrowser = lazy(() =>
+  import('./components/cards/CardBrowser').then((m) => ({ default: m.CardBrowser })),
+);
+
+type View = 'main' | 'deck' | 'cards';
 
 // Pokémon do dia (determinístico pela data) quando não há ?pokemon=ID.
 function pokemonOfTheDay(): number {
@@ -36,14 +41,15 @@ export function App() {
   const [query, setQuery] = useState<string>(initialQuery);
   const [shiny, setShiny] = useState(false);
   const { pokemon, loading, error } = usePokemon(query);
-  const [view, setView] = useState<'main' | 'deck'>(() =>
-    new URLSearchParams(window.location.search).get('view') === 'deck' ? 'deck' : 'main',
-  );
+  const [view, setView] = useState<View>(() => {
+    const v = new URLSearchParams(window.location.search).get('view');
+    return v === 'deck' || v === 'cards' ? v : 'main';
+  });
 
-  const setViewUrl = (next: 'main' | 'deck') => {
+  const setViewUrl = (next: View) => {
     const url = new URL(window.location.href);
-    if (next === 'deck') url.searchParams.set('view', 'deck');
-    else url.searchParams.delete('view');
+    if (next === 'main') url.searchParams.delete('view');
+    else url.searchParams.set('view', next);
     window.history.replaceState({}, '', url);
     setView(next);
   };
@@ -102,16 +108,20 @@ export function App() {
     return () => document.removeEventListener('keydown', onKey);
   }, [pokemon, go]);
 
-  if (view === 'deck')
+  if (view === 'deck' || view === 'cards')
     return (
       <Suspense fallback={<p className="loading-note muted">{t('loading')}</p>}>
-        <DeckBuilder onClose={() => setViewUrl('main')} />
+        {view === 'deck' ? (
+          <DeckBuilder onClose={() => setViewUrl('main')} />
+        ) : (
+          <CardBrowser onClose={() => setViewUrl('main')} />
+        )}
       </Suspense>
     );
 
   return (
     <>
-      <Header onOpenDeck={() => setViewUrl('deck')} />
+      <Header onOpenDeck={() => setViewUrl('deck')} onOpenCards={() => setViewUrl('cards')} />
       <main>
         <PokedexDevice
           pokemon={pokemon}
