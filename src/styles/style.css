@@ -793,6 +793,13 @@ main {
   text-transform: capitalize;
 }
 
+.evo-item .evo-cond {
+  font-size: 0.58rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: none;
+}
+
 .muted {
   font-size: 0.82rem;
   color: var(--text-muted);
@@ -1018,8 +1025,7 @@ main {
 
 .filter-type,
 .filter-gen,
-.compare-a,
-.compare-b {
+.compare-input {
   flex: 1;
   min-width: 0;
   padding: 9px 11px;
@@ -1037,8 +1043,7 @@ main {
   min-width: 0;
 }
 
-.compare-field .compare-a,
-.compare-field .compare-b {
+.compare-field .compare-input {
   width: 100%;
 }
 

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-A single-page Pokédex that fetches data from the public [PokéAPI](https://pokeapi.co/) and lets the user search by name/number and page through Pokémon with Prev/Next buttons (and arrow keys). Built with **TypeScript** (ES modules, strict mode), bundled with **Vite**. Live site: https://pokedex.devfrs.com/ (deployed on Cloudflare Pages; build `npm run build`, output `dist`). Unknown routes fall back to `public/404.html`. Bilingual UI (PT-BR/EN) via `src/i18n/`; in PT mode, API text (description/genus/abilities) uses Spanish as the closest approximation since PokéAPI has no Portuguese.
+A single-page Pokédex that fetches data from the public [PokéAPI](https://pokeapi.co/) and lets the user search by name/number and page through Pokémon with Prev/Next buttons (and arrow keys). Built with **TypeScript** (ES modules, strict mode), bundled with **Vite**. Live site: https://pokedex.devfrs.com/ (deployed on Cloudflare Pages; build `npm run build`, output `dist`). Unknown routes fall back to `public/404.html`. Bilingual UI (PT-BR/EN) via `src/i18n/`. PokéAPI has no Portuguese, so in PT mode the API prose (description/genus/abilities) is machine-translated EN→PT via `src/services/translate.ts` (MyMemory API, cached in `localStorage`); finite terms (growth/egg/habitat) use curated maps in `src/domain/pokemonInfo.ts`.
 
 ## Commands
 

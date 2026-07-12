@@ -2,14 +2,12 @@ import type {
   Pokemon,
   Species,
   TypeData,
-  AbilityData,
   EvolutionChain,
   EvolutionNode,
   EncounterLocation,
   RefItem,
   Effectiveness,
   PokemonType,
-  PokemonAbility,
 } from '../types';
 
 const BASE_URL = 'https://pokeapi.co/api/v2/pokemon';
@@ -23,7 +21,6 @@ const NAMES_KEY = 'pokedex-names';
 const cache = new Map<string, Pokemon>();
 const speciesCache = new Map<string, Species>();
 const typeCache = new Map<string, TypeData>();
-const abilityCache = new Map<string, string>();
 
 function extractIdFromUrl(url: string): number | null {
   const match = url.match(/\/(\d+)\/?$/);
@@ -101,31 +98,6 @@ export function getGenus(species: Species | null, lang = 'en'): string {
   return entry ? entry.genus : '';
 }
 
-/** Nome localizado de uma habilidade ('en' usa o slug; outros buscam o endpoint). */
-export async function getAbilityName(ability: PokemonAbility, lang: string): Promise<string> {
-  const slug = ability.ability.name.replace(/-/g, ' ');
-  if (lang === 'en') return slug;
-
-  const { url } = ability.ability;
-  const cacheKey = `${url}|${lang}`;
-  const cached = abilityCache.get(cacheKey);
-  if (cached !== undefined) return cached;
-
-  try {
-    const response = await fetch(url);
-    if (!response.ok) return slug;
-    const data = (await response.json()) as AbilityData;
-    const entry =
-      data.names.find((n) => n.language.name === lang) ||
-      data.names.find((n) => n.language.name === 'en');
-    const name = entry ? entry.name : slug;
-    abilityCache.set(cacheKey, name);
-    return name;
-  } catch {
-    return slug;
-  }
-}
-
 /** Cadeia de evolução (BFS, inclui ramificações como a do Eevee). */
 export async function fetchEvolutionChain(speciesUrl: string): Promise<RefItem[]> {
   try {
@@ -141,7 +113,7 @@ export async function fetchEvolutionChain(speciesUrl: string): Promise<RefItem[]
     while (queue.length > 0) {
       const node = queue.shift() as EvolutionNode;
       const id = extractIdFromUrl(node.species.url);
-      if (id) chain.push({ name: node.species.name, id });
+      if (id) chain.push({ name: node.species.name, id, detail: node.evolution_details[0] });
       node.evolves_to.forEach((next) => queue.push(next));
     }
     return chain;

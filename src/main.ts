@@ -13,9 +13,9 @@ import {
   fetchEncounters,
   getFlavorText,
   getGenus,
-  getAbilityName,
   MAX_POKEMON,
 } from './services/pokeapi';
+import { translateToPt } from './services/translate';
 import {
   getPokemonSprite,
   getStaticImage,
@@ -23,13 +23,19 @@ import {
   getArtworkById,
 } from './services/sprites';
 import { getTypeColor, getTypeLabel } from './domain/pokemonTypes';
-import { aboutRows, speciesFlags, groupMoves, titleize } from './domain/pokemonInfo';
+import {
+  aboutRows,
+  speciesFlags,
+  groupMoves,
+  titleize,
+  formatEvolution,
+} from './domain/pokemonInfo';
 import { getTheme, setTheme, getFavorites, isFavorite, toggleFavorite } from './services/storage';
 import { setupAutocomplete } from './features/autocomplete';
 import { setupFilter } from './features/filter';
 import { setupCompare } from './features/compare';
 import { radarSvg } from './features/radar';
-import { initLang, getLang, setLang, t, contentLang } from './i18n';
+import { initLang, getLang, setLang, t } from './i18n';
 
 /** querySelector tipado (assume que o elemento existe no HTML). */
 const qs = <T extends Element>(selector: string): T => document.querySelector(selector) as T;
@@ -179,22 +185,22 @@ function renderStats(stats: PokemonStat[]): void {
   statsContainer.appendChild(totalRow);
 }
 
-async function renderAbilities(abilities: PokemonAbility[], reqId: number): Promise<void> {
-  abilitiesContainer.innerHTML = `<span class="muted">${t('loading')}</span>`;
-  const lang = contentLang();
-  const names = await Promise.all(abilities.map((ability) => getAbilityName(ability, lang)));
-  if (reqId !== requestId) return;
-
+function renderAbilities(abilities: PokemonAbility[]): void {
   abilitiesContainer.innerHTML = '';
-  abilities.forEach((ability, i) => {
+  const pt = getLang() === 'pt';
+
+  abilities.forEach((ability) => {
     const chip = document.createElement('span');
     chip.className = 'ability-chip';
-    chip.textContent = names[i];
+    const english = ability.ability.name.replace(/-/g, ' ');
+    chip.textContent = english;
     if (ability.is_hidden) {
       chip.classList.add('ability-chip--hidden');
       chip.title = t('hiddenAbility');
     }
     abilitiesContainer.appendChild(chip);
+    // Traduz em segundo plano no modo PT.
+    if (pt) void translateToPt(english).then((tr) => (chip.textContent = tr));
   });
 }
 
@@ -261,9 +267,21 @@ async function renderSpecies(data: Pokemon, reqId: number): Promise<void> {
   const species = await fetchSpecies(data.species.url);
   if (reqId !== requestId || !species) return;
 
-  const lang = contentLang();
-  genusEl.textContent = getGenus(species, lang);
-  descriptionEl.textContent = getFlavorText(species, lang);
+  const pt = getLang() === 'pt';
+  const genusEn = getGenus(species, 'en');
+  const descEn = getFlavorText(species, 'en');
+  genusEl.textContent = genusEn;
+  descriptionEl.textContent = descEn;
+
+  // No modo PT, traduz descrição e genus (EN → PT) em segundo plano.
+  if (pt) {
+    void translateToPt(genusEn).then((tr) => {
+      if (reqId === requestId) genusEl.textContent = tr;
+    });
+    void translateToPt(descEn).then((tr) => {
+      if (reqId === requestId) descriptionEl.textContent = tr;
+    });
+  }
 
   speciesFlags(species).forEach((flag) => {
     const badge = document.createElement('span');
@@ -272,7 +290,7 @@ async function renderSpecies(data: Pokemon, reqId: number): Promise<void> {
     flagsContainer.appendChild(badge);
   });
 
-  aboutRows(data, species, t('genderless')).forEach(({ key, value }) => {
+  aboutRows(data, species, t('genderless'), getLang()).forEach(({ key, value }) => {
     const cell = document.createElement('div');
     cell.className = 'about-cell';
     const label = document.createElement('span');
@@ -391,7 +409,8 @@ async function renderEvolution(speciesUrl: string, reqId: number): Promise<void>
     return;
   }
 
-  chain.forEach(({ name, id }) => {
+  const lang = getLang();
+  chain.forEach(({ name, id, detail }) => {
     const item = document.createElement('button');
     item.type = 'button';
     item.className = 'evo-item';
@@ -405,6 +424,15 @@ async function renderEvolution(speciesUrl: string, reqId: number): Promise<void>
     label.textContent = name;
 
     item.append(image, label);
+
+    const condition = formatEvolution(detail, lang);
+    if (condition) {
+      const cond = document.createElement('small');
+      cond.className = 'evo-cond';
+      cond.textContent = condition;
+      item.appendChild(cond);
+    }
+
     item.addEventListener('click', () => void renderPokemon(name));
     evolutionContainer.appendChild(item);
   });
@@ -496,7 +524,7 @@ function renderDetails(data: Pokemon, reqId: number): void {
   renderStats(data.stats);
   renderHeldItems(data);
   renderMoves(data);
-  void renderAbilities(data.abilities, reqId);
+  renderAbilities(data.abilities);
   void renderSpecies(data, reqId);
   void renderEffectiveness(data.types, reqId);
   void renderEvolution(data.species.url, reqId);

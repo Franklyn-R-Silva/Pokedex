@@ -34,8 +34,9 @@
 - Links compartilháveis (`?pokemon=ID`) e PWA instalável com suporte offline
 - Responsivo: uma coluna no celular, três colunas no desktop
 
-> A PokéAPI não tem português, então no modo PT o texto vindo da API (descrição, genus,
-> habilidades) usa espanhol como aproximação; a interface e os nomes dos tipos são traduzidos de verdade.
+> A PokéAPI não tem português, então no modo PT os textos da API (descrição, genus, habilidades)
+> são traduzidos automaticamente EN→PT (MyMemory, com cache em `localStorage`); a interface, os tipos
+> e os termos finitos (crescimento, grupos de ovo, habitat) são traduzidos diretamente.
 
 ## Tecnologias
 

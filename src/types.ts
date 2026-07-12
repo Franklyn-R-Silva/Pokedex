@@ -95,9 +95,18 @@ export interface EncounterLocation {
   location_area: NamedResource;
 }
 
+export interface EvolutionDetail {
+  min_level: number | null;
+  trigger: NamedResource;
+  item: NamedResource | null;
+  min_happiness: number | null;
+  held_item: NamedResource | null;
+}
+
 export interface EvolutionNode {
   species: NamedResource;
   evolves_to: EvolutionNode[];
+  evolution_details: EvolutionDetail[];
 }
 
 export interface EvolutionChain {
@@ -123,6 +132,7 @@ export interface AbilityData {
 export interface RefItem {
   name: string;
   id: number;
+  detail?: EvolutionDetail;
 }
 
 export interface Weakness {

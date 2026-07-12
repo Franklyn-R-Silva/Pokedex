@@ -34,8 +34,9 @@
 - Shareable deep links (`?pokemon=ID`), installable PWA with offline support
 - Responsive: single column on mobile, three columns on desktop
 
-> The PokéAPI has no Portuguese localization, so in PT mode API text (description, genus,
-> abilities) falls back to Spanish as the closest approximation; the UI and type names are fully translated.
+> The PokéAPI has no Portuguese, so in PT mode the API prose (description, genus, abilities) is
+> machine-translated EN→PT (MyMemory, cached in `localStorage`); the UI, type names, and finite
+> terms (growth rate, egg groups, habitat) are translated directly.
 
 ## Tech stack
 
