@@ -507,3 +507,19 @@
 .deck-row__view:hover {
   outline: 2px solid var(--type-color);
 }
+
+/* Barra de progresso ao montar meta-deck */
+.deck-progress {
+  flex: 1;
+  min-width: 120px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+
+.deck-progress__fill {
+  height: 100%;
+  background: var(--type-color);
+  transition: width 0.2s ease;
+}

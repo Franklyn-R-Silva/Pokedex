@@ -17,6 +17,7 @@ export function DeckBuilder({ onClose }: { onClose: () => void }) {
   const { entries, add, addMany, remove, clear } = useDeck();
   const [mobileTab, setMobileTab] = useState<MobileTab>('deck');
   const [building, setBuilding] = useState(false);
+  const [progress, setProgress] = useState({ done: 0, total: 0 });
   const size = deckSize(entries);
 
   // Carrega um arquétipo do meta buscando cada carta pelo nome na API.
@@ -25,10 +26,17 @@ export function DeckBuilder({ onClose }: { onClose: () => void }) {
     if (!template || building) return;
     setBuilding(true);
     clear();
-    // Busca todas as cartas em paralelo (com cache) — importação rápida.
+    const total = template.cards.length;
+    setProgress({ done: 0, total });
+    let done = 0;
+    // Busca em paralelo (com cache); atualiza o progresso a cada resposta.
     const results = await Promise.all(
       template.cards.map((c) =>
-        searchCards({ name: c.query }).then((r) => ({ card: r.cards[0], count: c.count })),
+        searchCards({ name: c.query }).then((r) => {
+          done += 1;
+          setProgress({ done, total });
+          return { card: r.cards[0], count: c.count };
+        }),
       ),
     );
     results.forEach(({ card, count }) => {
@@ -65,7 +73,22 @@ export function DeckBuilder({ onClose }: { onClose: () => void }) {
             {d.name}
           </button>
         ))}
-        {building && <span className="muted">{dl(lang, 'buildingMeta')}</span>}
+        {building && (
+          <>
+            <span className="muted">{dl(lang, 'buildingMeta')}</span>
+            <div
+              className="deck-progress"
+              role="progressbar"
+              aria-valuenow={progress.done}
+              aria-valuemax={progress.total}
+            >
+              <div
+                className="deck-progress__fill"
+                style={{ width: `${progress.total ? (progress.done / progress.total) * 100 : 0}%` }}
+              />
+            </div>
+          </>
+        )}
       </div>
 
       <div className="deck-mobile-tabs">

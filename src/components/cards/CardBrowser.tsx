@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { TcgCard } from '../../types';
 import type { Lang } from '../../types';
 import { searchCards, formatPrice } from '../../services/tcg';
@@ -42,22 +42,39 @@ const L = (lang: Lang, pt: string, en: string) => (lang === 'pt' ? pt : en);
 
 // Navegador de cartas (estilo "Preços/Banco de cartas"): busca com filtros
 // avançados, paginação e preço de mercado. Só frontend (Pokémon TCG API).
+const qp = () => new URLSearchParams(window.location.search);
+
 export function CardBrowser({ onClose }: { onClose: () => void }) {
   const { lang } = useI18n();
   const { open } = useModal();
-  const [name, setName] = useState('');
-  const [supertype, setSupertype] = useState('');
-  const [type, setType] = useState('');
-  const [rarity, setRarity] = useState('');
-  const [sort, setSort] = useState('-set.releaseDate');
-  const [page, setPage] = useState(1);
+  const [name, setName] = useState(() => qp().get('q') ?? '');
+  const [supertype, setSupertype] = useState(() => qp().get('st') ?? '');
+  const [type, setType] = useState(() => qp().get('el') ?? '');
+  const [rarity, setRarity] = useState(() => qp().get('r') ?? '');
+  const [sort, setSort] = useState(() => qp().get('sort') ?? '-set.releaseDate');
+  const [page, setPage] = useState(() => Number(qp().get('p')) || 1);
   const [data, setData] = useState<{ cards: TcgCard[]; totalCount: number } | null>(null);
+  const first = useRef(true);
 
-  // Reseta a página ao mudar qualquer filtro.
+  // Reseta a página ao mudar um filtro (menos na primeira renderização).
   useEffect(() => {
-    /* eslint-disable-next-line react-hooks/set-state-in-effect */
+    if (first.current) return;
     setPage(1);
   }, [name, supertype, type, rarity, sort]);
+
+  // Mantém os filtros na URL (voltar/recarregar preserva o estado).
+  useEffect(() => {
+    first.current = false;
+    const params = qp();
+    const set = (k: string, v: string) => (v ? params.set(k, v) : params.delete(k));
+    set('q', name);
+    set('st', supertype);
+    set('el', type);
+    set('r', rarity);
+    params.set('sort', sort);
+    params.set('p', String(page));
+    window.history.replaceState({}, '', `?${params.toString()}`);
+  }, [name, supertype, type, rarity, sort, page]);
 
   useEffect(() => {
     let active = true;
@@ -145,9 +162,10 @@ export function CardBrowser({ onClose }: { onClose: () => void }) {
       </div>
 
       {data === null ? (
-        <div className="tcg-loading">
-          <span className="spinner" aria-hidden="true" />
-          {L(lang, 'Carregando…', 'Loading…')}
+        <div className="cardbrowser__grid" aria-busy="true">
+          {Array.from({ length: 12 }).map((_, i) => (
+            <div className="cardbrowser__skeleton" key={i} />
+          ))}
         </div>
       ) : data.cards.length === 0 ? (
         <p className="muted cardbrowser__empty">{L(lang, 'Nenhuma carta encontrada.', 'No cards found.')}</p>
