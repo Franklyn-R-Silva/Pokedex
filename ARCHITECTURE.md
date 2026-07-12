@@ -13,8 +13,9 @@ Navegador
    │
    ├── src/main.js  ── orquestra DOM, render e eventos
    │        │
-   │        ├── src/api.js ─────► fetch na PokéAPI (+ cache) e resolução de sprite
-   │        └── src/pokemonTypes.js ─► cores/labels dos tipos
+   │        ├── src/api.js ─────► fetch na PokéAPI (+ cache), sprite e evolução
+   │        ├── src/pokemonTypes.js ─► cores/labels dos tipos
+   │        └── src/storage.js ─► tema e favoritos (localStorage)
    │
    └── src/style.css ── tema dirigido pela variável --type-color
 ```
@@ -27,18 +28,24 @@ Navegador
 - **Cache em memória** (`Map`): cada Pokémon buscado é memorizado por nome e por id, evitando refetch ao navegar com Prev/Next.
 - `fetchAllPokemonNames()`: carrega a lista completa de nomes (usada no autocomplete da busca).
 - `getPokemonSprite(data)`: resolve a imagem via cadeia de fallback — **animado (Gen V) → artwork oficial → dream world → sprite padrão**. Necessário porque o sprite animado é `null` na API para Pokémon de gerações mais novas.
+- `fetchEvolutionChain(speciesUrl)`: segue `species → evolution_chain` e percorre a árvore (incluindo ramificações, como a do Eevee), retornando `[{ name, id }]`. O id é extraído da URL da espécie, evitando requisições extras para montar as imagens (via `getArtworkById`).
 - `MAX_POKEMON`: total de Pokémon; limita o botão Next.
 
 ### `src/pokemonTypes.js` — tipos
 
 Mapas `TYPE_COLORS` e `TYPE_LABELS` (18 tipos) e seus getters. A cor do tipo primário alimenta a variável CSS `--type-color`.
 
+### `src/storage.js` — persistência
+
+Camada fina sobre `localStorage`: tema (`getTheme`/`setTheme`) e favoritos (`getFavorites`/`isFavorite`/`toggleFavorite`). Os favoritos são armazenados como `[{ id, name }]`.
+
 ### `src/main.js` — orquestração
 
-- Referências do DOM e o pipeline de render (`renderPokemon` → `renderDetails`/`renderTypes`/`renderStats`).
-- Estado: `searchPokemon` (id atual, limitado a `[1, MAX_POKEMON]`) e o sprite atual (para download).
-- Eventos: envio do formulário, botões Prev/Next, setas do teclado e download da imagem.
-- Efeitos colaterais: escreve `--type-color` na raiz do documento, temando fundo, painel e barras de stats.
+- Referências do DOM e o pipeline de render (`renderPokemon` → `renderDetails` → `renderTypes`/`renderStats`/`renderAbilities`/`renderEvolution`).
+- Estado: `searchPokemon` (id atual, limitado a `[1, MAX_POKEMON]`), `currentPokemon` (dados completos, para favoritar) e `currentSprite` (para download).
+- **Guarda de corrida**: `requestId` é incrementado a cada busca; renders assíncronos (evolução) são descartados se um novo já começou, evitando exibir dados obsoletos.
+- Eventos: formulário, Prev/Next, setas do teclado, download, favoritar e alternância de tema.
+- Efeitos colaterais: escreve `--type-color` na raiz do documento (temando fundo, painel e barras) e alterna a classe `dark` no `<html>`.
 
 ## Contrato entre arquivos
 

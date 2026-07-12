@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Pokédex web que consome a PokéAPI. Pesquise por nome ou número, veja tipos e stats, e baixe a imagem do Pokémon."
+      content="Pokédex web que consome a PokéAPI. Pesquise por nome ou número, veja tipos, stats, habilidades e evolução, e baixe a imagem do Pokémon."
     />
     <meta name="author" content="Franklyn" />
 
@@ -22,6 +22,10 @@
   </head>
 
   <body>
+    <header class="topbar">
+      <button class="theme-toggle" type="button" aria-label="Tema escuro">🌙</button>
+    </header>
+
     <main>
       <div class="pokedex-device">
         <img src="" alt="pokemon" class="pokemon__image" />
@@ -49,6 +53,7 @@
 
       <section class="details">
         <div class="details__types"></div>
+
         <div class="details__meta">
           <div>
             <span class="label">Altura</span>
@@ -59,8 +64,25 @@
             <span class="weight"></span>
           </div>
         </div>
+
+        <h2 class="section-title">Stats</h2>
         <ul class="details__stats"></ul>
-        <button class="btn-download" type="button" disabled>⬇ Baixar imagem</button>
+
+        <h2 class="section-title">Habilidades</h2>
+        <div class="details__abilities"></div>
+
+        <h2 class="section-title">Evolução</h2>
+        <div class="details__evolution"></div>
+
+        <div class="details__actions">
+          <button class="btn-favorite" type="button" disabled>☆ Favoritar</button>
+          <button class="btn-download" type="button" disabled>⬇ Baixar imagem</button>
+        </div>
+      </section>
+
+      <section class="favorites">
+        <h2 class="favorites__title">⭐ Favoritos</h2>
+        <div class="favorites__list"></div>
       </section>
     </main>
 

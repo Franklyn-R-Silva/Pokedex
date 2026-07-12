@@ -34,7 +34,9 @@
 - 🔍 Pesquisar Pokémon por **nome** (com **autocomplete**) ou **número**
 - ⬅️ ➡️ Navegar entre os Pokémon com os botões **Prev**/**Next** ou as **setas do teclado**
 - 🏷️ Ver **tipos** (com cores oficiais), **altura**, **peso** e **stats** em barras
+- 🧬 Ver **habilidades** (destacando as ocultas) e a **cadeia de evolução** (clicável)
 - 🎨 **Tema por tipo**: as cores da interface mudam conforme o Pokémon
+- 🌙 **Modo escuro** e ⭐ **favoritar Pokémon** (persistidos no navegador)
 - ⬇️ **Baixar a imagem/GIF** do Pokémon
 - 📱 Layout **responsivo** para celular
 - ⚡ **Cache** de requisições e mensagens de erro/carregamento
@@ -86,8 +88,9 @@ Acesse o endereço exibido no terminal (por padrão `http://localhost:5173`).
 ├── index.html              # Marcação da página (entrada do Vite)
 ├── src/
 │   ├── main.js             # Orquestração: DOM, render e eventos
-│   ├── api.js              # PokéAPI: fetch, cache e resolução de sprite
+│   ├── api.js              # PokéAPI: fetch, cache, sprite e evolução
 │   ├── pokemonTypes.js     # Cores e traduções dos tipos
+│   ├── storage.js          # Tema e favoritos (localStorage)
 │   └── style.css           # Estilos
 ├── public/
 │   ├── images/pokedex.png  # Imagem do dispositivo
@@ -123,8 +126,8 @@ O fluxo está dividido em módulos:
 - [x] Modernizar o fluxo com **Vite** e organizar o código em **módulos**
 - [x] Busca por nome com **autocomplete** e **download** da imagem
 - [x] Layout **responsivo** para celular
-- [ ] Adicionar **habilidades** e cadeia de evolução
-- [ ] Modo **escuro** e favoritar Pokémon
+- [x] Adicionar **habilidades** e cadeia de evolução
+- [x] Modo **escuro** e favoritar Pokémon
 
 ## 🙏 Créditos
 

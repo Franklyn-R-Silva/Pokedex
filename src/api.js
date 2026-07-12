@@ -62,3 +62,47 @@ export function getPokemonSprite(data) {
 
   return animated || officialArtwork || dreamWorld || sprites.front_default || '';
 }
+
+/**
+ * Monta a URL do artwork oficial a partir do id (sem requisição extra).
+ * @param {number} id
+ * @returns {string}
+ */
+export function getArtworkById(id) {
+  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`;
+}
+
+// Extrai o id numérico de uma URL de recurso da PokéAPI (ex.: .../pokemon-species/25/).
+function extractIdFromUrl(url) {
+  const match = url.match(/\/(\d+)\/?$/);
+  return match ? Number(match[1]) : null;
+}
+
+/**
+ * Busca a cadeia de evolução de um Pokémon.
+ * Fluxo: species -> evolution_chain -> percorre a árvore (inclui ramificações).
+ * @param {string} speciesUrl URL da espécie (data.species.url).
+ * @returns {Promise<Array<{name: string, id: number}>>}
+ */
+export async function fetchEvolutionChain(speciesUrl) {
+  try {
+    const speciesResponse = await fetch(speciesUrl);
+    if (!speciesResponse.ok) return [];
+    const species = await speciesResponse.json();
+
+    const evoResponse = await fetch(species.evolution_chain.url);
+    if (!evoResponse.ok) return [];
+    const evolution = await evoResponse.json();
+
+    const chain = [];
+    const queue = [evolution.chain];
+    while (queue.length > 0) {
+      const node = queue.shift();
+      chain.push({ name: node.species.name, id: extractIdFromUrl(node.species.url) });
+      node.evolves_to.forEach((next) => queue.push(next));
+    }
+    return chain;
+  } catch {
+    return [];
+  }
+}

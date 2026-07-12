@@ -218,13 +218,103 @@ main {
   text-align: right;
 }
 
-.btn-download {
+.section-title {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #888;
+  text-align: left;
+  margin: 18px 0 10px;
+}
+
+/* ---------- Habilidades ---------- */
+
+.details__abilities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ability-chip {
+  padding: 5px 12px;
+  border-radius: 8px;
+  background: #eef1f5;
+  color: #3a444d;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.ability-chip--hidden {
+  border: 1px dashed var(--type-color);
+}
+
+.ability-chip--hidden::after {
+  content: ' ✦';
+  color: var(--type-color);
+}
+
+/* ---------- Evolução ---------- */
+
+.details__evolution {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.evo-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  background: #fafafa;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.evo-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+}
+
+.evo-item img {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+}
+
+.evo-item span {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #3a444d;
+  text-transform: capitalize;
+}
+
+.muted {
+  font-size: 0.8rem;
+  color: #999;
+}
+
+/* ---------- Ações (favoritar / baixar) ---------- */
+
+.details__actions {
+  display: flex;
+  gap: 10px;
   margin-top: 18px;
-  width: 100%;
+}
+
+.btn-favorite,
+.btn-download {
+  flex: 1;
   padding: 12px;
   border: none;
   border-radius: 8px;
-  background: var(--type-color);
   color: #fff;
   font-weight: 700;
   font-size: 0.95rem;
@@ -234,17 +324,105 @@ main {
     transform 0.1s ease;
 }
 
+.btn-download {
+  background: var(--type-color);
+}
+
+.btn-favorite {
+  background: #f4b400;
+}
+
+.btn-favorite.is-active {
+  background: #e59400;
+}
+
+.btn-favorite:hover:not(:disabled),
 .btn-download:hover:not(:disabled) {
   filter: brightness(1.08);
 }
 
+.btn-favorite:active:not(:disabled),
 .btn-download:active:not(:disabled) {
   transform: translateY(1px);
 }
 
+.btn-favorite:disabled,
 .btn-download:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* ---------- Barra superior / tema ---------- */
+
+.topbar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 12px 16px 0;
+}
+
+.theme-toggle {
+  border: none;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 999px;
+  width: 40px;
+  height: 40px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  transition: transform 0.15s ease;
+}
+
+.theme-toggle:hover {
+  transform: scale(1.08);
+}
+
+/* ---------- Favoritos ---------- */
+
+.favorites {
+  width: 100%;
+  max-width: 425px;
+}
+
+.favorites__title {
+  font-size: 0.9rem;
+  color: #3a444d;
+  margin-bottom: 10px;
+}
+
+.favorites__list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.favorite-chip {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border-radius: 999px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+}
+
+.favorite-chip__load {
+  border: none;
+  background: none;
+  padding: 6px 4px 6px 14px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #3a444d;
+  cursor: pointer;
+  text-transform: capitalize;
+}
+
+.favorite-chip__remove {
+  border: none;
+  background: none;
+  padding: 6px 12px 6px 6px;
+  color: #c0392b;
+  font-weight: 700;
+  cursor: pointer;
 }
 
 /* ---------- Rodapé ---------- */
@@ -263,6 +441,56 @@ main {
 
 .site-footer a:hover {
   text-decoration: underline;
+}
+
+/* ---------- Modo escuro ---------- */
+
+html.dark body {
+  background: linear-gradient(to bottom, var(--type-color), #12121c);
+  color: #e6e6e6;
+}
+
+html.dark .details,
+html.dark .favorite-chip {
+  background: #1c2033;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+html.dark .details__meta .height,
+html.dark .details__meta .weight,
+html.dark .stat__value,
+html.dark .favorites__title,
+html.dark .favorite-chip__load,
+html.dark .site-footer {
+  color: #e6e6e6;
+}
+
+html.dark .ability-chip {
+  background: #2a3050;
+  color: #e6e6e6;
+}
+
+html.dark .evo-item {
+  background: #2a3050;
+  border-color: #3a4266;
+}
+
+html.dark .evo-item span {
+  color: #e6e6e6;
+}
+
+html.dark .stat__bar {
+  background: #3a4266;
+}
+
+html.dark .input__search {
+  background: #1c2033;
+  color: #e6e6e6;
+  border-color: #555;
+}
+
+html.dark .theme-toggle {
+  background: rgba(0, 0, 0, 0.4);
 }
 
 /* ---------- Responsivo (celular) ---------- */
@@ -290,5 +518,9 @@ main {
   .stat {
     grid-template-columns: 38px 1fr 32px;
     gap: 8px;
+  }
+
+  .details__actions {
+    flex-direction: column;
   }
 }

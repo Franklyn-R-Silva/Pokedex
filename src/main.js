@@ -1,6 +1,14 @@
 import './style.css';
-import { fetchPokemon, fetchAllPokemonNames, getPokemonSprite, MAX_POKEMON } from './api.js';
+import {
+  fetchPokemon,
+  fetchAllPokemonNames,
+  fetchEvolutionChain,
+  getPokemonSprite,
+  getArtworkById,
+  MAX_POKEMON,
+} from './api.js';
 import { getTypeColor, getTypeLabel } from './pokemonTypes.js';
+import { getTheme, setTheme, getFavorites, isFavorite, toggleFavorite } from './storage.js';
 
 const pokemonName = document.querySelector('.pokemon__name');
 const pokemonNumber = document.querySelector('.pokemon__number');
@@ -12,12 +20,17 @@ const nameList = document.querySelector('#pokemon-list');
 const buttonPrev = document.querySelector('.btn-prev');
 const buttonNext = document.querySelector('.btn-next');
 const buttonDownload = document.querySelector('.btn-download');
+const buttonFavorite = document.querySelector('.btn-favorite');
+const themeToggle = document.querySelector('.theme-toggle');
 
 const typesContainer = document.querySelector('.details__types');
 const heightValue = document.querySelector('.height');
 const weightValue = document.querySelector('.weight');
 const statsContainer = document.querySelector('.details__stats');
+const abilitiesContainer = document.querySelector('.details__abilities');
+const evolutionContainer = document.querySelector('.details__evolution');
 const details = document.querySelector('.details');
+const favoritesList = document.querySelector('.favorites__list');
 
 // Nome curto de cada stat para exibição.
 const STAT_LABELS = {
@@ -30,7 +43,9 @@ const STAT_LABELS = {
 };
 
 let searchPokemon = 1;
+let currentPokemon = null; // dados completos do Pokémon exibido.
 let currentSprite = null; // { url, name } do Pokémon exibido (para download).
+let requestId = 0; // token para descartar renders assíncronos obsoletos.
 
 function setLoading() {
   pokemonName.innerHTML = 'Carregando...';
@@ -42,8 +57,10 @@ function showError(message) {
   pokemonName.innerHTML = message;
   pokemonNumber.innerHTML = '';
   details.classList.remove('is-visible');
+  currentPokemon = null;
   currentSprite = null;
   buttonDownload.disabled = true;
+  buttonFavorite.disabled = true;
   document.documentElement.style.removeProperty('--type-color');
 }
 
@@ -85,7 +102,95 @@ function renderStats(stats) {
   });
 }
 
-function renderDetails(data) {
+function renderAbilities(abilities) {
+  abilitiesContainer.innerHTML = '';
+  abilities.forEach(({ ability, is_hidden: isHidden }) => {
+    const chip = document.createElement('span');
+    chip.className = 'ability-chip';
+    chip.textContent = ability.name.replace(/-/g, ' ');
+    if (isHidden) {
+      chip.classList.add('ability-chip--hidden');
+      chip.title = 'Habilidade oculta';
+    }
+    abilitiesContainer.appendChild(chip);
+  });
+}
+
+async function renderEvolution(speciesUrl, reqId) {
+  evolutionContainer.innerHTML = '<span class="muted">Carregando...</span>';
+
+  const chain = await fetchEvolutionChain(speciesUrl);
+  // Descarta se o usuário já navegou para outro Pokémon.
+  if (reqId !== requestId) return;
+
+  evolutionContainer.innerHTML = '';
+  if (chain.length <= 1) {
+    evolutionContainer.innerHTML = '<span class="muted">Sem evoluções</span>';
+    return;
+  }
+
+  chain.forEach(({ name, id }) => {
+    const item = document.createElement('button');
+    item.type = 'button';
+    item.className = 'evo-item';
+
+    const image = document.createElement('img');
+    image.src = getArtworkById(id);
+    image.alt = name;
+    image.loading = 'lazy';
+
+    const label = document.createElement('span');
+    label.textContent = name;
+
+    item.append(image, label);
+    item.addEventListener('click', () => renderPokemon(name));
+    evolutionContainer.appendChild(item);
+  });
+}
+
+function updateFavoriteButton() {
+  if (!currentPokemon) return;
+  const favorited = isFavorite(currentPokemon.id);
+  buttonFavorite.textContent = favorited ? '★ Favoritado' : '☆ Favoritar';
+  buttonFavorite.classList.toggle('is-active', favorited);
+}
+
+function renderFavorites() {
+  const favorites = getFavorites();
+  favoritesList.innerHTML = '';
+
+  if (favorites.length === 0) {
+    favoritesList.innerHTML = '<span class="muted">Nenhum favorito ainda</span>';
+    return;
+  }
+
+  favorites.forEach((favorite) => {
+    const chip = document.createElement('div');
+    chip.className = 'favorite-chip';
+
+    const load = document.createElement('button');
+    load.type = 'button';
+    load.className = 'favorite-chip__load';
+    load.textContent = `#${favorite.id} ${favorite.name}`;
+    load.addEventListener('click', () => renderPokemon(favorite.name));
+
+    const remove = document.createElement('button');
+    remove.type = 'button';
+    remove.className = 'favorite-chip__remove';
+    remove.textContent = '✕';
+    remove.setAttribute('aria-label', `Remover ${favorite.name}`);
+    remove.addEventListener('click', () => {
+      toggleFavorite(favorite);
+      renderFavorites();
+      updateFavoriteButton();
+    });
+
+    chip.append(load, remove);
+    favoritesList.appendChild(chip);
+  });
+}
+
+function renderDetails(data, reqId) {
   const primaryType = data.types[0]?.type?.name;
   document.documentElement.style.setProperty('--type-color', getTypeColor(primaryType));
 
@@ -93,11 +198,14 @@ function renderDetails(data) {
   heightValue.textContent = `${(data.height / 10).toFixed(1)} m`;
   weightValue.textContent = `${(data.weight / 10).toFixed(1)} kg`;
   renderStats(data.stats);
+  renderAbilities(data.abilities);
+  renderEvolution(data.species.url, reqId);
 
   details.classList.add('is-visible');
 }
 
 async function renderPokemon(pokemon) {
+  const reqId = ++requestId;
   setLoading();
 
   let data;
@@ -107,6 +215,8 @@ async function renderPokemon(pokemon) {
     showError('Erro de conexão :c');
     return;
   }
+
+  if (reqId !== requestId) return; // navegação mais recente já em andamento.
 
   if (!data) {
     showError('Não encontrado :c');
@@ -122,10 +232,13 @@ async function renderPokemon(pokemon) {
   input.value = '';
   searchPokemon = data.id;
 
+  currentPokemon = data;
   currentSprite = { url: sprite, name: data.name };
   buttonDownload.disabled = !sprite;
+  buttonFavorite.disabled = false;
+  updateFavoriteButton();
 
-  renderDetails(data);
+  renderDetails(data, reqId);
 }
 
 /**
@@ -169,6 +282,12 @@ async function populateNameList() {
   nameList.appendChild(fragment);
 }
 
+function applyTheme(theme) {
+  document.documentElement.classList.toggle('dark', theme === 'dark');
+  themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
+  themeToggle.setAttribute('aria-label', theme === 'dark' ? 'Tema claro' : 'Tema escuro');
+}
+
 form.addEventListener('submit', (event) => {
   event.preventDefault();
   const query = input.value.trim().toLowerCase();
@@ -191,6 +310,19 @@ buttonNext.addEventListener('click', () => {
 
 buttonDownload.addEventListener('click', downloadSprite);
 
+buttonFavorite.addEventListener('click', () => {
+  if (!currentPokemon) return;
+  toggleFavorite({ id: currentPokemon.id, name: currentPokemon.name });
+  updateFavoriteButton();
+  renderFavorites();
+});
+
+themeToggle.addEventListener('click', () => {
+  const next = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
+  setTheme(next);
+  applyTheme(next);
+});
+
 // Navegação pelo teclado (setas esquerda/direita).
 document.addEventListener('keydown', (event) => {
   if (document.activeElement === input) return;
@@ -198,5 +330,7 @@ document.addEventListener('keydown', (event) => {
   if (event.key === 'ArrowRight') buttonNext.click();
 });
 
+applyTheme(getTheme());
+renderFavorites();
 renderPokemon(searchPokemon);
 populateNameList();
