@@ -13,12 +13,15 @@ Navegador
    │
    ├── src/main.js  ── orquestra DOM, render e eventos
    │        │
-   │        ├── src/api.js ─────► fetch na PokéAPI (+ cache), sprite e evolução
+   │        ├── src/api.js ─────► fetch na PokéAPI (+ cache), sprite, evolução, fraquezas
+   │        ├── src/i18n.js ────► traduções PT-BR / EN
    │        ├── src/pokemonTypes.js ─► cores/labels dos tipos
    │        ├── src/storage.js ─► tema e favoritos (localStorage)
-   │        └── src/autocomplete.js ─► sugestões de busca por substring
+   │        ├── src/autocomplete.js ─► sugestões de busca por substring
+   │        ├── src/filter.js ──► filtro por tipo / geração
+   │        └── src/compare.js ─► comparação lado a lado
    │
-   └── src/style.css ── tema dirigido pela variável --type-color
+   └── src/style.css ── tema (--type-color) e layout responsivo (3 colunas no desktop)
 ```
 
 ## Módulos
@@ -48,6 +51,18 @@ Camada fina sobre `localStorage`: tema (`getTheme`/`setTheme`) e favoritos (`get
 
 `setupAutocomplete({ input, container, getNames, onSelect })` substitui o `<datalist>` nativo (que só sugere por prefixo) por um dropdown que casa por **substring** — permite achar o Pokémon sabendo só parte do nome. Prioriza correspondências no início, destaca o trecho encontrado e é navegável por teclado (↑/↓, Enter, Esc).
 
+### `src/i18n.js` — internacionalização
+
+Dicionários PT-BR/EN. `t(key)` devolve o texto da UI no idioma atual; `contentLang()` mapeia o idioma da UI para o do conteúdo da API (`pt`→`es`, `en`→`en`), porque a PokéAPI não tem português — o espanhol é a aproximação mais próxima. O idioma persiste em `localStorage`; textos estáticos usam atributos `data-i18n` / `data-i18n-ph`.
+
+### `src/filter.js` — filtro
+
+`setupFilter(...)` monta um grid clicável filtrando por tipo e/ou geração (interseção por id quando ambos são escolhidos). Devolve `{ refresh }` para re-rotular ao trocar de idioma.
+
+### `src/compare.js` — comparação
+
+`setupCompare(...)` busca dois Pokémon e monta uma tabela lado a lado (tipos, altura, peso, stats e total), destacando o maior valor de cada linha. Devolve `{ refresh }`.
+
 ### `src/main.js` — orquestração
 
 - Referências do DOM e o pipeline de render (`renderPokemon` → `renderDetails` → `renderTypes`/`renderStats`/`renderAbilities`/`renderEvolution`).
@@ -66,7 +81,7 @@ Imagens e favicons ficam em `public/` e são referenciados por caminho absoluto 
 
 ## Build e qualidade
 
-- **Vite** gera o bundle otimizado em `dist/`. Deploy no **Cloudflare Pages** (build: `npm run build`, saída: `dist`); `public/_redirects` faz o fallback de SPA.
+- **Vite** gera o bundle otimizado em `dist/`. Deploy no **Cloudflare Pages** (build: `npm run build`, saída: `dist`). Rotas desconhecidas caem em `public/404.html` (a app usa apenas query string `?pokemon=ID` na raiz, então não precisa de fallback de SPA).
 - **vite-plugin-pwa** gera o service worker e o manifest: a app é instalável e faz cache offline da PokéAPI e dos sprites (estratégia `CacheFirst`).
 - **Vitest** cobre a lógica pura (`filterNames`, resolução de sprites, favoritos/tema). **ESLint** (flat config) e **Prettier** garantem consistência; rodam no CI (GitHub Actions) a cada push/PR.
 

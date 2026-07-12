@@ -571,6 +571,201 @@ main {
   gap: 8px;
 }
 
+/* ---------- Toggle de idioma ---------- */
+
+.lang-toggle {
+  border: none;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 999px;
+  min-width: 40px;
+  height: 40px;
+  padding: 0 12px;
+  font-weight: 800;
+  font-size: 0.85rem;
+  color: #3a444d;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  transition: transform 0.15s ease;
+}
+
+.lang-toggle:hover {
+  transform: scale(1.05);
+}
+
+/* ---------- Painéis (explorar / comparar) ---------- */
+
+.panel {
+  width: 100%;
+  max-width: 425px;
+}
+
+.panel__title {
+  font-size: 0.9rem;
+  color: #3a444d;
+  margin-bottom: 10px;
+}
+
+.filter__controls,
+.compare__controls {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.filter-type,
+.filter-gen,
+.compare-a,
+.compare-b {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 2px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #3a444d;
+  background: #fff;
+}
+
+.compare-run {
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  background: var(--type-color);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(78px, 1fr));
+  gap: 8px;
+}
+
+.grid-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  background: #fafafa;
+  cursor: pointer;
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease;
+}
+
+.grid-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+}
+
+.grid-item img {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+}
+
+.grid-item span {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #3a444d;
+  text-transform: capitalize;
+  text-align: center;
+}
+
+.grid-more {
+  align-self: center;
+}
+
+/* ---------- Tabela de comparação ---------- */
+
+.compare {
+  background: #fafafa;
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.compare__header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.compare__poke {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.compare__poke img {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+}
+
+.compare__name {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #3a444d;
+  text-transform: capitalize;
+  text-align: center;
+}
+
+.compare__types {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.compare__vs {
+  font-weight: 800;
+  color: #888;
+}
+
+.compare__row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #3a444d;
+}
+
+.compare__row > span:first-child {
+  text-align: right;
+}
+
+.compare__row > span:last-child {
+  text-align: left;
+}
+
+.compare__stat-label {
+  font-size: 0.7rem;
+  color: #888;
+  text-transform: uppercase;
+}
+
+.compare__row .is-higher {
+  color: #16a34a;
+  font-weight: 800;
+}
+
+.compare__row--total {
+  border-top: 2px solid #eee;
+  margin-top: 6px;
+  padding-top: 8px;
+}
+
 /* ---------- Modo escuro ---------- */
 
 html.dark body {
@@ -634,6 +829,37 @@ html.dark .details__description {
   color: #c9c9c9;
 }
 
+html.dark .lang-toggle {
+  background: rgba(0, 0, 0, 0.4);
+  color: #e6e6e6;
+}
+
+html.dark .panel__title,
+html.dark .grid-item span,
+html.dark .compare__name,
+html.dark .compare__row {
+  color: #e6e6e6;
+}
+
+html.dark .filter-type,
+html.dark .filter-gen,
+html.dark .compare-a,
+html.dark .compare-b {
+  background: #1c2033;
+  color: #e6e6e6;
+  border-color: #555;
+}
+
+html.dark .grid-item,
+html.dark .compare {
+  background: #2a3050;
+  border-color: #3a4266;
+}
+
+html.dark .compare__row--total {
+  border-color: #3a4266;
+}
+
 html.dark .theme-toggle {
   background: rgba(0, 0, 0, 0.4);
 }
@@ -663,5 +889,46 @@ html.dark .theme-toggle {
   .stat {
     grid-template-columns: 38px 1fr 32px;
     gap: 8px;
+  }
+}
+
+/* ---------- Desktop: layout em colunas (menos scroll) ---------- */
+
+@media (min-width: 1024px) {
+  main {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(300px, 360px));
+    justify-content: center;
+    align-items: start;
+    gap: 28px;
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: 24px 15px 48px;
+  }
+
+  .pokedex-device {
+    grid-column: 1;
+    margin-top: 0;
+    justify-self: center;
+  }
+
+  .toolbar {
+    grid-column: 1;
+  }
+
+  .details {
+    grid-column: 2;
+  }
+
+  .favorites {
+    grid-column: 3;
+  }
+
+  .panel.filter {
+    grid-column: 3;
+  }
+
+  .panel.compare {
+    grid-column: 3;
   }
 }

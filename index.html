@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Pokédex web que consome a PokéAPI. Pesquise por nome ou número, veja tipos, stats, habilidades, fraquezas e evolução, ouça o cry e baixe a imagem do Pokémon."
+      content="Pokédex web que consome a PokéAPI. Pesquise por nome ou número, veja tipos, stats, habilidades, fraquezas e evolução, compare Pokémon e baixe a imagem."
     />
     <meta name="author" content="Franklyn" />
     <meta name="theme-color" content="#ef5350" />
@@ -16,14 +16,14 @@
     <meta property="og:title" content="Pokédex" />
     <meta
       property="og:description"
-      content="Pesquise Pokémon por nome ou número: tipos, stats, habilidades, fraquezas, evolução e download da imagem."
+      content="Pesquise Pokémon por nome ou número: tipos, stats, habilidades, fraquezas, evolução, comparação e download da imagem."
     />
-    <meta property="og:image" content="/images/pokedex.png" />
+    <meta property="og:image" content="/icons/icon-512.png" />
     <meta property="og:url" content="https://pokedex.devfrs.com/" />
-    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:card" content="summary" />
 
     <link rel="icon" href="/favicons/favicon-16x16.png" />
-    <link rel="apple-touch-icon" href="/images/pokedex.png" />
+    <link rel="apple-touch-icon" href="/icons/icon-192.png" />
 
     <link rel="preconnect" href="https://pokeapi.co" />
     <link rel="preconnect" href="https://raw.githubusercontent.com" />
@@ -36,6 +36,7 @@
 
   <body>
     <header class="topbar">
+      <button class="lang-toggle" type="button" aria-label="Idioma / Language">PT</button>
       <button class="theme-toggle" type="button" aria-label="Tema escuro">🌙</button>
     </header>
 
@@ -50,12 +51,13 @@
           <input
             type="search"
             class="input__search"
-            placeholder="Name or Number"
+            placeholder="Nome ou número"
+            data-i18n-ph="searchPlaceholder"
             autocomplete="off"
             role="combobox"
             aria-autocomplete="list"
             aria-expanded="false"
-            aria-label="Buscar Pokémon por nome ou número"
+            aria-label="Buscar Pokémon"
             required
           />
           <ul class="suggestions" role="listbox"></ul>
@@ -68,10 +70,14 @@
       </div>
 
       <div class="toolbar">
-        <button class="btn-tool btn-random" type="button">🎲 Aleatório</button>
-        <button class="btn-tool btn-shiny" type="button" aria-pressed="false">✨ Shiny</button>
-        <button class="btn-tool btn-cry" type="button" disabled>🔊 Som</button>
-        <button class="btn-tool btn-share" type="button" disabled>🔗 Compartilhar</button>
+        <button class="btn-tool btn-random" type="button" data-i18n="random">🎲 Aleatório</button>
+        <button class="btn-tool btn-shiny" type="button" aria-pressed="false" data-i18n="shiny">
+          ✨ Shiny
+        </button>
+        <button class="btn-tool btn-cry" type="button" disabled data-i18n="cry">🔊 Som</button>
+        <button class="btn-tool btn-share" type="button" disabled data-i18n="share">
+          🔗 Compartilhar
+        </button>
       </div>
 
       <section class="details" aria-live="polite">
@@ -82,25 +88,25 @@
 
         <div class="details__meta">
           <div>
-            <span class="label">Altura</span>
+            <span class="label" data-i18n="height">Altura</span>
             <span class="height"></span>
           </div>
           <div>
-            <span class="label">Peso</span>
+            <span class="label" data-i18n="weight">Peso</span>
             <span class="weight"></span>
           </div>
         </div>
 
-        <h2 class="section-title">Fraquezas</h2>
+        <h2 class="section-title" data-i18n="weaknesses">Fraquezas</h2>
         <div class="details__weaknesses"></div>
 
-        <h2 class="section-title">Stats</h2>
+        <h2 class="section-title" data-i18n="stats">Stats</h2>
         <ul class="details__stats"></ul>
 
-        <h2 class="section-title">Habilidades</h2>
+        <h2 class="section-title" data-i18n="abilities">Habilidades</h2>
         <div class="details__abilities"></div>
 
-        <h2 class="section-title">Evolução</h2>
+        <h2 class="section-title" data-i18n="evolution">Evolução</h2>
         <div class="details__evolution"></div>
 
         <div class="details__actions">
@@ -111,8 +117,37 @@
       </section>
 
       <section class="favorites">
-        <h2 class="favorites__title">⭐ Favoritos</h2>
+        <h2 class="favorites__title" data-i18n="favoritesTitle">⭐ Favoritos</h2>
         <div class="favorites__list"></div>
+      </section>
+
+      <section class="panel filter">
+        <h2 class="panel__title" data-i18n="exploreTitle">🔎 Explorar</h2>
+        <div class="filter__controls">
+          <select class="filter-type" aria-label="Tipo"></select>
+          <select class="filter-gen" aria-label="Geração"></select>
+        </div>
+        <div class="filter-results grid"></div>
+      </section>
+
+      <section class="panel compare">
+        <h2 class="panel__title" data-i18n="compareTitle">⚔️ Comparar</h2>
+        <div class="compare__controls">
+          <input
+            class="compare-a"
+            type="search"
+            data-i18n-ph="comparePlaceholderA"
+            autocomplete="off"
+          />
+          <input
+            class="compare-b"
+            type="search"
+            data-i18n-ph="comparePlaceholderB"
+            autocomplete="off"
+          />
+          <button class="compare-run" type="button" data-i18n="compareButton">Comparar</button>
+        </div>
+        <div class="compare-result"></div>
       </section>
     </main>
 

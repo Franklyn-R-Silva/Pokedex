@@ -9,6 +9,13 @@ const NAMES_KEY = 'pokedex-names';
 const cache = new Map();
 const speciesCache = new Map();
 const typeCache = new Map();
+const abilityCache = new Map();
+
+// Extrai o id numérico de uma URL de recurso da PokéAPI (ex.: .../pokemon-species/25/).
+function extractIdFromUrl(url) {
+  const match = url.match(/\/(\d+)\/?$/);
+  return match ? Number(match[1]) : null;
+}
 
 /**
  * Busca um Pokémon pelo nome ou número.
@@ -82,16 +89,50 @@ export async function fetchSpecies(url) {
   }
 }
 
-/** Descrição (flavor text) em inglês, com quebras normalizadas. */
-export function getFlavorText(species) {
-  const entry = species?.flavor_text_entries?.find((e) => e.language.name === 'en');
+/** Descrição (flavor text) no idioma pedido, com fallback para inglês. */
+export function getFlavorText(species, lang = 'en') {
+  const entries = species?.flavor_text_entries ?? [];
+  const entry =
+    entries.find((e) => e.language.name === lang) || entries.find((e) => e.language.name === 'en');
   return entry ? entry.flavor_text.replace(/[\n\f\r]/g, ' ') : '';
 }
 
-/** Categoria/genus em inglês (ex.: "Seed Pokémon"). */
-export function getGenus(species) {
-  const entry = species?.genera?.find((e) => e.language.name === 'en');
+/** Categoria/genus no idioma pedido, com fallback para inglês. */
+export function getGenus(species, lang = 'en') {
+  const entries = species?.genera ?? [];
+  const entry =
+    entries.find((e) => e.language.name === lang) || entries.find((e) => e.language.name === 'en');
   return entry ? entry.genus : '';
+}
+
+/**
+ * Nome localizado de uma habilidade. Para 'en' usa o slug (a UI capitaliza);
+ * para outros idiomas busca o endpoint da habilidade (com cache).
+ * @param {{ability: {name: string, url: string}}} ability
+ * @param {string} lang
+ * @returns {Promise<string>}
+ */
+export async function getAbilityName(ability, lang) {
+  const slug = ability.ability.name.replace(/-/g, ' ');
+  if (lang === 'en') return slug;
+
+  const { url } = ability.ability;
+  const cacheKey = `${url}|${lang}`;
+  if (abilityCache.has(cacheKey)) return abilityCache.get(cacheKey);
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) return slug;
+    const data = await response.json();
+    const entry =
+      data.names.find((n) => n.language.name === lang) ||
+      data.names.find((n) => n.language.name === 'en');
+    const name = entry ? entry.name : slug;
+    abilityCache.set(cacheKey, name);
+    return name;
+  } catch {
+    return slug;
+  }
 }
 
 /**
@@ -160,12 +201,6 @@ export function getArtworkById(id) {
   return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`;
 }
 
-// Extrai o id numérico de uma URL de recurso da PokéAPI (ex.: .../pokemon-species/25/).
-function extractIdFromUrl(url) {
-  const match = url.match(/\/(\d+)\/?$/);
-  return match ? Number(match[1]) : null;
-}
-
 /**
  * Busca a cadeia de evolução de um Pokémon.
  * Fluxo: species -> evolution_chain -> percorre a árvore (inclui ramificações).
@@ -229,6 +264,38 @@ export async function fetchWeaknesses(types) {
       .filter(([, m]) => m > 1)
       .sort((a, b) => b[1] - a[1])
       .map(([name, multiplier]) => ({ name, multiplier }));
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Lista os Pokémon de um tipo.
+ * @param {string} typeName
+ * @returns {Promise<Array<{name: string, id: number}>>}
+ */
+export async function fetchByType(typeName) {
+  const data = await fetchType(`https://pokeapi.co/api/v2/type/${typeName}`);
+  if (!data) return [];
+  return data.pokemon
+    .map((p) => ({ name: p.pokemon.name, id: extractIdFromUrl(p.pokemon.url) }))
+    .filter((p) => p.id && p.id <= MAX_POKEMON);
+}
+
+/**
+ * Lista as espécies de uma geração (ordenadas por id).
+ * @param {number|string} genId
+ * @returns {Promise<Array<{name: string, id: number}>>}
+ */
+export async function fetchByGeneration(genId) {
+  try {
+    const response = await fetch(`https://pokeapi.co/api/v2/generation/${genId}`);
+    if (!response.ok) return [];
+    const data = await response.json();
+    return data.pokemon_species
+      .map((s) => ({ name: s.name, id: extractIdFromUrl(s.url) }))
+      .filter((s) => s.id)
+      .sort((a, b) => a.id - b.id);
   } catch {
     return [];
   }

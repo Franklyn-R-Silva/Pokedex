@@ -7,6 +7,7 @@ import {
   fetchWeaknesses,
   getFlavorText,
   getGenus,
+  getAbilityName,
   getPokemonSprite,
   getStaticImage,
   getAnimatedGif,
@@ -16,6 +17,9 @@ import {
 import { getTypeColor, getTypeLabel } from './pokemonTypes.js';
 import { getTheme, setTheme, getFavorites, isFavorite, toggleFavorite } from './storage.js';
 import { setupAutocomplete } from './autocomplete.js';
+import { setupFilter } from './filter.js';
+import { setupCompare } from './compare.js';
+import { initLang, getLang, setLang, t, contentLang } from './i18n.js';
 
 const pokemonName = document.querySelector('.pokemon__name');
 const pokemonNumber = document.querySelector('.pokemon__number');
@@ -34,6 +38,7 @@ const buttonShiny = document.querySelector('.btn-shiny');
 const buttonCry = document.querySelector('.btn-cry');
 const buttonShare = document.querySelector('.btn-share');
 const themeToggle = document.querySelector('.theme-toggle');
+const langToggle = document.querySelector('.lang-toggle');
 
 const typesContainer = document.querySelector('.details__types');
 const genusEl = document.querySelector('.details__genus');
@@ -47,16 +52,6 @@ const evolutionContainer = document.querySelector('.details__evolution');
 const details = document.querySelector('.details');
 const favoritesList = document.querySelector('.favorites__list');
 
-// Nome curto de cada stat para exibição.
-const STAT_LABELS = {
-  hp: 'HP',
-  attack: 'ATK',
-  defense: 'DEF',
-  'special-attack': 'SPA',
-  'special-defense': 'SPD',
-  speed: 'VEL',
-};
-
 let searchPokemon = 1;
 let currentPokemon = null; // dados completos do Pokémon exibido.
 let currentImages = null; // { png, gif, name } do Pokémon exibido (para download).
@@ -64,9 +59,11 @@ let currentCry = ''; // URL do cry do Pokémon exibido.
 let shiny = false; // exibindo a versão shiny?
 let requestId = 0; // token para descartar renders assíncronos obsoletos.
 let allNames = []; // todos os nomes de Pokémon (para o autocomplete).
+let filterCtl = null;
+let compareCtl = null;
 
 function setLoading() {
-  pokemonName.innerHTML = 'Carregando...';
+  pokemonName.innerHTML = t('loading');
   pokemonNumber.innerHTML = '';
 }
 
@@ -87,17 +84,19 @@ function showError(message) {
 }
 
 function renderTypes(types) {
+  const lang = getLang();
   typesContainer.innerHTML = '';
   types.forEach(({ type }) => {
     const badge = document.createElement('span');
     badge.className = 'type-badge';
     badge.style.backgroundColor = getTypeColor(type.name);
-    badge.textContent = getTypeLabel(type.name);
+    badge.textContent = getTypeLabel(type.name, lang);
     typesContainer.appendChild(badge);
   });
 }
 
 function renderStats(stats) {
+  const labels = t('statLabels');
   statsContainer.innerHTML = '';
   stats.forEach(({ base_stat: base, stat }) => {
     const item = document.createElement('li');
@@ -105,7 +104,7 @@ function renderStats(stats) {
 
     const label = document.createElement('span');
     label.className = 'stat__label';
-    label.textContent = STAT_LABELS[stat.name] ?? stat.name;
+    label.textContent = labels[stat.name] ?? stat.name;
 
     const bar = document.createElement('div');
     bar.className = 'stat__bar';
@@ -124,29 +123,35 @@ function renderStats(stats) {
   });
 }
 
-function renderAbilities(abilities) {
+async function renderAbilities(abilities, reqId) {
+  abilitiesContainer.innerHTML = `<span class="muted">${t('loading')}</span>`;
+  const lang = contentLang();
+  const names = await Promise.all(abilities.map((ability) => getAbilityName(ability, lang)));
+  if (reqId !== requestId) return;
+
   abilitiesContainer.innerHTML = '';
-  abilities.forEach(({ ability, is_hidden: isHidden }) => {
+  abilities.forEach((ability, i) => {
     const chip = document.createElement('span');
     chip.className = 'ability-chip';
-    chip.textContent = ability.name.replace(/-/g, ' ');
-    if (isHidden) {
+    chip.textContent = names[i];
+    if (ability.is_hidden) {
       chip.classList.add('ability-chip--hidden');
-      chip.title = 'Habilidade oculta';
+      chip.title = t('hiddenAbility');
     }
     abilitiesContainer.appendChild(chip);
   });
 }
 
 async function renderWeaknesses(types, reqId) {
-  weaknessesContainer.innerHTML = '<span class="muted">Carregando...</span>';
+  weaknessesContainer.innerHTML = `<span class="muted">${t('loading')}</span>`;
 
   const weaknesses = await fetchWeaknesses(types);
   if (reqId !== requestId) return;
 
+  const lang = getLang();
   weaknessesContainer.innerHTML = '';
   if (weaknesses.length === 0) {
-    weaknessesContainer.innerHTML = '<span class="muted">Nenhuma</span>';
+    weaknessesContainer.innerHTML = `<span class="muted">${t('none')}</span>`;
     return;
   }
 
@@ -154,7 +159,8 @@ async function renderWeaknesses(types, reqId) {
     const badge = document.createElement('span');
     badge.className = 'type-badge';
     badge.style.backgroundColor = getTypeColor(name);
-    badge.textContent = multiplier > 2 ? `${getTypeLabel(name)} ×4` : getTypeLabel(name);
+    badge.textContent =
+      multiplier > 2 ? `${getTypeLabel(name, lang)} ×4` : getTypeLabel(name, lang);
     weaknessesContainer.appendChild(badge);
   });
 }
@@ -166,20 +172,20 @@ async function renderSpeciesInfo(speciesUrl, reqId) {
   const species = await fetchSpecies(speciesUrl);
   if (reqId !== requestId || !species) return;
 
-  genusEl.textContent = getGenus(species);
-  descriptionEl.textContent = getFlavorText(species);
+  const lang = contentLang();
+  genusEl.textContent = getGenus(species, lang);
+  descriptionEl.textContent = getFlavorText(species, lang);
 }
 
 async function renderEvolution(speciesUrl, reqId) {
-  evolutionContainer.innerHTML = '<span class="muted">Carregando...</span>';
+  evolutionContainer.innerHTML = `<span class="muted">${t('loading')}</span>`;
 
   const chain = await fetchEvolutionChain(speciesUrl);
-  // Descarta se o usuário já navegou para outro Pokémon.
   if (reqId !== requestId) return;
 
   evolutionContainer.innerHTML = '';
   if (chain.length <= 1) {
-    evolutionContainer.innerHTML = '<span class="muted">Sem evoluções</span>';
+    evolutionContainer.innerHTML = `<span class="muted">${t('noEvolutions')}</span>`;
     return;
   }
 
@@ -205,7 +211,7 @@ async function renderEvolution(speciesUrl, reqId) {
 function updateFavoriteButton() {
   if (!currentPokemon) return;
   const favorited = isFavorite(currentPokemon.id);
-  buttonFavorite.textContent = favorited ? '★ Favoritado' : '☆ Favoritar';
+  buttonFavorite.textContent = favorited ? t('favorited') : t('favorite');
   buttonFavorite.classList.toggle('is-active', favorited);
 }
 
@@ -214,7 +220,7 @@ function renderFavorites() {
   favoritesList.innerHTML = '';
 
   if (favorites.length === 0) {
-    favoritesList.innerHTML = '<span class="muted">Nenhum favorito ainda</span>';
+    favoritesList.innerHTML = `<span class="muted">${t('noFavorites')}</span>`;
     return;
   }
 
@@ -232,7 +238,7 @@ function renderFavorites() {
     remove.type = 'button';
     remove.className = 'favorite-chip__remove';
     remove.textContent = '✕';
-    remove.setAttribute('aria-label', `Remover ${favorite.name}`);
+    remove.setAttribute('aria-label', t('removeFavorite'));
     remove.addEventListener('click', () => {
       toggleFavorite(favorite);
       renderFavorites();
@@ -256,7 +262,7 @@ function updateImages() {
   currentImages = { png, gif, name: baseName };
   buttonDownloadPng.disabled = !png;
   buttonDownloadGif.disabled = !gif;
-  buttonDownloadGif.title = gif ? '' : 'Sem GIF animado para este Pokémon';
+  buttonDownloadGif.title = gif ? '' : t('noGif');
 }
 
 function updateUrl(id) {
@@ -273,7 +279,7 @@ function renderDetails(data, reqId) {
   heightValue.textContent = `${(data.height / 10).toFixed(1)} m`;
   weightValue.textContent = `${(data.weight / 10).toFixed(1)} kg`;
   renderStats(data.stats);
-  renderAbilities(data.abilities);
+  renderAbilities(data.abilities, reqId);
   renderSpeciesInfo(data.species.url, reqId);
   renderWeaknesses(data.types, reqId);
   renderEvolution(data.species.url, reqId);
@@ -289,14 +295,14 @@ async function renderPokemon(pokemon) {
   try {
     data = await fetchPokemon(pokemon);
   } catch {
-    showError('Erro de conexão :c');
+    showError(t('connError'));
     return;
   }
 
   if (reqId !== requestId) return; // navegação mais recente já em andamento.
 
   if (!data) {
-    showError('Não encontrado :c');
+    showError(t('notFound'));
     return;
   }
 
@@ -322,8 +328,6 @@ async function renderPokemon(pokemon) {
 /**
  * Baixa uma imagem por URL. Faz fetch do blob (a PokéAPI serve os sprites
  * com CORS liberado); em caso de falha, abre a imagem em nova aba.
- * @param {string} url
- * @param {string} name  Nome base do arquivo (sem extensão).
  */
 async function downloadImage(url, name) {
   if (!url) return;
@@ -364,11 +368,11 @@ async function sharePokemon() {
 
   try {
     if (navigator.share) {
-      await navigator.share({ title: 'Pokédex', text: `Veja ${currentPokemon.name}!`, url: link });
+      await navigator.share({ title: 'Pokédex', text: currentPokemon.name, url: link });
     } else if (navigator.clipboard) {
       await navigator.clipboard.writeText(link);
-      const original = buttonShare.textContent;
-      buttonShare.textContent = '✅ Copiado!';
+      const original = t('share');
+      buttonShare.textContent = t('copied');
       setTimeout(() => {
         buttonShare.textContent = original;
       }, 1500);
@@ -378,9 +382,6 @@ async function sharePokemon() {
   }
 }
 
-/**
- * Carrega todos os nomes para alimentar o autocomplete por substring.
- */
 async function loadNames() {
   allNames = await fetchAllPokemonNames();
 }
@@ -388,7 +389,19 @@ async function loadNames() {
 function applyTheme(theme) {
   document.documentElement.classList.toggle('dark', theme === 'dark');
   themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
-  themeToggle.setAttribute('aria-label', theme === 'dark' ? 'Tema claro' : 'Tema escuro');
+  themeToggle.setAttribute('aria-label', theme === 'dark' ? t('themeLight') : t('themeDark'));
+}
+
+// Aplica o idioma a todos os textos estáticos da interface.
+function applyStaticI18n() {
+  document.querySelectorAll('[data-i18n]').forEach((el) => {
+    el.textContent = t(el.dataset.i18n);
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach((el) => {
+    el.placeholder = t(el.dataset.i18nPh);
+  });
+  langToggle.textContent = getLang().toUpperCase();
+  applyTheme(getTheme());
 }
 
 form.addEventListener('submit', (event) => {
@@ -400,20 +413,15 @@ form.addEventListener('submit', (event) => {
 });
 
 buttonPrev.addEventListener('click', () => {
-  if (searchPokemon > 1) {
-    renderPokemon(searchPokemon - 1);
-  }
+  if (searchPokemon > 1) renderPokemon(searchPokemon - 1);
 });
 
 buttonNext.addEventListener('click', () => {
-  if (searchPokemon < MAX_POKEMON) {
-    renderPokemon(searchPokemon + 1);
-  }
+  if (searchPokemon < MAX_POKEMON) renderPokemon(searchPokemon + 1);
 });
 
 buttonRandom.addEventListener('click', () => {
-  const id = Math.floor(Math.random() * MAX_POKEMON) + 1;
-  renderPokemon(id);
+  renderPokemon(Math.floor(Math.random() * MAX_POKEMON) + 1);
 });
 
 buttonShiny.addEventListener('click', () => {
@@ -447,9 +455,20 @@ themeToggle.addEventListener('click', () => {
   applyTheme(next);
 });
 
+langToggle.addEventListener('click', () => {
+  setLang(getLang() === 'pt' ? 'en' : 'pt');
+  applyStaticI18n();
+  updateFavoriteButton();
+  renderFavorites();
+  filterCtl?.refresh();
+  compareCtl?.refresh();
+  if (currentPokemon) renderPokemon(currentPokemon.id);
+});
+
 // Navegação pelo teclado (setas esquerda/direita).
 document.addEventListener('keydown', (event) => {
   if (document.activeElement === input) return;
+  if (event.target.tagName === 'INPUT' || event.target.tagName === 'SELECT') return;
   if (event.key === 'ArrowLeft') buttonPrev.click();
   if (event.key === 'ArrowRight') buttonNext.click();
 });
@@ -461,11 +480,29 @@ setupAutocomplete({
   onSelect: (name) => renderPokemon(name),
 });
 
+filterCtl = setupFilter({
+  typeSelect: document.querySelector('.filter-type'),
+  genSelect: document.querySelector('.filter-gen'),
+  resultsEl: document.querySelector('.filter-results'),
+  onSelect: (name) => {
+    renderPokemon(name);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  },
+});
+
+compareCtl = setupCompare({
+  inputA: document.querySelector('.compare-a'),
+  inputB: document.querySelector('.compare-b'),
+  button: document.querySelector('.compare-run'),
+  resultEl: document.querySelector('.compare-result'),
+});
+
 // Deep link: abre direto o Pokémon indicado em ?pokemon=ID (ou o #1).
 const initialParam = new URLSearchParams(window.location.search).get('pokemon');
 searchPokemon = Number(initialParam) || 1;
 
-applyTheme(getTheme());
+initLang();
+applyStaticI18n();
 renderFavorites();
 renderPokemon(initialParam || searchPokemon);
 loadNames();

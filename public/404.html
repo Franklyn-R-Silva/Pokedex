@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/favicons/favicon-16x16.png" />
+    <title>404 · Pokédex</title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Oxanium:wght@400;600;700;800&display=swap');
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Oxanium', sans-serif;
+      }
+
+      body {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        text-align: center;
+        padding: 24px;
+        color: #fff;
+        background: linear-gradient(to bottom, #ef5350, #b71c1c);
+      }
+
+      img {
+        width: 120px;
+        image-rendering: pixelated;
+      }
+
+      h1 {
+        font-size: clamp(64px, 22vw, 120px);
+        font-weight: 800;
+        line-height: 1;
+        text-shadow: -4px 6px 0 rgba(0, 0, 0, 0.35);
+      }
+
+      p {
+        font-size: clamp(15px, 4.5vw, 20px);
+        font-weight: 600;
+        max-width: 32ch;
+      }
+
+      p .en {
+        display: block;
+        opacity: 0.8;
+        font-weight: 400;
+        font-size: 0.85em;
+        margin-top: 4px;
+      }
+
+      a {
+        margin-top: 8px;
+        display: inline-block;
+        padding: 12px 28px;
+        border-radius: 999px;
+        background: #fff;
+        color: #b71c1c;
+        font-weight: 800;
+        text-decoration: none;
+        box-shadow: -2px 4px 0 rgba(0, 0, 0, 0.3);
+        transition: transform 0.12s ease;
+      }
+
+      a:hover {
+        transform: translateY(-2px);
+      }
+    </style>
+  </head>
+  <body>
+    <img
+      src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/201-question.gif"
+      alt="Unown"
+      onerror="this.style.display = 'none'"
+    />
+    <h1>404</h1>
+    <p>
+      Este Pokémon fugiu…
+      <span class="en">This Pokémon got away… page not found.</span>
+    </p>
+    <a href="/">Voltar para a Pokédex · Back home</a>
+  </body>
+</html>

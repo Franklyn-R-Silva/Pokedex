@@ -42,10 +42,14 @@ export const TYPE_LABELS = {
   fairy: 'Fada',
 };
 
+// Lista fixa dos tipos (para o filtro).
+export const TYPE_NAMES = Object.keys(TYPE_COLORS);
+
 export function getTypeColor(type) {
   return TYPE_COLORS[type] ?? '#777';
 }
 
-export function getTypeLabel(type) {
+export function getTypeLabel(type, lang = 'pt') {
+  if (lang === 'en') return type.charAt(0).toUpperCase() + type.slice(1);
   return TYPE_LABELS[type] ?? type;
 }
