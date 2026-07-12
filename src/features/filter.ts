@@ -1,4 +1,4 @@
-// Filtro por tipo e/ou geração: mostra um grid paginado de Pokémon clicáveis.
+// Filtro por tipo e/ou geração: grid clicável com ordenação e "carregar mais".
 import type { RefItem } from '../types';
 import { fetchByType, fetchByGeneration } from '../services/pokeapi';
 import { getArtworkById } from '../services/sprites';
@@ -11,6 +11,7 @@ const PAGE_SIZE = 24;
 interface FilterOptions {
   typeSelect: HTMLSelectElement;
   genSelect: HTMLSelectElement;
+  sortSelect: HTMLSelectElement;
   resultsEl: HTMLElement;
   paginationEl: HTMLElement;
   onSelect: (name: string) => void;
@@ -24,17 +25,19 @@ export interface FilterControls {
 export function setupFilter({
   typeSelect,
   genSelect,
+  sortSelect,
   resultsEl,
   paginationEl,
   onSelect,
 }: FilterOptions): FilterControls {
-  let lastResults: RefItem[] = [];
-  let page = 0;
+  let results: RefItem[] = [];
+  let shown = PAGE_SIZE;
 
   function populateSelects(): void {
     const lang = getLang();
     const currentType = typeSelect.value;
     const currentGen = genSelect.value;
+    const currentSort = sortSelect.value || 'number';
 
     typeSelect.innerHTML = '';
     typeSelect.appendChild(new Option(t('allTypes'), ''));
@@ -46,78 +49,62 @@ export function setupFilter({
     genSelect.appendChild(new Option(t('allGens'), ''));
     GENERATIONS.forEach((g) => genSelect.appendChild(new Option(`Gen ${g}`, String(g))));
 
+    sortSelect.innerHTML = '';
+    sortSelect.appendChild(new Option(t('sortByNumber'), 'number'));
+    sortSelect.appendChild(new Option(t('sortByName'), 'name'));
+
     typeSelect.value = currentType;
     genSelect.value = currentGen;
+    sortSelect.value = currentSort;
   }
 
-  function renderPagination(): void {
-    paginationEl.innerHTML = '';
-    const total = lastResults.length;
-    const pages = Math.ceil(total / PAGE_SIZE);
-    if (pages <= 1) return;
-
-    const prev = document.createElement('button');
-    prev.type = 'button';
-    prev.className = 'page-btn';
-    prev.textContent = '‹';
-    prev.disabled = page === 0;
-    prev.addEventListener('click', () => {
-      page -= 1;
-      renderPage();
-    });
-
-    const info = document.createElement('span');
-    info.className = 'page-info';
-    info.textContent = `${page + 1} / ${pages} · ${total}`;
-
-    const next = document.createElement('button');
-    next.type = 'button';
-    next.className = 'page-btn';
-    next.textContent = '›';
-    next.disabled = page >= pages - 1;
-    next.addEventListener('click', () => {
-      page += 1;
-      renderPage();
-    });
-
-    paginationEl.append(prev, info, next);
+  function sorted(list: RefItem[]): RefItem[] {
+    const copy = [...list];
+    if (sortSelect.value === 'name') copy.sort((a, b) => a.name.localeCompare(b.name));
+    else copy.sort((a, b) => a.id - b.id);
+    return copy;
   }
 
-  function renderPage(): void {
+  function render(): void {
     resultsEl.innerHTML = '';
-    const start = page * PAGE_SIZE;
-    lastResults.slice(start, start + PAGE_SIZE).forEach(({ name, id }) => {
-      const item = document.createElement('button');
-      item.type = 'button';
-      item.className = 'grid-item';
+    paginationEl.innerHTML = '';
 
-      const image = document.createElement('img');
-      image.src = getArtworkById(id);
-      image.alt = name;
-      image.loading = 'lazy';
-
-      const label = document.createElement('span');
-      label.textContent = `#${id} ${name}`;
-
-      item.append(image, label);
-      item.addEventListener('click', () => onSelect(name));
-      resultsEl.appendChild(item);
-    });
-
-    renderPagination();
-  }
-
-  function renderResults(list: RefItem[]): void {
-    lastResults = list;
-    page = 0;
-
-    if (list.length === 0) {
+    if (results.length === 0) {
       resultsEl.innerHTML = `<span class="muted">${t('noResults')}</span>`;
-      paginationEl.innerHTML = '';
       return;
     }
 
-    renderPage();
+    sorted(results)
+      .slice(0, shown)
+      .forEach(({ name, id }) => {
+        const item = document.createElement('button');
+        item.type = 'button';
+        item.className = 'grid-item';
+
+        const image = document.createElement('img');
+        image.src = getArtworkById(id);
+        image.alt = name;
+        image.loading = 'lazy';
+
+        const label = document.createElement('span');
+        label.textContent = `#${id} ${name}`;
+
+        item.append(image, label);
+        item.addEventListener('click', () => onSelect(name));
+        resultsEl.appendChild(item);
+      });
+
+    if (shown < results.length) {
+      const more = document.createElement('button');
+      more.type = 'button';
+      more.className = 'load-more';
+      more.textContent = `${t('loadMore')} (${results.length - shown})`;
+      more.addEventListener('click', () => {
+        shown += PAGE_SIZE;
+        render();
+      });
+      paginationEl.appendChild(more);
+    }
   }
 
   async function apply(): Promise<void> {
@@ -125,37 +112,41 @@ export function setupFilter({
     const gen = genSelect.value;
 
     if (!type && !gen) {
+      results = [];
       resultsEl.innerHTML = '';
       paginationEl.innerHTML = '';
-      lastResults = [];
       return;
     }
 
     resultsEl.innerHTML = `<span class="muted">${t('loading')}</span>`;
     paginationEl.innerHTML = '';
 
-    let list: RefItem[];
     if (type && gen) {
       const [byType, byGen] = await Promise.all([fetchByType(type), fetchByGeneration(gen)]);
       const genIds = new Set(byGen.map((p) => p.id));
-      list = byType.filter((p) => genIds.has(p.id)).sort((a, b) => a.id - b.id);
+      results = byType.filter((p) => genIds.has(p.id));
     } else if (type) {
-      list = (await fetchByType(type)).sort((a, b) => a.id - b.id);
+      results = await fetchByType(type);
     } else {
-      list = await fetchByGeneration(gen);
+      results = await fetchByGeneration(gen);
     }
 
-    renderResults(list);
+    shown = PAGE_SIZE;
+    render();
   }
 
   typeSelect.addEventListener('change', apply);
   genSelect.addEventListener('change', apply);
+  sortSelect.addEventListener('change', () => {
+    shown = PAGE_SIZE;
+    render();
+  });
   populateSelects();
 
   return {
     refresh() {
       populateSelects();
-      if (lastResults.length) renderPage();
+      if (results.length) render();
     },
     setType(typeName: string) {
       typeSelect.value = typeName;

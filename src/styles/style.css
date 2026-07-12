@@ -1028,6 +1028,7 @@ main {
 
 .filter-type,
 .filter-gen,
+.filter-sort,
 .compare-input {
   flex: 1;
   min-width: 0;
@@ -1038,6 +1039,30 @@ main {
   font-weight: 600;
   color: var(--text);
   background: var(--surface-2);
+}
+
+.filter-sort {
+  flex: 0 0 auto;
+  width: auto;
+}
+
+.load-more {
+  width: 100%;
+  padding: 9px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--text);
+  font-weight: 700;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.load-more:hover {
+  background: var(--type-color);
+  border-color: var(--type-color);
+  color: #fff;
 }
 
 .compare-field {
@@ -1156,17 +1181,7 @@ main {
 }
 
 .filter-pagination {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  margin-top: 16px;
-  padding: 5px;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  width: fit-content;
-  margin-inline: auto;
+  margin-top: 14px;
 }
 
 .filter-pagination:empty {
@@ -1426,10 +1441,12 @@ html.dark .ctable .is-higher {
   display: none;
 }
 
-.forms-chips {
+.forms-chips,
+.forms-grid {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  justify-content: center;
 }
 
 .form-chip {

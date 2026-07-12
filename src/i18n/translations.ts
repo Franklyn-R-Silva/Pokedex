@@ -35,6 +35,9 @@ export interface Translation {
   allTypes: string;
   allGens: string;
   noResults: string;
+  sortByNumber: string;
+  sortByName: string;
+  loadMore: string;
   compareTitle: string;
   comparePlaceholder: string;
   compareAddAria: string;
@@ -121,6 +124,9 @@ export const translations: Record<Lang, Translation> = {
     allTypes: 'Todos os tipos',
     allGens: 'Todas as gerações',
     noResults: 'Nada encontrado',
+    sortByNumber: 'Nº',
+    sortByName: 'A–Z',
+    loadMore: 'Carregar mais',
     compareTitle: '⚔️ Comparar',
     comparePlaceholder: 'Adicionar Pokémon',
     compareAddAria: 'Adicionar Pokémon',
@@ -219,6 +225,9 @@ export const translations: Record<Lang, Translation> = {
     allTypes: 'All types',
     allGens: 'All generations',
     noResults: 'Nothing found',
+    sortByNumber: '#',
+    sortByName: 'A–Z',
+    loadMore: 'Load more',
     compareTitle: '⚔️ Compare',
     comparePlaceholder: 'Add Pokémon',
     compareAddAria: 'Add Pokémon',

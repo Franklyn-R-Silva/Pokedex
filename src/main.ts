@@ -364,14 +364,28 @@ function renderForms(species: Species): void {
   title.textContent = t('forms');
 
   const wrap = document.createElement('div');
-  wrap.className = 'forms-chips';
+  wrap.className = 'forms-grid';
   others.forEach((variety) => {
-    const chip = document.createElement('button');
-    chip.type = 'button';
-    chip.className = 'form-chip';
-    chip.textContent = titleize(variety.pokemon.name);
-    chip.addEventListener('click', () => void renderPokemon(variety.pokemon.name));
-    wrap.appendChild(chip);
+    const id = Number(/\/(\d+)\/?$/.exec(variety.pokemon.url)?.[1]);
+    const item = document.createElement('button');
+    item.type = 'button';
+    item.className = 'evo-item';
+
+    if (id) {
+      const img = document.createElement('img');
+      img.src = getArtworkById(id);
+      img.alt = variety.pokemon.name;
+      img.loading = 'lazy';
+      img.addEventListener('error', () => img.remove());
+      item.appendChild(img);
+    }
+
+    const label = document.createElement('span');
+    label.textContent = titleize(variety.pokemon.name);
+    item.appendChild(label);
+
+    item.addEventListener('click', () => void renderPokemon(variety.pokemon.name));
+    wrap.appendChild(item);
   });
 
   formsContainer.append(title, wrap);
@@ -1022,6 +1036,7 @@ setupAutocomplete({
 filterCtl = setupFilter({
   typeSelect: qs<HTMLSelectElement>('.filter-type'),
   genSelect: qs<HTMLSelectElement>('.filter-gen'),
+  sortSelect: qs<HTMLSelectElement>('.filter-sort'),
   resultsEl: qs<HTMLElement>('.filter-results'),
   paginationEl: qs<HTMLElement>('.filter-pagination'),
   onSelect: (name) => {
