@@ -424,6 +424,25 @@ function renderMoves(data: Pokemon): void {
   body.className = 'moves-body';
   body.hidden = true;
 
+  // Campo de busca (lupa) para filtrar a lista longa de golpes.
+  const search = document.createElement('div');
+  search.className = 'moves-search';
+  const searchIcon = document.createElement('span');
+  searchIcon.className = 'moves-search__icon';
+  searchIcon.setAttribute('aria-hidden', 'true');
+  searchIcon.textContent = '🔍';
+  const searchInput = document.createElement('input');
+  searchInput.type = 'search';
+  searchInput.className = 'moves-search__input';
+  searchInput.placeholder = t('moveSearch');
+  searchInput.setAttribute('aria-label', t('moveSearch'));
+  search.append(searchIcon, searchInput);
+
+  const empty = document.createElement('p');
+  empty.className = 'moves-empty muted';
+  empty.textContent = t('moveNoResults');
+  empty.hidden = true;
+
   const methodLabels: Record<string, string> = {
     'level-up': t('moveLevel'),
     machine: t('moveMachine'),
@@ -446,6 +465,7 @@ function renderMoves(data: Pokemon): void {
         chip.type = 'button';
         chip.className = 'move-chip is-clickable';
         chip.textContent = level > 0 ? `${titleize(name)} · ${level}` : titleize(name);
+        chip.dataset.move = `${name} ${titleize(name)}`.toLowerCase();
         chip.addEventListener('click', () => void openMoveModal(url, name));
         chips.appendChild(chip);
       });
@@ -453,10 +473,31 @@ function renderMoves(data: Pokemon): void {
       body.appendChild(group);
     });
 
+  // Filtra os chips pela busca; oculta grupos vazios e mostra aviso se nada casar.
+  searchInput.addEventListener('input', () => {
+    const q = searchInput.value.trim().toLowerCase();
+    let anyVisible = false;
+    body.querySelectorAll<HTMLElement>('.moves-group').forEach((group) => {
+      let groupVisible = false;
+      group.querySelectorAll<HTMLElement>('.move-chip').forEach((chip) => {
+        const match = !q || (chip.dataset.move ?? '').includes(q);
+        chip.hidden = !match;
+        if (match) groupVisible = true;
+      });
+      group.hidden = !groupVisible;
+      if (groupVisible) anyVisible = true;
+    });
+    empty.hidden = anyVisible;
+  });
+
+  body.prepend(search);
+  body.appendChild(empty);
+
   toggle.addEventListener('click', () => {
     const open = body.hidden;
     body.hidden = !open;
     toggle.setAttribute('aria-expanded', String(open));
+    if (open) searchInput.focus();
   });
 
   movesContainer.append(toggle, body);

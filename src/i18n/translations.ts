@@ -72,6 +72,8 @@ export interface Translation {
   moveEgg: string;
   moveTutor: string;
   showMoves: string;
+  moveSearch: string;
+  moveNoResults: string;
   noLocations: string;
   forms: string;
   evYield: string;
@@ -168,6 +170,8 @@ export const translations: Record<Lang, Translation> = {
     moveEgg: 'Ovo',
     moveTutor: 'Tutor',
     showMoves: 'Ver golpes',
+    moveSearch: 'Filtrar golpes…',
+    moveNoResults: 'Nenhum golpe encontrado',
     noLocations: 'Indisponível na natureza',
     forms: 'Formas',
     evYield: 'Rende EV',
@@ -276,6 +280,8 @@ export const translations: Record<Lang, Translation> = {
     moveEgg: 'Egg',
     moveTutor: 'Tutor',
     showMoves: 'Show moves',
+    moveSearch: 'Filter moves…',
+    moveNoResults: 'No moves found',
     noLocations: 'Not found in the wild',
     forms: 'Forms',
     evYield: 'EV yield',

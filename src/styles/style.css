@@ -10,6 +10,13 @@
   --text-muted: #6b7583;
   --border: #e6e9ef;
 
+  /* Escala de espaçamento (mantém os gaps consistentes entre painéis/cards). */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 22px;
+
   --radius: 16px;
   --radius-sm: 10px;
   --shadow: 0 10px 30px rgba(20, 30, 50, 0.08);
@@ -59,8 +66,11 @@ body {
 /* Foco elegante nos campos: borda tingida + anel suave (sem contorno duro). */
 .compare-input:focus,
 .compare-input:focus-visible,
+.team-input:focus,
+.team-input:focus-visible,
 .filter-type:focus,
-.filter-gen:focus {
+.filter-gen:focus,
+.filter-sort:focus {
   outline: none;
   border-color: var(--type-color);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--type-color) 22%, transparent);
@@ -325,7 +335,7 @@ main {
 .panel {
   width: 100%;
   max-width: 425px;
-  padding: 22px;
+  padding: var(--space-5);
   border-radius: var(--radius);
   background: var(--surface);
   border: 1px solid var(--border);
@@ -650,8 +660,60 @@ main {
   display: none;
 }
 
+/* Busca de golpes: fica fixa no topo da lista rolável. */
+.moves-search {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+  padding: 8px 11px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+
+.moves-search:focus-within {
+  border-color: var(--type-color);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--type-color) 22%, transparent);
+}
+
+.moves-search__icon {
+  font-size: 0.85rem;
+  line-height: 1;
+  opacity: 0.7;
+}
+
+.moves-search__input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.moves-search__input:focus {
+  outline: none;
+}
+
+.moves-empty {
+  text-align: left;
+  font-size: 0.8rem;
+  padding: 4px 2px;
+}
+
+.moves-empty[hidden],
+.move-chip[hidden],
+.moves-group[hidden] {
+  display: none;
+}
+
 .moves-group {
-  margin-bottom: 12px;
+  margin-bottom: var(--space-3);
 }
 
 .moves-group__title {
@@ -915,15 +977,15 @@ main {
 .panel__title {
   font-size: 0.95rem;
   color: var(--text);
-  margin-bottom: 12px;
+  margin-bottom: var(--space-3);
   text-align: left;
 }
 
 .panel__head {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
 }
 
 .panel__head .panel__title {
@@ -1020,16 +1082,18 @@ main {
 /* ---------- Painéis: filtro e comparação ---------- */
 
 .filter__controls,
-.compare__controls {
+.compare__controls,
+.team__controls {
   display: flex;
-  gap: 8px;
-  margin-bottom: 14px;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
 }
 
 .filter-type,
 .filter-gen,
 .filter-sort,
-.compare-input {
+.compare-input,
+.team-input {
   flex: 1;
   min-width: 0;
   padding: 9px 11px;
@@ -1071,7 +1135,8 @@ main {
   min-width: 0;
 }
 
-.compare-field .compare-input {
+.compare-field .compare-input,
+.compare-field .team-input {
   width: 100%;
 }
 
@@ -1717,12 +1782,6 @@ html.dark .ctable .is-higher {
 }
 
 /* ---------- Time (team builder) ---------- */
-
-.team__controls {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
-}
 
 .team-list {
   display: flex;
