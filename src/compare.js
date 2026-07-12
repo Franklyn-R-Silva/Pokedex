@@ -1,128 +1,175 @@
-// Compara dois Pokémon lado a lado (tipos, altura, peso e stats).
+// Compara até 4 Pokémon lado a lado, com tabela de stats e gráfico de radar.
 import { fetchPokemon, getStaticImage } from './api.js';
-import { getTypeColor, getTypeLabel } from './pokemonTypes.js';
-import { t, getLang } from './i18n.js';
+import { t } from './i18n.js';
+
+const MAX_COMPARE = 4;
+const COLORS = ['#ef5350', '#42a5f5', '#66bb6a', '#ab47bc'];
+const STAT_ORDER = ['hp', 'attack', 'defense', 'special-attack', 'special-defense', 'speed'];
+
+const escapeHtml = (s) => String(s).replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
+
+function statValue(pokemon, key) {
+  return pokemon.stats.find((s) => s.stat.name === key)?.base_stat ?? 0;
+}
 
 function statTotal(pokemon) {
   return pokemon.stats.reduce((sum, s) => sum + s.base_stat, 0);
 }
 
-export function setupCompare({ inputA, inputB, button, resultEl }) {
-  let lastA = null;
-  let lastB = null;
+export function setupCompare({ form, input, chipsEl, resultEl }) {
+  let selected = [];
 
-  function pokemonColumn(pokemon) {
-    const lang = getLang();
-    const col = document.createElement('div');
-    col.className = 'compare__poke';
+  function renderChips() {
+    chipsEl.innerHTML = '';
+    selected.forEach((pokemon, idx) => {
+      const chip = document.createElement('div');
+      chip.className = 'compare-chip';
+      chip.style.setProperty('--pc', COLORS[idx]);
 
-    const image = document.createElement('img');
-    image.src = getStaticImage(pokemon);
-    image.alt = pokemon.name;
-    image.loading = 'lazy';
+      const name = document.createElement('span');
+      name.textContent = `#${pokemon.id} ${pokemon.name}`;
 
-    const name = document.createElement('span');
-    name.className = 'compare__name';
-    name.textContent = `#${pokemon.id} ${pokemon.name}`;
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.className = 'compare-chip__remove';
+      remove.textContent = '✕';
+      remove.setAttribute('aria-label', t('compareRemoveAria'));
+      remove.addEventListener('click', () => {
+        selected = selected.filter((p) => p.id !== pokemon.id);
+        render();
+      });
 
-    const types = document.createElement('div');
-    types.className = 'compare__types';
-    pokemon.types.forEach(({ type }) => {
-      const badge = document.createElement('span');
-      badge.className = 'type-badge';
-      badge.style.backgroundColor = getTypeColor(type.name);
-      badge.textContent = getTypeLabel(type.name, lang);
-      types.appendChild(badge);
+      chip.append(name, remove);
+      chipsEl.appendChild(chip);
     });
 
-    col.append(image, name, types);
-    return col;
+    const full = selected.length >= MAX_COMPARE;
+    input.disabled = full;
+    input.placeholder = full ? '' : t('comparePlaceholder');
   }
 
-  function statRow(label, valueA, valueB, isTotal = false) {
-    const row = document.createElement('div');
-    row.className = isTotal ? 'compare__row compare__row--total' : 'compare__row';
-
-    const a = document.createElement('span');
-    a.textContent = valueA;
-    a.className = valueA > valueB ? 'is-higher' : '';
-
-    const mid = document.createElement('span');
-    mid.className = 'compare__stat-label';
-    mid.textContent = label;
-
-    const b = document.createElement('span');
-    b.textContent = valueB;
-    b.className = valueB > valueA ? 'is-higher' : '';
-
-    row.append(a, mid, b);
-    return row;
-  }
-
-  function render(a, b) {
+  // Gera o gráfico de radar (SVG) com os 6 stats dos Pokémon selecionados.
+  function radarSvg() {
+    const size = 240;
+    const c = size / 2;
+    const R = 82;
+    const n = STAT_ORDER.length;
     const labels = t('statLabels');
-    resultEl.innerHTML = '';
+    const maxStat = Math.max(100, ...selected.flatMap((p) => p.stats.map((s) => s.base_stat)));
 
-    const wrapper = document.createElement('div');
-    wrapper.className = 'compare';
+    const angle = (i) => ((i * 360) / n - 90) * (Math.PI / 180);
+    const point = (r, i) => [c + r * Math.cos(angle(i)), c + r * Math.sin(angle(i))];
+    const poly = (r, mapFn) =>
+      STAT_ORDER.map((key, i) =>
+        point(mapFn ? r * mapFn(key) : r, i)
+          .map((v) => v.toFixed(1))
+          .join(','),
+      ).join(' ');
 
-    const header = document.createElement('div');
-    header.className = 'compare__header';
-    const vs = document.createElement('span');
-    vs.className = 'compare__vs';
-    vs.textContent = 'VS';
-    header.append(pokemonColumn(a), vs, pokemonColumn(b));
-    wrapper.appendChild(header);
+    let svg = `<svg viewBox="0 0 ${size} ${size}" class="radar" role="img" aria-label="radar">`;
 
-    a.stats.forEach((s) => {
-      const other = b.stats.find((x) => x.stat.name === s.stat.name);
-      wrapper.appendChild(
-        statRow(labels[s.stat.name] ?? s.stat.name, s.base_stat, other?.base_stat ?? 0),
-      );
+    // Anéis de grade.
+    [0.25, 0.5, 0.75, 1].forEach((f) => {
+      svg += `<polygon points="${poly(R * f)}" class="radar-grid" />`;
     });
-    wrapper.appendChild(statRow(t('total'), statTotal(a), statTotal(b), true));
 
-    resultEl.appendChild(wrapper);
+    // Eixos + rótulos.
+    STAT_ORDER.forEach((key, i) => {
+      const [x, y] = point(R, i);
+      const [lx, ly] = point(R + 16, i);
+      svg += `<line x1="${c}" y1="${c}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" class="radar-axis" />`;
+      svg += `<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" class="radar-label" text-anchor="middle" dominant-baseline="middle">${escapeHtml(labels[key])}</text>`;
+    });
+
+    // Polígono de cada Pokémon.
+    selected.forEach((pokemon, idx) => {
+      const color = COLORS[idx];
+      const points = poly(R, (key) => statValue(pokemon, key) / maxStat);
+      svg += `<polygon points="${points}" fill="${color}" fill-opacity="0.16" stroke="${color}" stroke-width="2" />`;
+    });
+
+    return svg + '</svg>';
   }
 
-  async function run() {
-    const qa = inputA.value.trim().toLowerCase();
-    const qb = inputB.value.trim().toLowerCase();
-    if (!qa || !qb) return;
+  function tableHtml() {
+    const labels = t('statLabels');
+    const cols = `minmax(44px, auto) repeat(${selected.length}, 1fr)`;
 
-    resultEl.innerHTML = `<span class="muted">${t('loading')}</span>`;
-    let a;
-    let b;
+    let html = '<div class="ctable">';
+
+    // Cabeçalho: imagem + nome de cada Pokémon.
+    html += `<div class="ctable-row ctable-head" style="grid-template-columns:${cols}"><span></span>`;
+    selected.forEach((pokemon, idx) => {
+      html += `<div class="ctable-poke" style="--pc:${COLORS[idx]}">
+        <img src="${escapeHtml(getStaticImage(pokemon))}" alt="${escapeHtml(pokemon.name)}" loading="lazy" />
+        <span class="ctable-name">#${pokemon.id} ${escapeHtml(pokemon.name)}</span>
+      </div>`;
+    });
+    html += '</div>';
+
+    // Linhas de stats (destaca o maior).
+    STAT_ORDER.forEach((key) => {
+      const values = selected.map((p) => statValue(p, key));
+      const max = Math.max(...values);
+      html += `<div class="ctable-row" style="grid-template-columns:${cols}"><span class="ctable-label">${escapeHtml(labels[key])}</span>`;
+      values.forEach((v) => {
+        html += `<span class="${v === max ? 'is-higher' : ''}">${v}</span>`;
+      });
+      html += '</div>';
+    });
+
+    // Total.
+    const totals = selected.map(statTotal);
+    const maxTotal = Math.max(...totals);
+    html += `<div class="ctable-row ctable-total" style="grid-template-columns:${cols}"><span class="ctable-label">${escapeHtml(t('total'))}</span>`;
+    totals.forEach((v) => {
+      html += `<span class="${v === maxTotal ? 'is-higher' : ''}">${v}</span>`;
+    });
+    html += '</div></div>';
+
+    return html;
+  }
+
+  function render() {
+    renderChips();
+
+    if (selected.length < 2) {
+      resultEl.innerHTML = selected.length ? `<span class="muted">${t('compareHint')}</span>` : '';
+      return;
+    }
+
+    resultEl.innerHTML = `<div class="compare">${radarSvg()}${tableHtml()}</div>`;
+  }
+
+  async function add(nameOrId) {
+    const query = String(nameOrId).trim().toLowerCase();
+    if (!query || selected.length >= MAX_COMPARE) return;
+
+    let data;
     try {
-      [a, b] = await Promise.all([fetchPokemon(qa), fetchPokemon(qb)]);
+      data = await fetchPokemon(query);
     } catch {
-      resultEl.innerHTML = `<span class="muted">${t('connError')}</span>`;
+      return;
+    }
+    if (!data || selected.some((p) => p.id === data.id)) {
+      input.value = '';
       return;
     }
 
-    if (!a || !b) {
-      resultEl.innerHTML = `<span class="muted">${t('notFound')}</span>`;
-      return;
-    }
-
-    lastA = a;
-    lastB = b;
-    render(a, b);
+    selected.push(data);
+    input.value = '';
+    render();
   }
 
-  button.addEventListener('click', run);
-  [inputA, inputB].forEach((el) =>
-    el.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        run();
-      }
-    }),
-  );
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    add(input.value);
+  });
+
+  render();
 
   return {
-    refresh() {
-      if (lastA && lastB) render(lastA, lastB);
-    },
+    add,
+    refresh: render,
   };
 }

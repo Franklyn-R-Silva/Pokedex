@@ -163,39 +163,32 @@
             </button>
           </div>
           <div class="compare-legend" hidden></div>
-          <div class="compare__controls">
+          <form class="compare__controls">
             <div class="compare-field">
               <input
-                class="compare-a"
+                class="compare-input"
                 type="search"
-                placeholder="1º Pokémon"
-                data-i18n-ph="comparePlaceholderA"
-                data-i18n-aria="comparePlaceholderA"
-                aria-label="1º Pokémon"
+                placeholder="Adicionar Pokémon"
+                data-i18n-ph="comparePlaceholder"
+                data-i18n-aria="comparePlaceholder"
+                aria-label="Adicionar Pokémon"
                 autocomplete="off"
                 role="combobox"
                 aria-autocomplete="list"
                 aria-expanded="false"
               />
-              <ul class="suggestions compare-suggest-a" role="listbox"></ul>
+              <ul class="suggestions compare-suggest" role="listbox"></ul>
             </div>
-            <div class="compare-field">
-              <input
-                class="compare-b"
-                type="search"
-                placeholder="2º Pokémon"
-                data-i18n-ph="comparePlaceholderB"
-                data-i18n-aria="comparePlaceholderB"
-                aria-label="2º Pokémon"
-                autocomplete="off"
-                role="combobox"
-                aria-autocomplete="list"
-                aria-expanded="false"
-              />
-              <ul class="suggestions compare-suggest-b" role="listbox"></ul>
-            </div>
-            <button class="compare-run" type="button" data-i18n="compareButton">Comparar</button>
-          </div>
+            <button
+              class="compare-add"
+              type="submit"
+              aria-label="Adicionar"
+              data-i18n-aria="compareAddAria"
+            >
+              ＋
+            </button>
+          </form>
+          <div class="compare-chips"></div>
           <div class="compare-result"></div>
         </section>
       </div>

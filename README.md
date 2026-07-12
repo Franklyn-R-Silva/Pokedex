@@ -27,7 +27,7 @@
 - Search by name (substring suggestions) or number, with Prev/Next and keyboard arrows
 - Types, base stats, abilities (hidden ones flagged), type weaknesses, and species description
 - Clickable evolution chain, shiny toggle, Pokémon cry, and random Pokémon
-- Compare two Pokémon side by side; filter by type and generation
+- Compare up to 4 Pokémon (stat table + radar chart); filter by type and generation with pagination
 - Bilingual UI (PT-BR / EN); favorites and theme persisted locally
 - Download the static image (PNG) and the animated GIF
 - Shareable deep links (`?pokemon=ID`), installable PWA with offline support

@@ -61,7 +61,7 @@ Dicionários PT-BR/EN. `t(key)` devolve o texto da UI no idioma atual; `contentL
 
 ### `src/compare.js` — comparação
 
-`setupCompare(...)` busca dois Pokémon e monta uma tabela lado a lado (tipos, altura, peso, stats e total), destacando o maior valor de cada linha. Devolve `{ refresh }`.
+`setupCompare(...)` gerencia uma lista de até **4 Pokémon** (chips com remover) e renderiza um **gráfico de radar em SVG** (6 stats, um polígono por Pokémon, cores fixas) + uma **tabela de N colunas** destacando o maior valor de cada stat e o total. Expõe `add(nome)` (usado pelo autocomplete) e `refresh` (re-render ao trocar idioma).
 
 ### `src/main.js` — orquestração
 

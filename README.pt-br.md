@@ -27,7 +27,7 @@
 - Busca por nome (sugestões por qualquer parte) ou número, com Prev/Next e setas do teclado
 - Tipos, stats base, habilidades (com destaque das ocultas), fraquezas e descrição da espécie
 - Cadeia de evolução clicável, alternância shiny, cry (som) e Pokémon aleatório
-- Comparação de dois Pokémon lado a lado; filtro por tipo e geração
+- Comparação de até 4 Pokémon (tabela de stats + gráfico de radar); filtro por tipo e geração com paginação
 - Interface bilíngue (PT-BR / EN); favoritos e tema salvos no navegador
 - Download da imagem estática (PNG) e do GIF animado
 - Links compartilháveis (`?pokemon=ID`) e PWA instalável com suporte offline
