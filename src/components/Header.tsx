@@ -1,18 +1,29 @@
 import { useState, useEffect } from 'react';
+import type { Theme } from '../services/storage';
 import { useI18n } from '../i18n/I18nContext';
-import { useTheme } from '../hooks/useTheme';
 import { useModal } from '../context/ModalContext';
+import { useAuth } from '../context/AuthContext';
 import { InfoModal } from './InfoModal';
+import { AuthModal } from './auth/AuthModal';
+import logoUrl from '../assets/logo_pokedex.webp';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
 }
 
-// Barra superior: marca + deck + instalar (PWA) + sobre + idioma + tema.
-export function Header({ onOpenDeck }: { onOpenDeck: () => void }) {
+interface HeaderProps {
+  theme: Theme;
+  onToggleTheme: () => void;
+  onOpenDeck: () => void;
+  onOpenCards: () => void;
+  onOpenPokedex: () => void;
+}
+
+// Barra superior: marca + explorar + cartas + deck + conta + tema/idioma.
+export function Header({ theme, onToggleTheme, onOpenDeck, onOpenCards, onOpenPokedex }: HeaderProps) {
   const { t, lang, toggle: toggleLang } = useI18n();
-  const { theme, toggle: toggleTheme } = useTheme();
-  const { open } = useModal();
+  const { open, close } = useModal();
+  const { enabled, user, signOut } = useAuth();
   const [installEvent, setInstallEvent] = useState<BeforeInstallPromptEvent | null>(null);
 
   useEffect(() => {
@@ -32,8 +43,14 @@ export function Header({ onOpenDeck }: { onOpenDeck: () => void }) {
 
   return (
     <header className="topbar">
-      <span className="brand">Pokédex</span>
+      <img className="brand-logo" src={logoUrl} alt="Pokédex" width="120" height="34" />
       <div className="topbar__controls">
+        <button className="deck-open" type="button" onClick={onOpenPokedex}>
+          {lang === 'pt' ? '🔎 Explorar' : '🔎 Explore'}
+        </button>
+        <button className="deck-open" type="button" onClick={onOpenCards}>
+          {lang === 'pt' ? '🃟 Cartas' : '🃟 Cards'}
+        </button>
         <button className="deck-open" type="button" onClick={onOpenDeck}>
           🃏 Deck
         </button>
@@ -62,10 +79,29 @@ export function Header({ onOpenDeck }: { onOpenDeck: () => void }) {
           className="theme-toggle"
           type="button"
           aria-label="Tema escuro"
-          onClick={toggleTheme}
+          onClick={onToggleTheme}
         >
           {theme === 'dark' ? '☀️' : '🌙'}
         </button>
+        {enabled &&
+          (user ? (
+            <button
+              className="auth-btn"
+              type="button"
+              title={user.email ?? ''}
+              onClick={() => void signOut()}
+            >
+              👤 {lang === 'pt' ? 'Sair' : 'Sign out'}
+            </button>
+          ) : (
+            <button
+              className="auth-btn"
+              type="button"
+              onClick={() => open(<AuthModal onDone={close} />)}
+            >
+              {lang === 'pt' ? 'Entrar' : 'Sign in'}
+            </button>
+          ))}
       </div>
     </header>
   );

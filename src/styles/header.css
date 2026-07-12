@@ -72,3 +72,11 @@
   background: var(--surface-2);
 }
 
+
+/* Logo da marca no header */
+.brand-logo {
+  height: 34px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}

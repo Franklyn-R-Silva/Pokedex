@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import type { TcgCard } from '../../types';
 import { searchCards } from '../../services/tcg';
 import { useI18n } from '../../i18n/I18nContext';
+import { useModal } from '../../context/ModalContext';
+import { CardDetail } from '../details/CardDetail';
 import { dl } from './labels';
 
 const SUPERTYPES = ['', 'Pokémon', 'Trainer', 'Energy'] as const;
@@ -22,6 +24,7 @@ const TYPES = [
 // Catálogo: busca cartas (nome + supertipo + tipo) e adiciona ao deck no clique.
 export function Catalog({ onAdd }: { onAdd: (card: TcgCard) => void }) {
   const { lang } = useI18n();
+  const { open } = useModal();
   const [name, setName] = useState('');
   const [supertype, setSupertype] = useState('');
   const [type, setType] = useState('');
@@ -90,15 +93,25 @@ export function Catalog({ onAdd }: { onAdd: (card: TcgCard) => void }) {
         )}
         {cards?.length === 0 && <span className="muted">{dl(lang, 'noResults')}</span>}
         {cards?.map((card) => (
-          <button
-            key={card.id}
-            type="button"
-            className="deck-result-card"
-            title={`${card.name} · ${card.rarity}`}
-            onClick={() => onAdd(card)}
-          >
-            <img src={card.small} alt={card.name} loading="lazy" />
-          </button>
+          <div className="deck-result-cell" key={card.id}>
+            <button
+              type="button"
+              className="deck-result-card"
+              title={`${card.name} · ${card.rarity}`}
+              onClick={() => onAdd(card)}
+            >
+              <img src={card.small} alt={card.name} loading="lazy" />
+            </button>
+            <button
+              type="button"
+              className="deck-result-view"
+              aria-label={lang === 'pt' ? 'Ver detalhes' : 'View details'}
+              title={lang === 'pt' ? 'Ver detalhes' : 'View details'}
+              onClick={() => open(<CardDetail card={card} onAdd={() => onAdd(card)} />)}
+            >
+              🔍
+            </button>
+          </div>
         ))}
       </div>
     </div>

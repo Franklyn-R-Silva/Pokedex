@@ -14,6 +14,8 @@ function card(partial: Partial<TcgCard>): TcgCard {
     hp: '',
     supertype: partial.supertype ?? 'Pokémon',
     evolvesFrom: partial.evolvesFrom ?? '',
+    legalStandard: partial.legalStandard ?? true,
+    legalExpanded: partial.legalExpanded ?? true,
     types: partial.types ?? [],
     subtypes: partial.subtypes ?? [],
     artist: '',
@@ -58,5 +60,18 @@ describe('deck analysis', () => {
     const a = analyzeDeck([{ card: card({ supertype: 'Trainer', subtypes: ['Item'] }), count: 4 }]);
     expect(a.pokemon).toBe(0);
     expect(a.issues.some((i) => i.code === 'noPokemon')).toBe(true);
+  });
+
+  it('reports format legality (Standard/Expanded)', () => {
+    const legal = analyzeDeck([{ card: card({ subtypes: ['Basic'] }), count: 4 }]);
+    expect(legal.standardLegal).toBe(true);
+
+    const rotated = analyzeDeck([
+      { card: card({ subtypes: ['Basic'] }), count: 3 },
+      { card: card({ id: 'old', legalStandard: false, legalExpanded: true, subtypes: ['Basic'] }), count: 1 },
+    ]);
+    expect(rotated.standardLegal).toBe(false);
+    expect(rotated.illegalStandard).toBe(1);
+    expect(rotated.expandedLegal).toBe(true);
   });
 });

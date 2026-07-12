@@ -441,3 +441,22 @@
     transition: none;
   }
 }
+
+/* Botão "adicionar ao deck" no modal da carta */
+.tcg-add-deck {
+  display: inline-block;
+  margin-bottom: var(--space-2);
+  padding: 8px 14px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--type-color);
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.tcg-add-deck:hover {
+  filter: brightness(1.08);
+}

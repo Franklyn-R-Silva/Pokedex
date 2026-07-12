@@ -1,0 +1,297 @@
+/* ---------- Explorar Pokédex (filtro avançado) ---------- */
+.pkx {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.pkx__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-3);
+}
+
+.pkx__count {
+  margin-left: auto;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 0.9rem;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+
+.pkx__body {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr);
+  gap: var(--space-4);
+  align-items: start;
+}
+
+/* Sidebar de filtros */
+.pkx__filters {
+  position: sticky;
+  top: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-3);
+  box-shadow: var(--shadow-sm);
+}
+
+.pkx__filter-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-2);
+}
+
+.pkx__filter-head strong {
+  font-family: var(--font-display);
+  color: var(--type-color);
+}
+
+.pkx__clear {
+  border: none;
+  background: none;
+  color: #e05252;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+}
+
+.pkx__search {
+  width: 100%;
+  padding: 9px 11px;
+  margin-bottom: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 0.85rem;
+}
+
+.pkx__section {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-muted);
+  margin: var(--space-3) 0 var(--space-2);
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+.pkx__types {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+}
+
+.pkx__type {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 6px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text);
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.12s ease,
+    border-color 0.12s ease;
+}
+
+.pkx__type:hover:not(:disabled) {
+  background: var(--surface-2);
+}
+
+.pkx__type.is-active {
+  background: var(--surface-2);
+  border-width: 2px;
+}
+
+.pkx__type:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.pkx__type-ic {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font-size: 0.7rem;
+  flex: 0 0 auto;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+}
+
+.pkx__type-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pkx__type-n {
+  color: var(--text-muted);
+  font-weight: 700;
+  font-size: 0.66rem;
+}
+
+.pkx__gens {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+}
+
+.pkx__gen {
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pkx__gen.is-active {
+  background: var(--type-color);
+  border-color: var(--type-color);
+  color: #fff;
+}
+
+.pkx__gen.is-active .pkx__type-n {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* Área principal — display:block sobrescreve a regra global `main{display:flex}`
+   do layout de 3 colunas do app (senão o grid interno colapsa). */
+.pkx__main {
+  display: block;
+  min-width: 0;
+}
+
+.pkx__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+  font-weight: 700;
+}
+
+.pkx__toolbar select {
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--text);
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+.pkx__grid {
+  display: grid;
+  width: 100%;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--space-3);
+}
+
+.pkx__card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: var(--space-3) var(--space-2) var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.pkx__card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow);
+  border-color: var(--type-color);
+}
+
+.pkx__card img {
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.pkx__num {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--text-muted);
+}
+
+.pkx__name {
+  font-weight: 700;
+  text-transform: capitalize;
+  font-size: 0.85rem;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pkx__badges {
+  display: flex;
+  gap: 4px;
+  margin-top: 3px;
+}
+
+.pkx__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  font-size: 0.72rem;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+}
+
+.pkx__skeleton {
+  height: 170px;
+  border-radius: var(--radius);
+  background: linear-gradient(90deg, var(--surface-2) 25%, var(--border) 50%, var(--surface-2) 75%);
+  background-size: 200% 100%;
+  animation: cb-shimmer 1.2s infinite linear;
+}
+
+.pkx__empty {
+  text-align: center;
+  padding: var(--space-6) 0;
+}
+
+.pkx__more {
+  margin-top: var(--space-4);
+}
+
+@media (max-width: 760px) {
+  .pkx__body {
+    grid-template-columns: 1fr;
+  }
+  .pkx__filters {
+    position: static;
+  }
+}

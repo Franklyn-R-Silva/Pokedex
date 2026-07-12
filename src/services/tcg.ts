@@ -7,7 +7,7 @@ import type { TcgCard, TcgAttack } from '../types';
 const API = 'https://api.pokemontcg.io/v2/cards';
 const STORE_KEY = 'pokedex-tcg';
 const SELECT =
-  'id,name,number,rarity,artist,flavorText,hp,supertype,evolvesFrom,types,subtypes,set,images,attacks,tcgplayer,cardmarket';
+  'id,name,number,rarity,artist,flavorText,hp,supertype,evolvesFrom,legalities,types,subtypes,set,images,attacks,tcgplayer,cardmarket';
 const memory = new Map<number, TcgCard[]>();
 
 // Chave opcional: sem ela a API funciona com limite reduzido (1000/dia).
@@ -30,6 +30,7 @@ interface ApiCard {
   hp?: string;
   supertype?: string;
   evolvesFrom?: string;
+  legalities?: { standard?: string; expanded?: string; unlimited?: string };
   types?: string[];
   subtypes?: string[];
   set?: { name?: string };
@@ -82,6 +83,8 @@ function toCard(c: ApiCard): TcgCard {
     hp: c.hp ?? '',
     supertype: c.supertype ?? '',
     evolvesFrom: c.evolvesFrom ?? '',
+    legalStandard: c.legalities?.standard === 'Legal',
+    legalExpanded: c.legalities?.expanded === 'Legal',
     types: c.types ?? [],
     subtypes: c.subtypes ?? [],
     artist: c.artist ?? '',
@@ -130,10 +133,16 @@ export interface CardSearch {
   supertype?: string;
   subtype?: string;
   type?: string;
+  rarity?: string;
+  orderBy?: string;
   page?: number;
+  pageSize?: number;
 }
 
-/** Busca cartas por nome/supertipo/subtipo/tipo (para o construtor de deck). */
+const searchCache = new Map<string, { cards: TcgCard[]; totalCount: number }>();
+
+/** Busca cartas por nome/supertipo/subtipo/tipo (para o construtor de deck).
+ *  Cacheada em memória por consulta — importação/repetição ficam instantâneas. */
 export async function searchCards(
   opts: CardSearch,
 ): Promise<{ cards: TcgCard[]; totalCount: number }> {
@@ -142,12 +151,19 @@ export async function searchCards(
   if (opts.supertype) parts.push(`supertype:"${opts.supertype}"`);
   if (opts.subtype) parts.push(`subtypes:"${opts.subtype}"`);
   if (opts.type) parts.push(`types:${opts.type}`);
+  if (opts.rarity) parts.push(`rarity:"${opts.rarity}"`);
   const query = parts.join(' ') || 'supertype:Pokémon';
+  const orderBy = opts.orderBy ?? '-set.releaseDate';
+  const pageSize = opts.pageSize ?? 24;
+
+  const cacheKey = `${query}#${orderBy}#${opts.page ?? 1}#${pageSize}`;
+  const cached = searchCache.get(cacheKey);
+  if (cached) return cached;
 
   try {
     const url =
-      `${API}?q=${encodeURIComponent(query)}&orderBy=-set.releaseDate` +
-      `&page=${opts.page ?? 1}&pageSize=24&select=${SELECT}`;
+      `${API}?q=${encodeURIComponent(query)}&orderBy=${encodeURIComponent(orderBy)}` +
+      `&page=${opts.page ?? 1}&pageSize=${pageSize}&select=${SELECT}`;
     const headers: Record<string, string> = {};
     if (API_KEY) headers['X-Api-Key'] = API_KEY;
 
@@ -156,9 +172,67 @@ export async function searchCards(
 
     const json = (await response.json()) as { data?: ApiCard[]; totalCount?: number };
     const cards = (json.data ?? []).filter((c) => c.images?.small).map(toCard);
-    return { cards, totalCount: json.totalCount ?? cards.length };
+    const result = { cards, totalCount: json.totalCount ?? cards.length };
+    if (cards.length > 0) searchCache.set(cacheKey, result);
+    return result;
   } catch {
     return { cards: [], totalCount: 0 };
+  }
+}
+
+const NAMES_STORE = 'pokedex-tcg-names';
+
+/** Busca várias cartas por nome em UMA query (name:"A" OR name:"B" …) e devolve
+ *  um mapa nome→melhor carta (match exato preferido). Cacheado em memória +
+ *  localStorage — a importação de um meta-deck vira 1 request (ou 0 no reuso). */
+export async function fetchCardsByNames(names: string[]): Promise<Map<string, TcgCard>> {
+  const unique = [...new Set(names.map((n) => n.trim()).filter(Boolean))];
+  const cacheKey = unique.map((n) => n.toLowerCase()).sort().join('|');
+
+  const result = new Map<string, TcgCard>();
+  const assign = (cards: TcgCard[]) => {
+    for (const name of unique) {
+      const nl = name.toLowerCase();
+      const exact = cards.find((c) => c.name.toLowerCase() === nl);
+      const partial = exact ?? cards.find((c) => c.name.toLowerCase().startsWith(nl));
+      if (partial) result.set(nl, partial);
+    }
+  };
+
+  // Cache persistente por conjunto de nomes.
+  try {
+    const store = JSON.parse(localStorage.getItem(NAMES_STORE) ?? '{}') as Record<string, TcgCard[]>;
+    if (store[cacheKey]) {
+      assign(store[cacheKey]);
+      return result;
+    }
+  } catch {
+    /* ignora */
+  }
+
+  try {
+    const q = unique.map((n) => `name:"${n.replace(/"/g, '')}"`).join(' OR ');
+    const url = `${API}?q=${encodeURIComponent(q)}&pageSize=250&select=${SELECT}`;
+    const headers: Record<string, string> = {};
+    if (API_KEY) headers['X-Api-Key'] = API_KEY;
+
+    const response = await fetch(url, { headers });
+    if (!response.ok) return result;
+    const json = (await response.json()) as { data?: ApiCard[] };
+    const cards = (json.data ?? []).filter((c) => c.images?.small).map(toCard);
+    assign(cards);
+
+    // Guarda só as cartas escolhidas (uma por nome) — leve para o localStorage.
+    try {
+      const store = JSON.parse(localStorage.getItem(NAMES_STORE) ?? '{}') as Record<string, TcgCard[]>;
+      store[cacheKey] = [...result.values()];
+      localStorage.setItem(NAMES_STORE, JSON.stringify(store));
+    } catch {
+      /* cota */
+    }
+    return result;
+  } catch {
+    return result;
   }
 }
 

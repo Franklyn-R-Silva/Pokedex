@@ -1,12 +1,13 @@
 <h1 align="center">Pokédex</h1>
 
 <p align="center">
-  Uma Pokédex rápida e instalável, feita em JavaScript puro com a
+  Uma Pokédex rápida e instalável, feita em React 19 + TypeScript com a
   <a href="https://pokeapi.co/">PokéAPI</a> — pesquise, compare e explore Pokémon em PT-BR ou EN.
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=javascript&logoColor=black" alt="JavaScript" />
+  <img src="https://img.shields.io/badge/React-20232A?style=flat&logo=react&logoColor=61DAFB" alt="React" />
+  <img src="https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white" alt="TypeScript" />
   <img src="https://img.shields.io/badge/Vite-646CFF?style=flat&logo=vite&logoColor=white" alt="Vite" />
   <img src="https://img.shields.io/badge/PWA-5A0FC8?style=flat&logo=pwa&logoColor=white" alt="PWA" />
   <img src="https://img.shields.io/badge/Vitest-6E9F18?style=flat&logo=vitest&logoColor=white" alt="Vitest" />

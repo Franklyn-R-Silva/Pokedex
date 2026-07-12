@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
 import type { ReactNode } from 'react';
 
 interface ModalValue {
@@ -9,12 +9,20 @@ interface ModalValue {
 const ModalContext = createContext<ModalValue | null>(null);
 
 // Provider de modal genérico: qualquer componente chama open(<Conteúdo/>).
-// Cuida do overlay, botão fechar, Escape e clique no backdrop.
+// Cuida do overlay, botão fechar, Escape, clique no backdrop e devolve o foco
+// ao elemento que abriu o modal (acessibilidade).
 export function ModalProvider({ children }: { children: ReactNode }) {
   const [content, setContent] = useState<ReactNode | null>(null);
+  const lastFocused = useRef<HTMLElement | null>(null);
 
-  const open = useCallback((node: ReactNode) => setContent(node), []);
-  const close = useCallback(() => setContent(null), []);
+  const open = useCallback((node: ReactNode) => {
+    lastFocused.current = document.activeElement as HTMLElement | null;
+    setContent(node);
+  }, []);
+  const close = useCallback(() => {
+    setContent(null);
+    lastFocused.current?.focus();
+  }, []);
 
   useEffect(() => {
     if (!content) return;

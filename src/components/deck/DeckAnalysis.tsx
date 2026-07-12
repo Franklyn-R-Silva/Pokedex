@@ -62,6 +62,20 @@ export function DeckAnalysis({ entries }: { entries: DeckEntry[] }) {
         </div>
       </div>
 
+      <div className="deck-legality">
+        <span className={`deck-format ${a.standardLegal ? 'is-legal' : 'is-illegal'}`}>
+          {a.standardLegal ? '✔' : '✖'} Standard
+        </span>
+        <span className={`deck-format ${a.expandedLegal ? 'is-legal' : 'is-illegal'}`}>
+          {a.expandedLegal ? '✔' : '✖'} Expanded
+        </span>
+        {a.illegalStandard > 0 && (
+          <span className="deck-format__note muted">
+            {a.illegalStandard} {lang === 'pt' ? 'fora de Standard' : 'not Standard-legal'}
+          </span>
+        )}
+      </div>
+
       <div className="deck-charts">
         <div className="deck-chart">
           <h4>{dl(lang, 'composition')}</h4>
@@ -108,6 +122,20 @@ export function DeckAnalysis({ entries }: { entries: DeckEntry[] }) {
           </li>
         ))}
       </ul>
+
+      {a.tips.length > 0 && (
+        <>
+          <h4 className="deck-missing-title">💡 {dl(lang, 'expertTips')}</h4>
+          <ul className="deck-issues">
+            {a.tips.map((tip, i) => (
+              <li className={`deck-issue deck-issue--${tip.level}`} key={i}>
+                <span className="deck-issue__icon">{tip.level === 'ok' ? '✔' : '💡'}</span>
+                {issueText(lang, tip.code, tip.value)}
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
     </div>
   );
 }

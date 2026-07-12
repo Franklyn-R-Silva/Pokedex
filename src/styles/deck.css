@@ -461,3 +461,97 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* Ver detalhe da carta no catálogo/lista */
+.deck-result-cell {
+  position: relative;
+}
+
+.deck-result-view {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 0.7rem;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.deck-result-cell:hover .deck-result-view,
+.deck-result-view:focus-visible {
+  opacity: 1;
+}
+
+.deck-row__view {
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  line-height: 0;
+  border-radius: 4px;
+}
+
+.deck-row__view img {
+  width: 30px;
+  height: 42px;
+  object-fit: contain;
+}
+
+.deck-row__view:hover {
+  outline: 2px solid var(--type-color);
+}
+
+/* Barra de progresso ao montar meta-deck */
+.deck-progress {
+  flex: 1;
+  min-width: 120px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+
+.deck-progress__fill {
+  height: 100%;
+  background: var(--type-color);
+  transition: width 0.2s ease;
+}
+
+/* Legalidade de formato (Standard/Expanded) */
+.deck-legality {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+  margin-bottom: var(--space-3);
+}
+
+.deck-format {
+  padding: 4px 11px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.deck-format.is-legal {
+  background: color-mix(in srgb, #16a34a 15%, transparent);
+  color: #16a34a;
+  border: 1px solid #16a34a;
+}
+
+.deck-format.is-illegal {
+  background: color-mix(in srgb, #e05252 15%, transparent);
+  color: #e05252;
+  border: 1px solid #e05252;
+}
+
+.deck-format__note {
+  font-size: 0.7rem;
+}

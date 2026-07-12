@@ -192,6 +192,8 @@ export interface TcgCard {
   hp: string;
   supertype: string;
   evolvesFrom: string;
+  legalStandard: boolean;
+  legalExpanded: boolean;
   types: string[];
   subtypes: string[];
   artist: string;

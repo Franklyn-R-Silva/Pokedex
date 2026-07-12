@@ -1,0 +1,159 @@
+/* ---------- Navegador de cartas (Preços / Banco de cartas) ---------- */
+.cardbrowser {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.cardbrowser__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-3);
+}
+
+.cardbrowser__count {
+  margin-left: auto;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 0.9rem;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+
+.cardbrowser__filters {
+  margin-bottom: var(--space-4);
+}
+
+.cardbrowser__selects {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.cardbrowser__selects select {
+  flex: 1;
+  min-width: 130px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.cardbrowser__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: var(--space-3);
+}
+
+.cardbrowser__card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.cardbrowser__card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow);
+  border-color: var(--type-color);
+}
+
+.cardbrowser__card img {
+  width: 100%;
+  border-radius: 6px;
+  box-shadow: var(--shadow-sm);
+}
+
+.cardbrowser__name {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.15;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.cardbrowser__price {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 0.85rem;
+  color: #16a34a;
+}
+
+.cardbrowser__card.no-price .cardbrowser__price {
+  color: var(--text-muted);
+}
+
+.cardbrowser__empty {
+  text-align: center;
+  padding: var(--space-6) 0;
+}
+
+.cardbrowser__pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  margin: var(--space-4) 0;
+  font-weight: 700;
+}
+
+.cardbrowser__pager button {
+  padding: 8px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cardbrowser__pager button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.cardbrowser__pager button:hover:not(:disabled) {
+  border-color: var(--type-color);
+}
+
+/* Skeleton do grid enquanto carrega */
+.cardbrowser__skeleton {
+  aspect-ratio: 5 / 7;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(90deg, var(--surface-2) 25%, var(--border) 50%, var(--surface-2) 75%);
+  background-size: 200% 100%;
+  animation: cb-shimmer 1.2s infinite linear;
+}
+
+@keyframes cb-shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cardbrowser__skeleton {
+    animation: none;
+  }
+}

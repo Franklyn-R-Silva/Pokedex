@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useDeck } from '../../hooks/useDeck';
 import { deckSize, DECK_SIZE } from '../../domain/deck';
 import { META_DECKS } from '../../domain/metaDecks';
-import { searchCards } from '../../services/tcg';
+import { fetchCardsByNames } from '../../services/tcg';
 import { useI18n } from '../../i18n/I18nContext';
 import { dl } from './labels';
 import { Catalog } from './Catalog';
@@ -17,6 +17,7 @@ export function DeckBuilder({ onClose }: { onClose: () => void }) {
   const { entries, add, addMany, remove, clear } = useDeck();
   const [mobileTab, setMobileTab] = useState<MobileTab>('deck');
   const [building, setBuilding] = useState(false);
+  const [progress, setProgress] = useState({ done: 0, total: 0 });
   const size = deckSize(entries);
 
   // Carrega um arquétipo do meta buscando cada carta pelo nome na API.
@@ -25,10 +26,17 @@ export function DeckBuilder({ onClose }: { onClose: () => void }) {
     if (!template || building) return;
     setBuilding(true);
     clear();
-    for (const { query, count } of template.cards) {
-      const { cards } = await searchCards({ name: query });
-      if (cards[0]) addMany(cards[0], count);
-    }
+    const total = template.cards.length;
+    setProgress({ done: 0, total });
+
+    // UMA única query com todos os nomes (+ cache localStorage) — bem mais
+    // rápido que ~13 requests. Mantém a quantidade (count) de cada carta.
+    const byName = await fetchCardsByNames(template.cards.map((c) => c.query));
+    template.cards.forEach((c, i) => {
+      const card = byName.get(c.query.toLowerCase());
+      if (card) addMany(card, c.count);
+      setProgress({ done: i + 1, total });
+    });
     setBuilding(false);
   };
 
@@ -60,7 +68,22 @@ export function DeckBuilder({ onClose }: { onClose: () => void }) {
             {d.name}
           </button>
         ))}
-        {building && <span className="muted">{dl(lang, 'buildingMeta')}</span>}
+        {building && (
+          <>
+            <span className="muted">{dl(lang, 'buildingMeta')}</span>
+            <div
+              className="deck-progress"
+              role="progressbar"
+              aria-valuenow={progress.done}
+              aria-valuemax={progress.total}
+            >
+              <div
+                className="deck-progress__fill"
+                style={{ width: `${progress.total ? (progress.done / progress.total) * 100 : 0}%` }}
+              />
+            </div>
+          </>
+        )}
       </div>
 
       <div className="deck-mobile-tabs">

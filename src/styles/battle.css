@@ -438,3 +438,14 @@
   cursor: pointer;
 }
 
+
+/* Item Poção na batalha */
+.battle-potion {
+  background: #16a34a !important;
+  grid-column: 1 / -1;
+}
+
+.battle-potion:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

@@ -3,6 +3,7 @@ import { MAX_POKEMON, fetchAllPokemonNames } from './services/pokeapi';
 import { getTypeColor, getTypeLabel } from './domain/pokemonTypes';
 import { getArtworkById } from './services/sprites';
 import { useI18n } from './i18n/I18nContext';
+import { useTheme } from './hooks/useTheme';
 import { usePokemon } from './hooks/usePokemon';
 import { Header } from './components/Header';
 import { PokedexDevice } from './components/PokedexDevice';
@@ -18,6 +19,14 @@ import { QuizPanel } from './components/panels/QuizPanel';
 const DeckBuilder = lazy(() =>
   import('./components/deck/DeckBuilder').then((m) => ({ default: m.DeckBuilder })),
 );
+const CardBrowser = lazy(() =>
+  import('./components/cards/CardBrowser').then((m) => ({ default: m.CardBrowser })),
+);
+const PokedexBrowser = lazy(() =>
+  import('./components/pokedex/PokedexBrowser').then((m) => ({ default: m.PokedexBrowser })),
+);
+
+type View = 'main' | 'deck' | 'cards' | 'pokedex';
 
 // Pokémon do dia (determinístico pela data) quando não há ?pokemon=ID.
 function pokemonOfTheDay(): number {
@@ -33,17 +42,21 @@ function initialQuery(): string {
 
 export function App() {
   const { t, lang } = useI18n();
+  // Tema no nível do App (sempre montado) — aplica a classe .dark em TODAS as
+  // views, inclusive deck/cartas/pokédex que não renderizam o Header.
+  const { theme, toggle: toggleTheme } = useTheme();
   const [query, setQuery] = useState<string>(initialQuery);
   const [shiny, setShiny] = useState(false);
   const { pokemon, loading, error } = usePokemon(query);
-  const [view, setView] = useState<'main' | 'deck'>(() =>
-    new URLSearchParams(window.location.search).get('view') === 'deck' ? 'deck' : 'main',
-  );
+  const [view, setView] = useState<View>(() => {
+    const v = new URLSearchParams(window.location.search).get('view');
+    return v === 'deck' || v === 'cards' || v === 'pokedex' ? v : 'main';
+  });
 
-  const setViewUrl = (next: 'main' | 'deck') => {
+  const setViewUrl = (next: View) => {
     const url = new URL(window.location.href);
-    if (next === 'deck') url.searchParams.set('view', 'deck');
-    else url.searchParams.delete('view');
+    if (next === 'main') url.searchParams.delete('view');
+    else url.searchParams.set('view', next);
     window.history.replaceState({}, '', url);
     setView(next);
   };
@@ -102,16 +115,32 @@ export function App() {
     return () => document.removeEventListener('keydown', onKey);
   }, [pokemon, go]);
 
-  if (view === 'deck')
+  if (view !== 'main')
     return (
       <Suspense fallback={<p className="loading-note muted">{t('loading')}</p>}>
-        <DeckBuilder onClose={() => setViewUrl('main')} />
+        {view === 'deck' && <DeckBuilder onClose={() => setViewUrl('main')} />}
+        {view === 'cards' && <CardBrowser onClose={() => setViewUrl('main')} />}
+        {view === 'pokedex' && (
+          <PokedexBrowser
+            onClose={() => setViewUrl('main')}
+            onSelect={(id) => {
+              setQuery(String(id));
+              setViewUrl('main');
+            }}
+          />
+        )}
       </Suspense>
     );
 
   return (
     <>
-      <Header onOpenDeck={() => setViewUrl('deck')} />
+      <Header
+        theme={theme}
+        onToggleTheme={toggleTheme}
+        onOpenDeck={() => setViewUrl('deck')}
+        onOpenCards={() => setViewUrl('cards')}
+        onOpenPokedex={() => setViewUrl('pokedex')}
+      />
       <main>
         <PokedexDevice
           pokemon={pokemon}

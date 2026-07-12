@@ -22,12 +22,17 @@ export interface DeckAnalysis {
   trainer: number;
   energy: number;
   basics: number;
+  supporters: number;
   energyByType: Record<string, number>;
   neededTypes: string[];
   costCurve: number[];
   score: number;
   grade: string;
   issues: DeckIssue[];
+  tips: DeckIssue[];
+  standardLegal: boolean;
+  expandedLegal: boolean;
+  illegalStandard: number;
 }
 
 export const DECK_SIZE = 60;
@@ -57,6 +62,7 @@ export function analyzeDeck(entries: DeckEntry[]): DeckAnalysis {
   let trainer = 0;
   let energy = 0;
   let basics = 0;
+  let supporters = 0;
   const energyByType: Record<string, number> = {};
   const neededTypes = new Set<string>();
   const costCurve: number[] = [0, 0, 0, 0, 0]; // custos 0..4+
@@ -75,6 +81,7 @@ export function analyzeDeck(entries: DeckEntry[]): DeckAnalysis {
       });
     } else if (card.supertype === 'Trainer') {
       trainer += count;
+      if (card.subtypes.includes('Supporter')) supporters += count;
     } else if (card.supertype === 'Energy') {
       energy += count;
       const type = energyType(card);
@@ -129,17 +136,43 @@ export function analyzeDeck(entries: DeckEntry[]): DeckAnalysis {
   const grade =
     score >= 85 ? 'A' : score >= 70 ? 'B' : score >= 55 ? 'C' : score >= 40 ? 'D' : 'F';
 
+  // Sugestões de especialista (proporções ideais e consistência).
+  const tips: DeckIssue[] = [];
+  if (pokemon > 0) {
+    if (pokemon < 12) tips.push({ level: 'warn', code: 'tipFewPokemon', value: pokemon });
+    else if (pokemon > 22) tips.push({ level: 'warn', code: 'tipManyPokemon', value: pokemon });
+    if (supporters < 6) tips.push({ level: 'warn', code: 'tipDraw', value: supporters });
+    if (energy > 20) tips.push({ level: 'warn', code: 'tipManyEnergy', value: energy });
+    else if (energy >= 1 && energy < 6) tips.push({ level: 'warn', code: 'tipFewEnergy', value: energy });
+    // Curva alta: muitos ataques custando 3+.
+    const heavy = costCurve[3] + costCurve[4];
+    if (heavy > pokemon) tips.push({ level: 'warn', code: 'tipHighCurve' });
+  }
+  if (size === DECK_SIZE && score >= 80 && tips.length === 0) {
+    tips.push({ level: 'ok', code: 'tipSolid' });
+  }
+
+  // Legalidade de formato: todas as cartas precisam ser legais no formato.
+  const illegalStandard = entries.filter((e) => !e.card.legalStandard).length;
+  const standardLegal = entries.length > 0 && illegalStandard === 0;
+  const expandedLegal = entries.length > 0 && entries.every((e) => e.card.legalExpanded);
+
   return {
     size,
     pokemon,
     trainer,
     energy,
     basics,
+    supporters,
     energyByType,
     neededTypes: needList,
     costCurve,
     score,
     grade,
     issues,
+    tips,
+    standardLegal,
+    expandedLegal,
+    illegalStandard,
   };
 }
