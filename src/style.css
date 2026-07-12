@@ -26,6 +26,14 @@ main {
   padding: 15px;
 }
 
+.col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+}
+
 .pokedex-device {
   display: inline-block;
   margin-top: 2%;
@@ -896,39 +904,25 @@ html.dark .theme-toggle {
 
 @media (min-width: 1024px) {
   main {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(300px, 360px));
+    flex-direction: row;
+    align-items: flex-start;
     justify-content: center;
-    align-items: start;
     gap: 28px;
-    max-width: 1160px;
+    max-width: 1180px;
     margin: 0 auto;
     padding: 24px 15px 48px;
   }
 
+  .col {
+    width: 360px;
+    flex: 0 0 360px;
+  }
+
+  .col--device {
+    margin-top: 8px;
+  }
+
   .pokedex-device {
-    grid-column: 1;
     margin-top: 0;
-    justify-self: center;
-  }
-
-  .toolbar {
-    grid-column: 1;
-  }
-
-  .details {
-    grid-column: 2;
-  }
-
-  .favorites {
-    grid-column: 3;
-  }
-
-  .panel.filter {
-    grid-column: 3;
-  }
-
-  .panel.compare {
-    grid-column: 3;
   }
 }

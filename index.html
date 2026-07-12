@@ -41,114 +41,120 @@
     </header>
 
     <main>
-      <div class="pokedex-device">
-        <img src="" alt="pokemon" class="pokemon__image" />
-        <h1 class="pokemon__data">
-          <span class="pokemon__number"></span> -
-          <span class="pokemon__name"></span>
-        </h1>
-        <form class="form" role="search">
-          <input
-            type="search"
-            class="input__search"
-            placeholder="Nome ou número"
-            data-i18n-ph="searchPlaceholder"
-            autocomplete="off"
-            role="combobox"
-            aria-autocomplete="list"
-            aria-expanded="false"
-            aria-label="Buscar Pokémon"
-            required
-          />
-          <ul class="suggestions" role="listbox"></ul>
-        </form>
-        <div class="buttons">
-          <button class="button btn-prev" type="button">Prev &lt;</button>
-          <button class="button btn-next" type="button">Next &gt;</button>
+      <div class="col col--device">
+        <div class="pokedex-device">
+          <img src="" alt="pokemon" class="pokemon__image" />
+          <h1 class="pokemon__data">
+            <span class="pokemon__number"></span> -
+            <span class="pokemon__name"></span>
+          </h1>
+          <form class="form" role="search">
+            <input
+              type="search"
+              class="input__search"
+              placeholder="Nome ou número"
+              data-i18n-ph="searchPlaceholder"
+              autocomplete="off"
+              role="combobox"
+              aria-autocomplete="list"
+              aria-expanded="false"
+              aria-label="Buscar Pokémon"
+              required
+            />
+            <ul class="suggestions" role="listbox"></ul>
+          </form>
+          <div class="buttons">
+            <button class="button btn-prev" type="button">Prev &lt;</button>
+            <button class="button btn-next" type="button">Next &gt;</button>
+          </div>
+          <img src="/images/pokedex.png" alt="pokedex" class="pokedex" />
         </div>
-        <img src="/images/pokedex.png" alt="pokedex" class="pokedex" />
+
+        <div class="toolbar">
+          <button class="btn-tool btn-random" type="button" data-i18n="random">🎲 Aleatório</button>
+          <button class="btn-tool btn-shiny" type="button" aria-pressed="false" data-i18n="shiny">
+            ✨ Shiny
+          </button>
+          <button class="btn-tool btn-cry" type="button" disabled data-i18n="cry">🔊 Som</button>
+          <button class="btn-tool btn-share" type="button" disabled data-i18n="share">
+            🔗 Compartilhar
+          </button>
+        </div>
       </div>
 
-      <div class="toolbar">
-        <button class="btn-tool btn-random" type="button" data-i18n="random">🎲 Aleatório</button>
-        <button class="btn-tool btn-shiny" type="button" aria-pressed="false" data-i18n="shiny">
-          ✨ Shiny
-        </button>
-        <button class="btn-tool btn-cry" type="button" disabled data-i18n="cry">🔊 Som</button>
-        <button class="btn-tool btn-share" type="button" disabled data-i18n="share">
-          🔗 Compartilhar
-        </button>
+      <div class="col col--details">
+        <section class="details" aria-live="polite">
+          <div class="details__types"></div>
+
+          <p class="details__genus"></p>
+          <p class="details__description"></p>
+
+          <div class="details__meta">
+            <div>
+              <span class="label" data-i18n="height">Altura</span>
+              <span class="height"></span>
+            </div>
+            <div>
+              <span class="label" data-i18n="weight">Peso</span>
+              <span class="weight"></span>
+            </div>
+          </div>
+
+          <h2 class="section-title" data-i18n="weaknesses">Fraquezas</h2>
+          <div class="details__weaknesses"></div>
+
+          <h2 class="section-title" data-i18n="stats">Stats</h2>
+          <ul class="details__stats"></ul>
+
+          <h2 class="section-title" data-i18n="abilities">Habilidades</h2>
+          <div class="details__abilities"></div>
+
+          <h2 class="section-title" data-i18n="evolution">Evolução</h2>
+          <div class="details__evolution"></div>
+
+          <div class="details__actions">
+            <button class="btn-favorite" type="button" disabled>☆ Favoritar</button>
+            <button class="btn-download btn-download--png" type="button" disabled>⬇ PNG</button>
+            <button class="btn-download btn-download--gif" type="button" disabled>⬇ GIF</button>
+          </div>
+        </section>
       </div>
 
-      <section class="details" aria-live="polite">
-        <div class="details__types"></div>
+      <div class="col col--panels">
+        <section class="favorites">
+          <h2 class="favorites__title" data-i18n="favoritesTitle">⭐ Favoritos</h2>
+          <div class="favorites__list"></div>
+        </section>
 
-        <p class="details__genus"></p>
-        <p class="details__description"></p>
-
-        <div class="details__meta">
-          <div>
-            <span class="label" data-i18n="height">Altura</span>
-            <span class="height"></span>
+        <section class="panel filter">
+          <h2 class="panel__title" data-i18n="exploreTitle">🔎 Explorar</h2>
+          <div class="filter__controls">
+            <select class="filter-type" aria-label="Tipo"></select>
+            <select class="filter-gen" aria-label="Geração"></select>
           </div>
-          <div>
-            <span class="label" data-i18n="weight">Peso</span>
-            <span class="weight"></span>
+          <div class="filter-results grid"></div>
+        </section>
+
+        <section class="panel compare">
+          <h2 class="panel__title" data-i18n="compareTitle">⚔️ Comparar</h2>
+          <div class="compare__controls">
+            <input
+              class="compare-a"
+              type="search"
+              data-i18n-ph="comparePlaceholderA"
+              autocomplete="off"
+            />
+            <input
+              class="compare-b"
+              type="search"
+              data-i18n-ph="comparePlaceholderB"
+              autocomplete="off"
+            />
+            <button class="compare-run" type="button" data-i18n="compareButton">Comparar</button>
           </div>
-        </div>
-
-        <h2 class="section-title" data-i18n="weaknesses">Fraquezas</h2>
-        <div class="details__weaknesses"></div>
-
-        <h2 class="section-title" data-i18n="stats">Stats</h2>
-        <ul class="details__stats"></ul>
-
-        <h2 class="section-title" data-i18n="abilities">Habilidades</h2>
-        <div class="details__abilities"></div>
-
-        <h2 class="section-title" data-i18n="evolution">Evolução</h2>
-        <div class="details__evolution"></div>
-
-        <div class="details__actions">
-          <button class="btn-favorite" type="button" disabled>☆ Favoritar</button>
-          <button class="btn-download btn-download--png" type="button" disabled>⬇ PNG</button>
-          <button class="btn-download btn-download--gif" type="button" disabled>⬇ GIF</button>
-        </div>
-      </section>
-
-      <section class="favorites">
-        <h2 class="favorites__title" data-i18n="favoritesTitle">⭐ Favoritos</h2>
-        <div class="favorites__list"></div>
-      </section>
-
-      <section class="panel filter">
-        <h2 class="panel__title" data-i18n="exploreTitle">🔎 Explorar</h2>
-        <div class="filter__controls">
-          <select class="filter-type" aria-label="Tipo"></select>
-          <select class="filter-gen" aria-label="Geração"></select>
-        </div>
-        <div class="filter-results grid"></div>
-      </section>
-
-      <section class="panel compare">
-        <h2 class="panel__title" data-i18n="compareTitle">⚔️ Comparar</h2>
-        <div class="compare__controls">
-          <input
-            class="compare-a"
-            type="search"
-            data-i18n-ph="comparePlaceholderA"
-            autocomplete="off"
-          />
-          <input
-            class="compare-b"
-            type="search"
-            data-i18n-ph="comparePlaceholderB"
-            autocomplete="off"
-          />
-          <button class="compare-run" type="button" data-i18n="compareButton">Comparar</button>
-        </div>
-        <div class="compare-result"></div>
-      </section>
+          <div class="compare-result"></div>
+        </section>
+      </div>
     </main>
 
     <footer class="site-footer">
