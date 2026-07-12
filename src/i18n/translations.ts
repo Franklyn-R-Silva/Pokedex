@@ -87,6 +87,24 @@ export interface Translation {
   teamPlaceholder: string;
   teamWeaknesses: string;
   teamEmpty: string;
+  battleButton: string;
+  battleTitle: string;
+  battlePickYou: string;
+  battlePickFoe: string;
+  battleNeedTwo: string;
+  battleYourTurn: string;
+  battleSuper: string;
+  battleWeak: string;
+  battleImmune: string;
+  battleFainted: string;
+  battleWins: string;
+  battleAgain: string;
+  battleSwap: string;
+  battleYou: string;
+  battleFoe: string;
+  cards: string;
+  cardsNone: string;
+  cardsHint: string;
   quizTitle: string;
   quizNext: string;
   quizScore: string;
@@ -185,6 +203,24 @@ export const translations: Record<Lang, Translation> = {
     teamPlaceholder: 'Adicionar ao time',
     teamWeaknesses: 'Fraquezas do time',
     teamEmpty: 'Monte um time de até 6',
+    battleButton: '⚔️ Batalhar',
+    battleTitle: '⚔️ Batalha',
+    battlePickYou: 'Escolha o seu Pokémon',
+    battlePickFoe: 'Escolha o oponente',
+    battleNeedTwo: 'Adicione ao menos 2 Pokémon ao time para batalhar.',
+    battleYourTurn: 'Escolha um ataque',
+    battleSuper: 'Super eficaz!',
+    battleWeak: 'Pouco eficaz…',
+    battleImmune: 'Não teve efeito.',
+    battleFainted: 'desmaiou!',
+    battleWins: 'venceu!',
+    battleAgain: 'Jogar de novo',
+    battleSwap: 'Trocar Pokémon',
+    battleYou: 'Você',
+    battleFoe: 'Oponente',
+    cards: 'Cartas',
+    cardsNone: 'Nenhuma carta encontrada para este Pokémon.',
+    cardsHint: 'Cartas do TCG · clique para ampliar',
     quizTitle: '❓ Quem é esse Pokémon?',
     quizNext: 'Próximo',
     quizScore: 'Placar',
@@ -295,6 +331,24 @@ export const translations: Record<Lang, Translation> = {
     teamPlaceholder: 'Add to team',
     teamWeaknesses: 'Team weaknesses',
     teamEmpty: 'Build a team of up to 6',
+    battleButton: '⚔️ Battle',
+    battleTitle: '⚔️ Battle',
+    battlePickYou: 'Choose your Pokémon',
+    battlePickFoe: 'Choose the opponent',
+    battleNeedTwo: 'Add at least 2 Pokémon to your team to battle.',
+    battleYourTurn: 'Choose an attack',
+    battleSuper: 'Super effective!',
+    battleWeak: 'Not very effective…',
+    battleImmune: 'It had no effect.',
+    battleFainted: 'fainted!',
+    battleWins: 'wins!',
+    battleAgain: 'Play again',
+    battleSwap: 'Change Pokémon',
+    battleYou: 'You',
+    battleFoe: 'Opponent',
+    cards: 'Cards',
+    cardsNone: 'No cards found for this Pokémon.',
+    cardsHint: 'TCG cards · click to enlarge',
     quizTitle: "❓ Who's that Pokémon?",
     quizNext: 'Next',
     quizScore: 'Score',

@@ -1900,3 +1900,251 @@ html.dark .ctable .is-higher {
 .quiz-next[hidden] {
   display: none;
 }
+
+/* ---------- Cartas do TCG ---------- */
+
+.tcg-hint {
+  font-size: 0.72rem;
+  text-align: left;
+  margin-bottom: var(--space-3);
+}
+
+.tcg-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+  gap: var(--space-2);
+}
+
+.tcg-card {
+  padding: 0;
+  border: none;
+  background: none;
+  border-radius: 6px;
+  cursor: pointer;
+  line-height: 0;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.tcg-card img {
+  width: 100%;
+  border-radius: 6px;
+  box-shadow: var(--shadow-sm);
+}
+
+.tcg-card:hover {
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: var(--shadow);
+}
+
+/* Cartas raras ganham um brilho holográfico ao passar o mouse. */
+.tcg-card.is-holo:hover img {
+  box-shadow: 0 0 14px 2px color-mix(in srgb, var(--type-color) 60%, transparent);
+  filter: saturate(1.15) contrast(1.05);
+}
+
+/* ---------- Batalha (mini-jogo) ---------- */
+
+.btn-battle {
+  margin-left: auto;
+  padding: 6px 12px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--type-color);
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: filter 0.2s ease;
+}
+
+.btn-battle:hover {
+  filter: brightness(1.08);
+}
+
+.battle-box {
+  max-width: 460px;
+}
+
+.battle-title {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  text-align: center;
+  margin-bottom: var(--space-4);
+}
+
+.battle-note {
+  text-align: center;
+  margin-bottom: var(--space-3);
+}
+
+.battle-pick {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
+}
+
+.battle-pick__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.battle-pick__item:hover:not(:disabled) {
+  border-color: var(--type-color);
+  transform: translateY(-2px);
+}
+
+.battle-pick__item.is-you {
+  border-color: var(--type-color);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--type-color) 30%, transparent);
+}
+
+.battle-pick__item img {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+}
+
+.battle-pick__name {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.battle-arena {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.battle-vs {
+  font-family: var(--font-display);
+  font-weight: 800;
+  color: var(--text-muted);
+}
+
+.battle-side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.battle-side__role {
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+.battle-side__name {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.battle-side__img {
+  width: 76px;
+  height: 76px;
+  object-fit: contain;
+}
+
+.battle-hp {
+  width: 100%;
+  height: 9px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.battle-hp__fill {
+  height: 100%;
+  width: 100%;
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+.battle-hp__fill.is-low {
+  background: #e05252 !important;
+}
+
+.battle-hp__text {
+  font-size: 0.66rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.battle-moves {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.battle-move {
+  padding: 9px;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.8rem;
+  cursor: pointer;
+  text-transform: capitalize;
+  transition: filter 0.15s ease;
+}
+
+.battle-move:hover {
+  filter: brightness(1.08);
+}
+
+.battle-log {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-height: 60px;
+  padding: var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  text-align: left;
+}
+
+.battle-log__line {
+  font-size: 0.76rem;
+  color: var(--text);
+  text-transform: capitalize;
+}
+
+.battle-result {
+  grid-column: 1 / -1;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 800;
+  text-align: center;
+  text-transform: capitalize;
+}
+
+.battle-again {
+  grid-column: 1 / -1;
+  padding: 10px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--type-color);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}

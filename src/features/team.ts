@@ -19,6 +19,7 @@ interface TeamOptions {
 export interface TeamControls {
   add: (nameOrId: string) => Promise<void>;
   refresh: () => void;
+  getTeam: () => Pokemon[];
 }
 
 function loadNames(): string[] {
@@ -144,5 +145,5 @@ export function setupTeam({ form, input, listEl, resultEl, onSelect }: TeamOptio
   });
   render();
 
-  return { add, refresh: render };
+  return { add, refresh: render, getTeam: () => team.slice() };
 }

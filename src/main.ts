@@ -7,6 +7,7 @@ import type { FilterControls } from './features/filter';
 import type { CompareControls } from './features/compare';
 import type { TeamControls } from './features/team';
 import type { QuizControls } from './features/quiz';
+import type { BattleControls } from './features/battle';
 import {
   fetchPokemon,
   fetchAllPokemonNames,
@@ -21,6 +22,7 @@ import {
   MAX_POKEMON,
 } from './services/pokeapi';
 import { translateToPt } from './services/translate';
+import { fetchCards, isHolo } from './services/tcg';
 import {
   getPokemonSprite,
   getStaticImage,
@@ -42,6 +44,7 @@ import { setupFilter } from './features/filter';
 import { setupCompare } from './features/compare';
 import { setupTeam } from './features/team';
 import { setupQuiz } from './features/quiz';
+import { setupBattle } from './features/battle';
 import { radarSvg } from './features/radar';
 import { initLang, getLang, setLang, t } from './i18n';
 
@@ -125,6 +128,7 @@ const detailsRadar = qs<HTMLElement>('.details__radar');
 const statsContainer = qs<HTMLElement>('.details__stats');
 const abilitiesContainer = qs<HTMLElement>('.details__abilities');
 const evolutionContainer = qs<HTMLElement>('.details__evolution');
+const cardsContainer = qs<HTMLElement>('.details__cards');
 const details = qs<HTMLElement>('.details');
 const favoritesList = qs<HTMLElement>('.favorites__list');
 
@@ -139,6 +143,8 @@ let filterCtl: FilterControls | null = null;
 let compareCtl: CompareControls | null = null;
 let teamCtl: TeamControls | null = null;
 let quizCtl: QuizControls | null = null;
+let battleCtl: BattleControls | null = null;
+let cardsLoadedFor: number | null = null;
 
 function setLoading(): void {
   pokemonName.textContent = t('loading');
@@ -533,6 +539,58 @@ async function renderEncounters(url: string, reqId: number): Promise<void> {
   locationsContainer.appendChild(chips);
 }
 
+// Abre uma única carta (imagem grande) reaproveitando o lightbox.
+function openCardImage(url: string, alt: string): void {
+  lightboxImg.src = url;
+  lightboxImg.alt = alt;
+  lightboxThumbs.innerHTML = '';
+  showModal(lightbox);
+}
+
+// Carrega as cartas do TCG sob demanda (só quando a aba "Cartas" é aberta).
+async function renderCards(): Promise<void> {
+  if (!currentPokemon || cardsLoadedFor === currentPokemon.id) return;
+  const reqId = requestId;
+  const dexId = currentPokemon.id;
+  cardsLoadedFor = dexId;
+
+  cardsContainer.innerHTML = '<div class="skeleton"></div><div class="skeleton skeleton--sm"></div>';
+  const cards = await fetchCards(dexId);
+  if (reqId !== requestId) return;
+
+  cardsContainer.innerHTML = '';
+  if (cards.length === 0) {
+    cardsLoadedFor = null; // permite tentar de novo (ex.: API estava fora)
+    const muted = document.createElement('span');
+    muted.className = 'muted';
+    muted.textContent = t('cardsNone');
+    cardsContainer.appendChild(muted);
+    return;
+  }
+
+  const hint = document.createElement('p');
+  hint.className = 'tcg-hint muted';
+  hint.textContent = t('cardsHint');
+
+  const grid = document.createElement('div');
+  grid.className = 'tcg-gallery';
+  cards.forEach((card) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'tcg-card';
+    if (isHolo(card.rarity)) btn.classList.add('is-holo');
+    const img = document.createElement('img');
+    img.src = card.small;
+    img.alt = `${card.name}${card.setName ? ` · ${card.setName}` : ''}`;
+    img.loading = 'lazy';
+    btn.appendChild(img);
+    btn.addEventListener('click', () => openCardImage(card.large, img.alt));
+    grid.appendChild(btn);
+  });
+
+  cardsContainer.append(hint, grid);
+}
+
 async function renderEvolution(speciesUrl: string, reqId: number): Promise<void> {
   evolutionContainer.innerHTML = skeletonRows(1);
 
@@ -659,6 +717,10 @@ function updateUrl(id: number): void {
 function renderDetails(data: Pokemon, reqId: number): void {
   const primaryType = data.types[0]?.type?.name ?? 'normal';
   document.documentElement.style.setProperty('--type-color', getTypeColor(primaryType));
+
+  // Cartas TCG recarregam sob demanda para o novo Pokémon.
+  cardsLoadedFor = null;
+  cardsContainer.innerHTML = '';
 
   renderTypes(data.types);
   heightValue.textContent = `${(data.height / 10).toFixed(1)} m`;
@@ -1076,6 +1138,7 @@ tabButtons.forEach((btn) => {
       b.setAttribute('aria-selected', String(active));
     });
     tabPanels.forEach((panel) => panel.classList.toggle('is-active', panel.dataset.panel === name));
+    if (name === 'cards') void renderCards();
   });
 });
 
@@ -1131,6 +1194,15 @@ setupAutocomplete({
   getNames: () => allNames,
   onSelect: (name) => void teamCtl?.add(name),
 });
+
+// Mini-jogo de batalha por turnos usando os Pokémon do time.
+battleCtl = setupBattle({
+  modal: qs<HTMLElement>('.battle-modal'),
+  content: qs<HTMLElement>('.battle-content'),
+  getTeam: () => teamCtl?.getTeam() ?? [],
+  show: showModal,
+});
+qs<HTMLButtonElement>('.btn-battle').addEventListener('click', () => battleCtl?.open());
 
 quizCtl = setupQuiz({
   container: qs<HTMLElement>('.quiz-body'),

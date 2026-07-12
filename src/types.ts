@@ -172,4 +172,14 @@ export interface Favorite {
   name: string;
 }
 
+/** Carta do TCG (Pokémon TCG API — api.pokemontcg.io), campos usados na galeria. */
+export interface TcgCard {
+  id: string;
+  name: string;
+  small: string;
+  large: string;
+  rarity: string;
+  setName: string;
+}
+
 export type Lang = 'pt' | 'en';
