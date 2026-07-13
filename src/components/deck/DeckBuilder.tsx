@@ -1,13 +1,14 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useDeck } from '../../hooks/useDeck';
 import { deckSize, DECK_SIZE } from '../../domain/deck';
-import { META_DECKS } from '../../domain/metaDecks';
+import { META_DECKS, META_SOURCE } from '../../domain/metaDecks';
 import { fetchCardsByNames } from '../../services/tcg';
 import { useI18n } from '../../i18n/I18nContext';
 import { dl } from './labels';
 import { Catalog } from './Catalog';
 import { DeckList } from './DeckList';
 import { DeckAnalysis } from './DeckAnalysis';
+import { DeckView } from './DeckView';
 
 type MobileTab = 'catalog' | 'deck' | 'analysis';
 
@@ -17,8 +18,12 @@ export function DeckBuilder({ onClose }: { onClose: () => void }) {
   const { entries, add, addMany, remove, clear } = useDeck();
   const [mobileTab, setMobileTab] = useState<MobileTab>('deck');
   const [building, setBuilding] = useState(false);
+  const [viewing, setViewing] = useState(false);
   const [progress, setProgress] = useState({ done: 0, total: 0 });
   const size = deckSize(entries);
+
+  // Decks ordenados por popularidade no meta (o 1º é "o mais usado").
+  const metaDecks = useMemo(() => [...META_DECKS].sort((a, b) => b.share - a.share), []);
 
   // Carrega um arquétipo do meta buscando cada carta pelo nome na API.
   const loadMeta = async (id: string) => {
@@ -50,6 +55,14 @@ export function DeckBuilder({ onClose }: { onClose: () => void }) {
         <span className={`deck-count ${size === DECK_SIZE ? 'is-full' : ''}`}>
           {size} / {DECK_SIZE}
         </span>
+        <button
+          className="deck-view-btn"
+          type="button"
+          onClick={() => setViewing(true)}
+          disabled={entries.length === 0}
+        >
+          👁 {dl(lang, 'viewDeck')}
+        </button>
         <button className="deck-clear" type="button" onClick={clear}>
           {dl(lang, 'clear')}
         </button>
@@ -57,15 +70,18 @@ export function DeckBuilder({ onClose }: { onClose: () => void }) {
 
       <div className="deck-meta">
         <span className="deck-meta__label">{dl(lang, 'meta')}</span>
-        {META_DECKS.map((d) => (
+        {metaDecks.map((d, i) => (
           <button
             key={d.id}
             type="button"
-            className="deck-meta__btn"
+            className={`deck-meta__btn ${i === 0 ? 'is-top' : ''}`}
             disabled={building}
+            title={`${d.share}% ${dl(lang, 'ofMeta')}`}
             onClick={() => void loadMeta(d.id)}
           >
+            {i === 0 && <span className="deck-meta__crown">🔥 {dl(lang, 'mostUsed')}</span>}
             {d.name}
+            <span className="deck-meta__share">{d.share}%</span>
           </button>
         ))}
         {building && (
@@ -110,6 +126,19 @@ export function DeckBuilder({ onClose }: { onClose: () => void }) {
           <DeckAnalysis entries={entries} />
         </section>
       </div>
+
+      <p className="deck-source muted">
+        {dl(lang, 'source')}{' '}
+        <a href="https://pokemontcg.io/" target="_blank" rel="noopener">
+          Pokémon TCG API
+        </a>{' '}
+        · {dl(lang, 'metaArchetypes')}{' '}
+        <a href={META_SOURCE.url} target="_blank" rel="noopener">
+          {META_SOURCE.label}
+        </a>
+      </p>
+
+      {viewing && <DeckView entries={entries} lang={lang} onClose={() => setViewing(false)} />}
     </div>
   );
 }

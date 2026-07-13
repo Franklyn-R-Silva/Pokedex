@@ -25,10 +25,39 @@ const L = {
   meta: ['Decks do meta:', 'Meta decks:'],
   buildingMeta: ['Montando deck…', 'Building deck…'],
   expertTips: ['Sugestões do especialista', 'Expert suggestions'],
+  strengths: ['Forças do deck', 'Deck strengths'],
+  mostUsed: ['Mais usado', 'Most used'],
+  ofMeta: ['do meta', 'of meta'],
+  source: ['Cartas e preços via', 'Cards & prices via'],
+  metaArchetypes: ['Arquétipos do meta via', 'Meta archetypes via'],
+  clearFilters: ['Limpar filtros', 'Clear filters'],
+  viewDeck: ['Ver deck', 'View deck'],
+  close: ['Fechar', 'Close'],
 } as const;
 
 export function dl(lang: Lang, key: keyof typeof L): string {
   return L[key][lang === 'pt' ? 0 : 1];
+}
+
+// Rótulos dos eixos do radar de forças.
+export function strengthLabel(lang: Lang, key: string): string {
+  const pt = lang === 'pt';
+  switch (key) {
+    case 'consistency':
+      return pt ? 'Consistência' : 'Consistency';
+    case 'power':
+      return pt ? 'Poder' : 'Power';
+    case 'hp':
+      return pt ? 'HP/Defesa' : 'HP/Defense';
+    case 'energy':
+      return pt ? 'Energia' : 'Energy';
+    case 'speed':
+      return pt ? 'Velocidade' : 'Speed';
+    case 'support':
+      return pt ? 'Suporte' : 'Support';
+    default:
+      return key;
+  }
 }
 
 // Texto dos apontamentos da análise (por código), com valor interpolado.

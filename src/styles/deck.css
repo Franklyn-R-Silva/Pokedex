@@ -49,6 +49,111 @@
   cursor: pointer;
 }
 
+.deck-view-btn {
+  padding: 7px 12px;
+  border: 1px solid var(--type-color);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--type-color) 12%, var(--surface));
+  color: var(--type-color);
+  font-weight: 800;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.deck-view-btn:hover:not(:disabled) {
+  filter: brightness(1.05);
+}
+
+.deck-view-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ---------- Visualização do deck (grade de cartas) ---------- */
+.deckview {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: #12141c;
+  background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.05) 1px, transparent 0);
+  background-size: 22px 22px;
+  overflow-y: auto;
+  padding: 0 var(--space-4) var(--space-6);
+}
+
+.deckview__bar {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  margin-bottom: var(--space-3);
+  background: linear-gradient(#12141c 78%, transparent);
+}
+
+.deckview__title {
+  font-family: var(--font-display);
+  color: #fff;
+  font-size: 1rem;
+}
+
+.deckview__bar .deck-count {
+  margin-left: auto;
+}
+
+.deckview__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--space-3);
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.deckview__card {
+  position: relative;
+  line-height: 0;
+  border-radius: 10px;
+  transition: transform 0.15s ease;
+}
+
+.deckview__card:hover {
+  transform: translateY(-4px) scale(1.02);
+}
+
+.deckview__card img {
+  width: 100%;
+  border-radius: 10px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+}
+
+.deckview__qty {
+  position: absolute;
+  left: 50%;
+  bottom: -6px;
+  transform: translateX(-50%);
+  min-width: 34px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: #e0322f;
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.05rem;
+  text-align: center;
+  line-height: 1;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.45);
+  clip-path: polygon(15% 0, 85% 0, 100% 50%, 85% 100%, 15% 100%, 0 50%);
+}
+
+.deckview__empty {
+  text-align: center;
+  color: #cfd6e4;
+  padding: var(--space-6) 0;
+}
+
 .deck-count {
   margin-left: auto;
   font-family: var(--font-display);
@@ -137,6 +242,9 @@
 
 .deck-chip,
 .deck-type {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   padding: 5px 10px;
   border: 1px solid var(--border);
   border-radius: 999px;
@@ -145,6 +253,9 @@
   font-size: 0.72rem;
   font-weight: 700;
   cursor: pointer;
+  transition:
+    background 0.12s ease,
+    border-color 0.12s ease;
 }
 
 .deck-chip.is-active,
@@ -154,11 +265,31 @@
   color: #fff;
 }
 
+.deck-chip--clear {
+  color: #e05252;
+  border-color: color-mix(in srgb, #e05252 40%, var(--border));
+}
+
+.deck-type__ic {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+}
+
+.deck-type.is-active .deck-type__ic {
+  background: rgba(255, 255, 255, 0.25) !important;
+}
+
 .deck-results {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(74px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
   gap: var(--space-2);
-  max-height: 420px;
+  max-height: 500px;
   overflow-y: auto;
 }
 
@@ -324,6 +455,54 @@
   fill: var(--text);
 }
 
+/* Radar de forças do deck */
+.deck-chart--radar {
+  flex: 1 1 100%;
+  margin-bottom: var(--space-2);
+}
+
+.deck-radar {
+  width: 100%;
+  max-width: 300px;
+  display: block;
+  margin: 0 auto;
+  overflow: visible;
+}
+
+.deck-radar__ring {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 1;
+}
+
+.deck-radar__axis {
+  stroke: var(--border);
+  stroke-width: 1;
+}
+
+.deck-radar__area {
+  fill: color-mix(in srgb, var(--type-color) 32%, transparent);
+  stroke: var(--type-color);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.deck-radar__dot {
+  fill: var(--type-color);
+}
+
+.deck-radar__label {
+  font-size: 10px;
+  font-weight: 700;
+  fill: var(--text);
+}
+
+.deck-radar__val {
+  font-size: 9px;
+  font-weight: 800;
+  fill: var(--text-muted);
+}
+
 .deck-legend {
   display: flex;
   flex-direction: column;
@@ -460,6 +639,46 @@
 .deck-meta__btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.deck-meta__share {
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--type-color) 18%, transparent);
+  color: var(--type-color);
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+/* Deck mais usado no meta — destaque */
+.deck-meta__btn.is-top {
+  position: relative;
+  border-color: var(--type-color);
+  background: color-mix(in srgb, var(--type-color) 10%, var(--surface-2));
+}
+
+.deck-meta__crown {
+  margin-right: 6px;
+  font-size: 0.66rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: var(--type-color);
+}
+
+/* Atribuição da fonte dos dados */
+.deck-source {
+  margin-top: var(--space-4);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border);
+  font-size: 0.74rem;
+  text-align: center;
+}
+
+.deck-source a {
+  color: var(--type-color);
+  font-weight: 700;
 }
 
 /* Ver detalhe da carta no catálogo/lista */

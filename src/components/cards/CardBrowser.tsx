@@ -201,6 +201,13 @@ export function CardBrowser({ onClose }: { onClose: () => void }) {
           </div>
         </>
       )}
+
+      <p className="cardbrowser__source muted">
+        {L(lang, 'Cartas e preços via', 'Cards & prices via')}{' '}
+        <a href="https://pokemontcg.io/" target="_blank" rel="noopener">
+          Pokémon TCG API
+        </a>
+      </p>
     </div>
   );
 }

@@ -44,6 +44,18 @@ interface ApiCard {
   };
 }
 
+// GET com retry em 429 (rate limit) — a API gratuita é restritiva sem chave.
+async function fetchJson(url: string): Promise<Response> {
+  const headers: Record<string, string> = {};
+  if (API_KEY) headers['X-Api-Key'] = API_KEY;
+  let res = await fetch(url, { headers });
+  for (let attempt = 0; attempt < 3 && res.status === 429; attempt++) {
+    await new Promise((r) => setTimeout(r, 700 * (attempt + 1)));
+    res = await fetch(url, { headers });
+  }
+  return res;
+}
+
 function loadStore(): Record<string, TcgCard[]> {
   try {
     return JSON.parse(localStorage.getItem(STORE_KEY) ?? '{}') as Record<string, TcgCard[]>;
@@ -180,60 +192,125 @@ export async function searchCards(
   }
 }
 
-const NAMES_STORE = 'pokedex-tcg-names';
+const BYNAME_STORE = 'pokedex-tcg-byname';
+let bynameMem: Map<string, TcgCard> | null = null;
 
-/** Busca várias cartas por nome em UMA query (name:"A" OR name:"B" …) e devolve
- *  um mapa nome→melhor carta (match exato preferido). Cacheado em memória +
- *  localStorage — a importação de um meta-deck vira 1 request (ou 0 no reuso). */
+function loadByName(): Map<string, TcgCard> {
+  if (bynameMem) return bynameMem;
+  try {
+    const obj = JSON.parse(localStorage.getItem(BYNAME_STORE) ?? '{}') as Record<string, TcgCard>;
+    bynameMem = new Map(Object.entries(obj));
+  } catch {
+    bynameMem = new Map();
+  }
+  return bynameMem;
+}
+
+function saveByName(map: Map<string, TcgCard>): void {
+  try {
+    localStorage.setItem(BYNAME_STORE, JSON.stringify(Object.fromEntries(map)));
+  } catch {
+    /* cota cheia: ignora */
+  }
+}
+
+/** Busca cartas por nome devolvendo um mapa nome→melhor carta (match exato
+ *  preferido). Cache **por carta** (memória + localStorage): staples repetidos
+ *  entre decks são buscados uma única vez, então só os nomes ainda ausentes vão
+ *  à API (em lotes). Reimportar um deck ou carregar outro que compartilhe cartas
+ *  fica instantâneo (0 requests). Ver prefetchCardsByNames para aquecer tudo. */
 export async function fetchCardsByNames(names: string[]): Promise<Map<string, TcgCard>> {
   const unique = [...new Set(names.map((n) => n.trim()).filter(Boolean))];
-  const cacheKey = unique.map((n) => n.toLowerCase()).sort().join('|');
-
+  const cache = loadByName();
   const result = new Map<string, TcgCard>();
-  const assign = (cards: TcgCard[]) => {
-    for (const name of unique) {
+  const missing: string[] = [];
+
+  for (const name of unique) {
+    const nl = name.toLowerCase();
+    const hit = cache.get(nl);
+    if (hit) result.set(nl, hit);
+    else missing.push(name);
+  }
+  if (missing.length === 0) return result;
+
+  // Chave do truncamento: um nome com muitas edições enche o pageSize (250) e
+  // "engole" os demais do lote OR. Energia Básica é o pior caso (centenas de
+  // reprints), então busca-se cada uma sozinha; o resto (≤ ~30 edições/nome)
+  // vai em OR de lotes pequenos (6 → no máx. ~180 resultados, sem truncar).
+  const before = result.size;
+  const basics = missing.filter((n) => BASIC_ENERGY.test(n));
+  const others = missing.filter((n) => !BASIC_ENERGY.test(n));
+
+  // Energias básicas — individuais, com concorrência leve.
+  const POOL = 4;
+  for (let i = 0; i < basics.length; i += POOL) {
+    const batch = basics.slice(i, i + POOL);
+    const cards = await Promise.all(batch.map((n) => fetchOneByName(n)));
+    batch.forEach((name, j) => {
+      const card = cards[j];
+      if (card) {
+        result.set(name.toLowerCase(), card);
+        cache.set(name.toLowerCase(), card);
+      }
+    });
+  }
+
+  // Demais nomes — OR em lotes pequenos (à prova de truncamento).
+  const CHUNK = 6;
+  for (let i = 0; i < others.length; i += CHUNK) {
+    const chunk = others.slice(i, i + CHUNK);
+    if (i > 0) await new Promise((r) => setTimeout(r, 100));
+    let cards: TcgCard[] = [];
+    try {
+      const q = chunk.map((n) => `name:"${n.replace(/"/g, '')}"`).join(' OR ');
+      const url = `${API}?q=${encodeURIComponent(q)}&orderBy=-set.releaseDate&pageSize=250&select=${SELECT}`;
+      const res = await fetchJson(url);
+      if (res.ok) {
+        const json = (await res.json()) as { data?: ApiCard[] };
+        cards = (json.data ?? []).filter((c) => c.images?.small).map(toCard);
+      }
+    } catch {
+      /* lote falhou: nomes ficam sem resolver */
+    }
+    for (const name of chunk) {
       const nl = name.toLowerCase();
       const exact = cards.find((c) => c.name.toLowerCase() === nl);
       const partial = exact ?? cards.find((c) => c.name.toLowerCase().startsWith(nl));
-      if (partial) result.set(nl, partial);
+      if (partial) {
+        result.set(nl, partial);
+        cache.set(nl, partial);
+      }
     }
-  };
-
-  // Cache persistente por conjunto de nomes.
-  try {
-    const store = JSON.parse(localStorage.getItem(NAMES_STORE) ?? '{}') as Record<string, TcgCard[]>;
-    if (store[cacheKey]) {
-      assign(store[cacheKey]);
-      return result;
-    }
-  } catch {
-    /* ignora */
   }
 
-  try {
-    const q = unique.map((n) => `name:"${n.replace(/"/g, '')}"`).join(' OR ');
-    const url = `${API}?q=${encodeURIComponent(q)}&pageSize=250&select=${SELECT}`;
-    const headers: Record<string, string> = {};
-    if (API_KEY) headers['X-Api-Key'] = API_KEY;
+  if (result.size > before) saveByName(cache);
+  return result;
+}
 
-    const response = await fetch(url, { headers });
-    if (!response.ok) return result;
-    const json = (await response.json()) as { data?: ApiCard[] };
+const BASIC_ENERGY =
+  /^(Grass|Fire|Water|Lightning|Psychic|Fighting|Darkness|Metal|Fairy|Dragon) Energy$/i;
+
+/** Resolve UM nome → melhor carta (match exato preferido, edição mais recente). */
+async function fetchOneByName(name: string): Promise<TcgCard | null> {
+  const nl = name.toLowerCase();
+  try {
+    const q = `name:"${name.replace(/"/g, '')}"`;
+    const url = `${API}?q=${encodeURIComponent(q)}&orderBy=-set.releaseDate&pageSize=6&select=${SELECT}`;
+    const res = await fetchJson(url);
+    if (!res.ok) return null;
+    const json = (await res.json()) as { data?: ApiCard[] };
     const cards = (json.data ?? []).filter((c) => c.images?.small).map(toCard);
-    assign(cards);
-
-    // Guarda só as cartas escolhidas (uma por nome) — leve para o localStorage.
-    try {
-      const store = JSON.parse(localStorage.getItem(NAMES_STORE) ?? '{}') as Record<string, TcgCard[]>;
-      store[cacheKey] = [...result.values()];
-      localStorage.setItem(NAMES_STORE, JSON.stringify(store));
-    } catch {
-      /* cota */
-    }
-    return result;
+    const exact = cards.find((c) => c.name.toLowerCase() === nl);
+    return exact ?? cards.find((c) => c.name.toLowerCase().startsWith(nl)) ?? null;
   } catch {
-    return result;
+    return null;
   }
+}
+
+/** Aquecimento em background: garante que todas as cartas dos nomes informados
+ *  estejam no cache por-carta, para que importações futuras sejam instantâneas. */
+export async function prefetchCardsByNames(names: string[]): Promise<void> {
+  await fetchCardsByNames(names);
 }
 
 /** Rarezas "brilhantes" que recebem o efeito holográfico no hover. */

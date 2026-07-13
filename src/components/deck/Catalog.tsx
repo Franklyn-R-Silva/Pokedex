@@ -1,24 +1,27 @@
 import { useState, useEffect } from 'react';
 import type { TcgCard } from '../../types';
 import { searchCards } from '../../services/tcg';
+import { getTypeColor } from '../../domain/pokemonTypes';
 import { useI18n } from '../../i18n/I18nContext';
 import { useModal } from '../../context/ModalContext';
 import { CardDetail } from '../details/CardDetail';
+import { TypeSymbol } from '../TypeIcon';
 import { dl } from './labels';
 
 const SUPERTYPES = ['', 'Pokémon', 'Trainer', 'Energy'] as const;
-const TYPES = [
-  'Grass',
-  'Fire',
-  'Water',
-  'Lightning',
-  'Psychic',
-  'Fighting',
-  'Darkness',
-  'Metal',
-  'Fairy',
-  'Dragon',
-  'Colorless',
+// Tipos de energia do TCG → tipo Pokémon (para reaproveitar cor + ícone SVG).
+const TCG_TYPES: { tcg: string; poke: string }[] = [
+  { tcg: 'Grass', poke: 'grass' },
+  { tcg: 'Fire', poke: 'fire' },
+  { tcg: 'Water', poke: 'water' },
+  { tcg: 'Lightning', poke: 'electric' },
+  { tcg: 'Psychic', poke: 'psychic' },
+  { tcg: 'Fighting', poke: 'fighting' },
+  { tcg: 'Darkness', poke: 'dark' },
+  { tcg: 'Metal', poke: 'steel' },
+  { tcg: 'Fairy', poke: 'fairy' },
+  { tcg: 'Dragon', poke: 'dragon' },
+  { tcg: 'Colorless', poke: 'normal' },
 ];
 
 // Catálogo: busca cartas (nome + supertipo + tipo) e adiciona ao deck no clique.
@@ -50,6 +53,19 @@ export function Catalog({ onAdd }: { onAdd: (card: TcgCard) => void }) {
   const labelFor = (st: string) =>
     st === '' ? dl(lang, 'all') : st === 'Pokémon' ? dl(lang, 'pokemon') : st === 'Trainer' ? dl(lang, 'trainer') : dl(lang, 'energy');
 
+  // Treinadores não têm tipo de energia — ao escolhê-los, limpa o filtro de tipo.
+  const pickSupertype = (st: string) => {
+    setSupertype(st);
+    if (st === 'Trainer') setType('');
+  };
+  const showTypes = supertype !== 'Trainer';
+  const hasFilters = Boolean(name || supertype || type);
+  const clearFilters = () => {
+    setName('');
+    setSupertype('');
+    setType('');
+  };
+
   return (
     <div className="deck-catalog">
       <input
@@ -66,24 +82,39 @@ export function Catalog({ onAdd }: { onAdd: (card: TcgCard) => void }) {
             key={st || 'all'}
             type="button"
             className={`deck-chip ${supertype === st ? 'is-active' : ''}`}
-            onClick={() => setSupertype(st)}
+            onClick={() => pickSupertype(st)}
           >
             {labelFor(st)}
           </button>
         ))}
-      </div>
-      <div className="deck-types">
-        {TYPES.map((tp) => (
-          <button
-            key={tp}
-            type="button"
-            className={`deck-type ${type === tp ? 'is-active' : ''}`}
-            onClick={() => setType(type === tp ? '' : tp)}
-          >
-            {tp}
+        {hasFilters && (
+          <button type="button" className="deck-chip deck-chip--clear" onClick={clearFilters}>
+            ✕ {dl(lang, 'clearFilters')}
           </button>
-        ))}
+        )}
       </div>
+      {showTypes && (
+        <div className="deck-types">
+          {TCG_TYPES.map(({ tcg, poke }) => {
+            const active = type === tcg;
+            return (
+              <button
+                key={tcg}
+                type="button"
+                className={`deck-type ${active ? 'is-active' : ''}`}
+                style={active ? { background: getTypeColor(poke), borderColor: getTypeColor(poke) } : undefined}
+                onClick={() => setType(active ? '' : tcg)}
+                title={tcg}
+              >
+                <span className="deck-type__ic" style={{ background: getTypeColor(poke) }}>
+                  <TypeSymbol type={poke} size={12} />
+                </span>
+                {tcg}
+              </button>
+            );
+          })}
+        </div>
+      )}
       <div className="deck-results">
         {cards === null && (
           <div className="tcg-loading">

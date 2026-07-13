@@ -33,6 +33,15 @@ export interface DeckAnalysis {
   standardLegal: boolean;
   expandedLegal: boolean;
   illegalStandard: number;
+  /** Perfil de forças (0–100) para o radar: no que o deck é forte. */
+  strengths: DeckStrength[];
+}
+
+export type StrengthKey = 'consistency' | 'power' | 'hp' | 'energy' | 'speed' | 'support';
+
+export interface DeckStrength {
+  key: StrengthKey;
+  value: number;
 }
 
 export const DECK_SIZE = 60;
@@ -68,16 +77,31 @@ export function analyzeDeck(entries: DeckEntry[]): DeckAnalysis {
   const costCurve: number[] = [0, 0, 0, 0, 0]; // custos 0..4+
   const names = new Set<string>();
   const issues: DeckIssue[] = [];
+  // Métricas para o perfil de forças (radar).
+  let hpSum = 0;
+  let hpCount = 0;
+  let maxDamage = 0;
+  let totalAttacks = 0;
+  let lowCostAttacks = 0; // ataques de custo ≤ 2 (mais rápidos)
 
   for (const { card, count } of entries) {
     names.add(card.name.toLowerCase());
     if (card.supertype === 'Pokémon') {
       pokemon += count;
+      const hp = parseInt(card.hp, 10);
+      if (hp) {
+        hpSum += hp * count;
+        hpCount += count;
+      }
       if (card.subtypes.includes('Basic')) basics += count;
       card.types.forEach((tp) => neededTypes.add(tp));
       card.attacks.forEach((atk) => {
         const cost = Math.min(4, atk.cost.length);
         costCurve[cost] += count;
+        totalAttacks += count;
+        if (atk.cost.length <= 2) lowCostAttacks += count;
+        const dmg = parseInt((atk.damage || '').replace(/\D/g, ''), 10);
+        if (dmg && dmg > maxDamage) maxDamage = dmg;
       });
     } else if (card.supertype === 'Trainer') {
       trainer += count;
@@ -152,6 +176,22 @@ export function analyzeDeck(entries: DeckEntry[]): DeckAnalysis {
     tips.push({ level: 'ok', code: 'tipSolid' });
   }
 
+  // Perfil de forças (0–100) — heurístico, para o radar "no que o deck é forte".
+  const clamp = (n: number): number => Math.max(0, Math.min(100, Math.round(n)));
+  const avgHp = hpCount ? hpSum / hpCount : 0;
+  const lowShare = totalAttacks ? lowCostAttacks / totalAttacks : 0;
+  const strengths: DeckStrength[] =
+    pokemon === 0
+      ? []
+      : [
+          { key: 'consistency', value: clamp(supporters * 9 + trainer * 1.2) },
+          { key: 'power', value: clamp(maxDamage / 3.3) },
+          { key: 'hp', value: clamp((avgHp - 40) / 2.6) },
+          { key: 'energy', value: clamp(energy * 6) },
+          { key: 'speed', value: clamp(basics * 5 + lowShare * 50) },
+          { key: 'support', value: clamp(trainer * 3) },
+        ];
+
   // Legalidade de formato: todas as cartas precisam ser legais no formato.
   const illegalStandard = entries.filter((e) => !e.card.legalStandard).length;
   const standardLegal = entries.length > 0 && illegalStandard === 0;
@@ -174,5 +214,6 @@ export function analyzeDeck(entries: DeckEntry[]): DeckAnalysis {
     standardLegal,
     expandedLegal,
     illegalStandard,
+    strengths,
   };
 }

@@ -2,6 +2,7 @@ import type { DeckEntry } from '../../domain/deck';
 import { analyzeDeck } from '../../domain/deck';
 import { useI18n } from '../../i18n/I18nContext';
 import { dl, issueText } from './labels';
+import { DeckRadar } from './DeckRadar';
 
 const COLORS = { pokemon: '#ef5350', trainer: '#42a5f5', energy: '#66bb6a' };
 const ICON = { ok: '✔', warn: '⚠', error: '✖' };
@@ -75,6 +76,13 @@ export function DeckAnalysis({ entries }: { entries: DeckEntry[] }) {
           </span>
         )}
       </div>
+
+      {a.strengths.length > 0 && (
+        <div className="deck-chart deck-chart--radar">
+          <h4>{dl(lang, 'strengths')}</h4>
+          <DeckRadar data={a.strengths} lang={lang} />
+        </div>
+      )}
 
       <div className="deck-charts">
         <div className="deck-chart">
