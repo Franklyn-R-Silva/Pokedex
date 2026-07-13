@@ -8,7 +8,9 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 10px clamp(12px, 4vw, 28px);
+  /* Respeita o notch/área segura no topo e nas laterais (iOS). */
+  padding: max(10px, var(--safe-t)) max(clamp(12px, 4vw, 28px), var(--safe-r)) 10px
+    max(clamp(12px, 4vw, 28px), var(--safe-l));
   background: color-mix(in srgb, var(--surface) 78%, transparent);
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
@@ -36,8 +38,103 @@
 }
 
 .topbar__controls {
+  position: relative;
   display: flex;
+  align-items: center;
   gap: 8px;
+}
+
+/* Ações de navegação: inline no desktop. */
+.topbar__nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Botão-menu (hambúrguer): só aparece no celular. */
+.topbar__menu-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--tap);
+  height: var(--tap);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 999px;
+  font-size: 1.15rem;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+}
+
+/* ---------- Header no celular: nav vira dropdown ---------- */
+@media (max-width: 768px) {
+  .topbar__menu-btn {
+    display: inline-flex;
+  }
+
+  /* Painel suspenso ancorado abaixo da barra. */
+  .topbar__nav {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    min-width: 200px;
+    max-width: min(78vw, 280px);
+    padding: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    /* Escondido (com transição) até abrir. */
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+    transform-origin: top right;
+    pointer-events: none;
+    transition:
+      opacity 0.16s ease,
+      transform 0.16s ease;
+  }
+
+  .topbar__nav.is-open {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+  }
+
+  /* No dropdown, cada ação é uma linha cheia com alvo de toque confortável. */
+  .topbar__nav > button {
+    width: 100%;
+    min-height: var(--tap);
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    padding: 0 14px;
+    border-radius: var(--radius-sm);
+    font-size: 0.95rem;
+    text-align: left;
+  }
+
+  /* O botão de info deixa de ser círculo dentro do menu. */
+  .topbar__nav > .topbar-info {
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius-sm);
+  }
+
+  /* Toggles sempre visíveis com alvo de toque adequado. */
+  .theme-toggle,
+  .lang-toggle {
+    height: var(--tap);
+  }
+
+  .theme-toggle {
+    width: var(--tap);
+  }
 }
 
 .theme-toggle,

@@ -15,3 +15,5 @@
 @import './cards.css';
 @import './auth.css';
 @import './pokedex.css';
+/* Camada de refino mobile — deve vir por último para vencer pela ordem da cascata. */
+@import './responsive.css';
