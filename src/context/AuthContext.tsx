@@ -16,6 +16,11 @@ interface AuthValue {
   signOut: () => Promise<void>;
 }
 
+// Interruptor da UI de conta. Enquanto `false`, o login/cadastro fica oculto
+// (botão no Header e modal) mesmo com o Supabase configurado — o código
+// continua intacto para ser reativado no futuro: basta voltar para `true`.
+const AUTH_UI_ENABLED = false;
+
 const AuthContext = createContext<AuthValue | null>(null);
 
 // Sessão do Supabase + ações de autenticação. Se o Supabase não estiver
@@ -65,7 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return (
     <AuthContext.Provider
       value={{
-        enabled: isSupabaseConfigured,
+        enabled: AUTH_UI_ENABLED && isSupabaseConfigured,
         user: session?.user ?? null,
         session,
         loading,
