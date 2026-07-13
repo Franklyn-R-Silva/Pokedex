@@ -130,3 +130,93 @@
     padding: 3px;
   }
 }
+
+/* ---------- Cards e diálogos: notch + toque ---------- */
+
+/* Diálogo do deck em tela cheia: a barra fixa respeita o notch/status bar
+   (senão o botão Fechar fica sob a barra do sistema no iOS). Complementa o
+   padding lateral/inferior já aplicado a .deckview em ≤768px acima. */
+@media (max-width: 768px) {
+  .deckview__bar {
+    padding-top: max(var(--space-3), var(--safe-t));
+  }
+}
+
+/* Em telas de toque (sem hover) o botão "ver carta" do catálogo precisa ficar
+   sempre visível — no hover-only ele é inalcançável no celular. */
+@media (hover: none) {
+  .deck-result-view {
+    opacity: 1;
+  }
+}
+
+/* Alvos de toque confortáveis dentro de cards, listas e diálogos. */
+@media (max-width: 768px) {
+  /* Lupa "ver detalhes" nas cartas do catálogo. */
+  .deck-result-view {
+    width: 30px;
+    height: 30px;
+    font-size: 0.85rem;
+  }
+
+  /* +/− na lista do deck (era 24px, difícil de acertar no dedo). */
+  .deck-stepper button {
+    width: 34px;
+    height: 34px;
+  }
+
+  /* Girar / resetar o card 3D no modal da carta. */
+  .card3d__controls button {
+    width: var(--tap);
+    height: var(--tap);
+  }
+
+  /* Fechar / limpar do diálogo do deck com alvo pleno. */
+  .deck-back,
+  .deck-clear {
+    min-height: var(--tap);
+  }
+}
+
+/* ---------- Sem estouro horizontal em telas estreitas ---------- */
+
+/* Tabela de comparação (até 4 Pokémon): as colunas são fixadas inline por JS,
+   então em telas estreitas o card rola na horizontal em vez de espremer as
+   colunas (imagens 46px + nomes) e vazar a largura do painel. */
+@media (max-width: 480px) {
+  .compare {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .ctable {
+    min-width: max-content;
+  }
+}
+
+/* Meta do card (altura/peso): pode quebrar linha em vez de espremer os valores
+   em negrito num só eixo em celulares muito estreitos. */
+@media (max-width: 480px) {
+  .details__meta {
+    flex-wrap: wrap;
+  }
+
+  .details__meta > div {
+    min-width: 0;
+  }
+}
+
+/* Cabeçalho do ataque no modal da carta TCG: nome longo + dano quebram em vez
+   de estourar a largura da folha inferior. */
+@media (max-width: 560px) {
+  .tcg-attack__head {
+    flex-wrap: wrap;
+  }
+}
+
+/* Landing de tipos: 4 colunas de ícones de 58px estouram em telas ~320px. */
+@media (max-width: 360px) {
+  .pkx-landing__grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
