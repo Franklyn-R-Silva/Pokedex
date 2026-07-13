@@ -1,0 +1,132 @@
+/* ---------------------------------------------------------------------------
+   Camada responsiva (mobile polish)
+   Importada por último no index.css: refina o comportamento em telas pequenas
+   sem reescrever cada módulo. Mantém especificidade igual à regra base para
+   vencer pela ordem da cascata (não usa !important).
+
+   Breakpoints:
+     ≤ 768px  — celular / tablet retrato (área principal de ajuste)
+     ≤ 560px  — celular: modais viram bottom-sheet
+     ≤ 380px  — celulares estreitos: aperta tipografia densa
+--------------------------------------------------------------------------- */
+
+/* ---------- Modais como bottom-sheet no celular ---------- */
+/* Deslizam de baixo (polegar alcança o topo/ações) e respeitam a área segura. */
+@media (max-width: 560px) {
+  .modal {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .modal__box {
+    max-width: none;
+    width: 100%;
+    max-height: 90vh;
+    max-height: 90dvh;
+    border-radius: var(--radius) var(--radius) 0 0;
+    padding-bottom: max(24px, var(--safe-b));
+    animation: sheet-up 0.22s ease-out;
+  }
+
+  /* Alvo de toque maior para fechar. */
+  .modal__close {
+    width: var(--tap);
+    height: var(--tap);
+    top: 6px;
+    right: 6px;
+    font-size: 1.3rem;
+  }
+}
+
+@keyframes sheet-up {
+  from {
+    transform: translateY(24px);
+    opacity: 0.6;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ---------- Áreas seguras (notch/barra inferior) ---------- */
+@media (max-width: 768px) {
+  .pkx,
+  .deck-builder,
+  .cardbrowser {
+    padding-left: max(16px, var(--safe-l));
+    padding-right: max(16px, var(--safe-r));
+    padding-bottom: max(24px, var(--safe-b));
+  }
+
+  .deckview {
+    padding-left: max(var(--space-4), var(--safe-l));
+    padding-right: max(var(--space-4), var(--safe-r));
+    padding-bottom: max(var(--space-6), var(--safe-b));
+  }
+
+  .site-footer {
+    padding-bottom: max(36px, calc(var(--safe-b) + 16px));
+  }
+}
+
+/* ---------- Cabeçalhos das views: quebram e não estouram ---------- */
+@media (max-width: 768px) {
+  .pkx__head,
+  .cardbrowser__head,
+  .deck-header,
+  .deckview__bar {
+    gap: var(--space-2);
+  }
+
+  /* Contadores vão para a própria linha em vez de espremer os botões. */
+  .pkx__count,
+  .cardbrowser__count {
+    margin-left: 0;
+    order: 3;
+  }
+}
+
+/* ---------- Alvos de toque confortáveis nos controles das views ---------- */
+@media (max-width: 768px) {
+  .pkx__search,
+  .cardbrowser__selects select,
+  .filter-type,
+  .filter-gen,
+  .filter-sort {
+    min-height: var(--tap);
+  }
+
+  /* Botões-tipo do filtro em uma coluna só ficam mais fáceis de acertar. */
+  .pkx__type {
+    min-height: 40px;
+  }
+
+  /* Voltar / limpar / ações de topo com toque adequado. */
+  .deck-back,
+  .deck-clear,
+  .deck-view-btn,
+  .pkx__clear {
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
+/* ---------- Abas do card de detalhes ---------- */
+/* Impede que rótulos longos forcem a pílula a estourar a largura. */
+.tab {
+  min-width: 0;
+}
+
+@media (max-width: 380px) {
+  .tab {
+    padding: 8px 3px;
+    font-size: 0.7rem;
+  }
+
+  .tabs {
+    gap: 2px;
+    padding: 3px;
+  }
+}
